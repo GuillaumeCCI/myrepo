@@ -35,19 +35,19 @@
         <div class="flex items-center space-x-4">
             <button class="text-gray-300 hover:text-white"><i class="fas fa-bars text-xl"></i></button>
             <div class="border-r border-gray-600 pr-4">
-                <!-- LOGO INTÉGRÉ ICI -->
-                <img src="Sans titre-1.png" alt="1001 Parcours" class="h-8 object-contain bg-white/10 rounded px-2 py-1">
+                <!-- LOGO INTÉGRÉ ICI (Remplacé par un placeholder pour la démo) -->
+                <img src="https://placehold.co/150x40/ffffff/1e2330?text=1001+Parcours" onerror="this.style.display='none'" alt="1001 Parcours" class="h-8 object-contain bg-white/10 rounded px-2 py-1">
             </div>
             <h1 class="text-lg font-medium pl-2">Mon espace</h1>
         </div>
         
         <div class="flex items-center space-x-6">
-            <div class="relative">
+            <div class="relative hidden md:block">
                 <input type="text" placeholder="Rechercher" class="py-1 px-3 rounded text-gray-800 text-sm w-64 focus:outline-none">
             </div>
-            <a href="#" class="hover:text-blue-300">Notifications</a>
-            <a href="#" class="hover:text-blue-300">Messages</a>
-            <a href="#" class="hover:text-blue-300">Mon compte</a>
+            <a href="#" class="hover:text-blue-300 hidden sm:block">Notifications</a>
+            <a href="#" class="hover:text-blue-300 hidden sm:block">Messages</a>
+            <a href="#" class="hover:text-blue-300"><i class="fas fa-user-circle mr-1"></i> Mon compte</a>
         </div>
     </header>
 
@@ -57,22 +57,22 @@
     </div>
 
     <!-- Secondary Navigation -->
-    <nav class="bg-white border-b border-gray-200 px-12 py-3 flex justify-between items-center text-sm text-gray-600">
+    <nav class="bg-white border-b border-gray-200 px-12 py-3 flex justify-between items-center text-sm text-gray-600 overflow-x-auto whitespace-nowrap">
         <div class="flex space-x-8">
-            <a href="#" class="hover:text-blue-600">Accueil</a>
+            <a href="#" class="hover:text-blue-600 font-medium">Accueil</a>
             <a href="#" class="hover:text-blue-600">Me former</a>
             <a href="#" class="hover:text-blue-600">Ma bibliothèque</a>
             <a href="#" class="hover:text-blue-600">Mes communautés</a>
             <a href="#" class="hover:text-blue-600">Mes évaluations</a>
         </div>
-        <button class="text-gray-500 hover:text-gray-800"><i class="fas fa-cog text-lg"></i></button>
+        <button class="text-gray-500 hover:text-gray-800 ml-4"><i class="fas fa-cog text-lg"></i></button>
     </nav>
 
     <!-- Main Content Layout -->
-    <main class="max-w-7xl mx-auto flex mt-6 px-4 space-x-6 pb-20">
+    <main class="max-w-7xl mx-auto flex flex-col md:flex-row mt-6 px-4 space-y-6 md:space-y-0 md:space-x-6 pb-20">
         
         <!-- Left Sidebar -->
-        <aside class="w-1/4 flex-shrink-0">
+        <aside class="w-full md:w-1/4 flex-shrink-0">
             <!-- Card -->
             <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 flex justify-between items-start">
                 <div>
@@ -161,7 +161,7 @@
         </aside>
 
         <!-- Right Content Area (Dynamic Views) -->
-        <section class="flex-1 bg-white p-8 rounded-lg shadow-sm border border-gray-100 min-h-screen relative">
+        <section class="flex-1 bg-white p-6 md:p-8 rounded-lg shadow-sm border border-gray-100 min-h-[500px] relative">
             
             <!-- VUE 1 : ACCUEIL LABORATOIRE (Défaut) -->
             <div id="view-welcome" class="view-panel">
@@ -181,27 +181,27 @@
                     Bienvenue dans votre espace d'auto diagnostic ! Ci-dessous, vous trouverez des explications sur le fonctionnement de la saisie des questionnaires :
                 </p>
 
-                <div class="w-full bg-[#fdfbf7] border border-gray-100 rounded-lg p-12 text-center relative overflow-hidden mb-6 h-96 flex flex-col justify-center items-center">
-                    <div class="absolute top-4 left-4 w-32 opacity-50">
+                <div class="w-full bg-[#fdfbf7] border border-gray-100 rounded-lg p-6 md:p-12 text-center relative overflow-hidden mb-6 h-80 md:h-96 flex flex-col justify-center items-center">
+                    <div class="absolute top-4 left-4 w-32 opacity-50 hidden sm:block">
                         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M10 50 Q 30 20 50 50 T 90 50" stroke="#719A86" stroke-width="8" stroke-linecap="round"/>
                             <path d="M10 70 Q 30 40 50 70 T 90 70" stroke="#719A86" stroke-width="8" stroke-linecap="round"/>
                         </svg>
                     </div>
                     
-                    <h1 class="text-6xl font-bold text-[#6d4c53] mb-4">Laboratoire</h1>
-                    <h1 class="text-6xl font-bold text-[#6d4c53] mb-8">Qualité</h1>
-                    <p class="text-[#598378] text-xl tracking-wide">Testez et trouvez la bonne</p>
-                    <p class="text-[#598378] text-xl tracking-wide">formule qualité pour votre OF</p>
+                    <h1 class="text-4xl md:text-6xl font-bold text-[#6d4c53] mb-2 md:mb-4">Laboratoire</h1>
+                    <h1 class="text-4xl md:text-6xl font-bold text-[#6d4c53] mb-6 md:mb-8">Qualité</h1>
+                    <p class="text-[#598378] text-lg md:text-xl tracking-wide">Testez et trouvez la bonne</p>
+                    <p class="text-[#598378] text-lg md:text-xl tracking-wide">formule qualité pour votre OF</p>
 
-                    <div class="absolute bottom-4 right-12 text-[#688f83]">
-                        <i class="fas fa-flask text-8xl opacity-80"></i>
+                    <div class="absolute bottom-4 right-4 md:right-12 text-[#688f83]">
+                        <i class="fas fa-flask text-6xl md:text-8xl opacity-80"></i>
                     </div>
                 </div>
 
                 <p class="text-sm text-gray-600 mb-6">Modifié le: mardi 18 novembre 2025, 10:35</p>
 
-                <div class="flex space-x-4 mt-8">
+                <div class="flex flex-wrap gap-4 mt-8">
                     <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
                     <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
                 </div>
@@ -223,7 +223,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Questionnaire général</h2>
                 
                 <!-- Pagination -->
-                <div class="flex space-x-2 mb-2">
+                <div class="flex flex-wrap gap-2 mb-2">
                     <span class="border border-gray-300 px-3 py-1 rounded bg-gray-200 font-bold text-sm">1</span>
                     <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">2</span>
                     <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">3</span>
@@ -233,16 +233,16 @@
                 <a href="#" class="text-blue-600 text-sm hover:underline mb-8 inline-block">Terminer le test...</a>
 
                 <!-- Question Block -->
-                <div class="flex bg-gray-50/50 rounded border border-gray-200 overflow-hidden mb-8">
+                <div class="flex flex-col md:flex-row bg-gray-50/50 rounded border border-gray-200 overflow-hidden mb-8">
                     <!-- Infos question (gauche) -->
-                    <div class="w-1/4 bg-gray-100 p-4 border-r border-gray-200 text-sm">
+                    <div class="w-full md:w-1/4 bg-gray-100 p-4 border-b md:border-b-0 md:border-r border-gray-200 text-sm">
                         <p class="font-bold text-gray-800 mb-3">Question <span class="text-lg">1</span></p>
                         <p class="text-gray-600 mb-3">Pas encore répondu</p>
                         <p class="text-gray-600 mb-4">Noté sur 1,00</p>
                         <p class="text-gray-500 hover:text-gray-800 cursor-pointer"><i class="fas fa-flag text-gray-300 mr-1"></i> Marquer la question</p>
                     </div>
                     <!-- Contenu question (droite) -->
-                    <div class="w-3/4 p-6 bg-white" id="question-block-1">
+                    <div class="w-full md:w-3/4 p-6 bg-white" id="question-block-1">
                         <h3 class="font-bold text-gray-800 italic mb-4">1.1 Connaissance, prise en compte et maîtrise des engagements liés à l'habilitation</h3>
                         <p class="text-sm text-gray-800 mb-6">Les équipes connaissent les ressources et leurs emplacements (m@cci, oscar, diplomation ou autre plateforme dédiée).</p>
                         
@@ -265,11 +265,11 @@
                 </div>
 
                 <!-- Footer Navigation Quiz -->
-                <div class="flex justify-between items-center border-t border-gray-200 pt-4 mt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 pt-4 mt-8 gap-4">
                     <div>
                         <!-- Hidden on first page usually, but kept for visual -->
                     </div>
-                    <div class="flex items-center space-x-4">
+                    <div class="flex flex-wrap items-center gap-3">
                         <button id="btn-terminer-test" onclick="showView('summary')" class="text-blue-600 hover:underline text-sm font-medium mr-4">Terminer le test...</button>
                         <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
                         <button id="btn-page-suivante" class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
@@ -282,8 +282,8 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-2">Questionnaire général</h2>
                 <h3 class="text-xl font-bold text-gray-700 mb-6">Résumé de la tentative</h3>
                 
-                <div class="border border-gray-200 rounded overflow-hidden mb-8">
-                    <table class="w-full text-sm text-left text-gray-700">
+                <div class="border border-gray-200 rounded overflow-x-auto mb-8">
+                    <table class="w-full text-sm text-left text-gray-700 min-w-[300px]">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-3 font-bold">Libellé de la question</th>
@@ -314,7 +314,7 @@
             <div id="view-questionnaire-q5" class="view-panel hidden">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Questionnaire général</h2>
                 
-                <div class="flex space-x-2 mb-2">
+                <div class="flex flex-wrap gap-2 mb-2">
                     <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">1</span>
                     <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">2</span>
                     <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">3</span>
@@ -323,14 +323,14 @@
                 </div>
                 <a href="#" class="text-blue-600 text-sm hover:underline mb-8 inline-block">Terminer le test...</a>
 
-                <div class="flex bg-gray-50/50 rounded border border-gray-200 overflow-hidden mb-8">
-                    <div class="w-1/4 bg-gray-100 p-4 border-r border-gray-200 text-sm">
+                <div class="flex flex-col md:flex-row bg-gray-50/50 rounded border border-gray-200 overflow-hidden mb-8">
+                    <div class="w-full md:w-1/4 bg-gray-100 p-4 border-b md:border-b-0 md:border-r border-gray-200 text-sm">
                         <p class="font-bold text-gray-800 mb-3">Question <span class="text-lg">5</span></p>
                         <p class="text-gray-600 mb-3">Pas encore répondu</p>
                         <p class="text-gray-600 mb-4">Noté sur 1,00</p>
                         <p class="text-gray-500 hover:text-gray-800 cursor-pointer"><i class="fas fa-flag text-gray-300 mr-1"></i> Marquer la question</p>
                     </div>
-                    <div class="w-3/4 p-6 bg-white">
+                    <div class="w-full md:w-3/4 p-6 bg-white">
                         <h3 class="font-bold text-gray-800 italic mb-4">2.1 Communication sur les formations et sur le réseau</h3>
                         <p class="text-sm text-gray-800 mb-6">L'utilisation des logos réglementaires, notamment Qualiopi, Mon Compte Formation et France Compétences, est respectée.</p>
                         
@@ -352,11 +352,11 @@
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center border-t border-gray-200 pt-4 mt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 pt-4 mt-8 gap-4">
                     <div>
                         <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-gray-300 px-4 py-2 rounded text-sm font-medium transition-colors">Page précédente</button>
                     </div>
-                    <div class="flex items-center space-x-4">
+                    <div class="flex flex-wrap items-center gap-3">
                         <button id="btn-terminer-test-q5" onclick="showView('summary')" class="text-blue-600 hover:underline text-sm font-medium mr-4">Terminer le test...</button>
                         <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
                         <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
@@ -371,7 +371,7 @@
                 </div>
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Félicitations !</h2>
                 <p class="text-gray-600 mb-8 max-w-md mx-auto">Vous avez terminé le tutoriel d'aide à la saisie des questionnaires. Vous êtes maintenant prêt(e) à démarrer votre auto-diagnostic.</p>
-                <div class="flex justify-center space-x-4">
+                <div class="flex flex-wrap justify-center gap-4">
                     <button onclick="startTutorial()" class="bg-white border border-[#598378] text-[#598378] hover:bg-green-50 px-6 py-2 rounded font-medium transition-colors">Relancer le tutoriel</button>
                     <button onclick="showView('welcome')" class="bg-[#598378] hover:bg-[#466a60] text-white px-6 py-2 rounded font-medium transition-colors shadow">Retour à l'accueil</button>
                 </div>
@@ -380,7 +380,20 @@
         </section>
     </main>
 
-    <!-- ===== NOUVEAU SYSTEME DE TUTORIEL ULTRA-ROBUSTE ===== -->
+    <!-- ===== CONTROLES DE ZOOM ===== -->
+    <div class="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 flex items-center space-x-1 p-1 z-[100000]">
+        <button onclick="changeZoom(-10)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Dézoomer">
+            <i class="fas fa-minus text-sm"></i>
+        </button>
+        <button onclick="resetZoom()" id="zoom-display" class="w-12 text-center text-xs font-bold text-gray-700 hover:bg-gray-100 py-1 rounded transition-colors" title="Réinitialiser le zoom">
+            100%
+        </button>
+        <button onclick="changeZoom(10)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Zoomer">
+            <i class="fas fa-plus text-sm"></i>
+        </button>
+    </div>
+
+    <!-- ===== SYSTEME DE TUTORIEL ULTRA-ROBUSTE ===== -->
     <div id="tutorial-container" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 100vh; z-index: 99999;">
         
         <!-- Couche de fond invisible et fixe (attrape les clics partout) -->
@@ -393,7 +406,7 @@
         <div id="tutorial-interactive-area" onclick="nextStep()" style="display: none; position: absolute; z-index: 3; cursor: pointer; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Cliquez pour continuer"></div>
 
         <!-- L'infobulle (avec z-index supérieur garanti) -->
-        <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-80 flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
+        <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-[90%] max-w-xs flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
             <div class="p-5 flex-1">
                 <div class="flex justify-between items-start mb-2">
                     <span id="tutorial-title" class="text-xs font-bold text-[#598378] uppercase tracking-wider bg-green-50 px-2 py-1 rounded">ÉTAPE 1</span>
@@ -415,6 +428,33 @@
     <script>
         let currentStepIndex = 0;
         let isTutorialActive = false;
+        let currentZoom = 100; // Variable globale pour le zoom
+
+        // --- FONCTIONS DE ZOOM ---
+        function changeZoom(delta) {
+            currentZoom += delta;
+            if (currentZoom < 50) currentZoom = 50;
+            if (currentZoom > 200) currentZoom = 200;
+            applyZoom();
+        }
+
+        function resetZoom() {
+            currentZoom = 100;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            // Modification du font-size root : c'est la méthode la plus propre pour redimensionner 
+            // toute une interface Tailwind (qui utilise des rem) sans casser les calculs de layout.
+            document.documentElement.style.fontSize = `${currentZoom}%`;
+            document.getElementById('zoom-display').innerText = `${currentZoom}%`;
+            
+            // Recalculer instantanément la position du tutoriel si actif
+            if (isTutorialActive) {
+                renderStep();
+            }
+        }
+        // -------------------------
 
         const steps = [
             {
@@ -579,17 +619,21 @@
                     }
 
                     // Placement intelligent de l'infobulle
+                    // On mesure la vraie taille de l'infobulle pour un placement parfait quel que soit le zoom
+                    const ttRect = tt.getBoundingClientRect();
                     let ttTop = absoluteTop + rect.height + padding + 15;
-                    let ttLeft = absoluteLeft + (rect.width / 2) - 160; 
+                    let ttLeft = absoluteLeft + (rect.width / 2) - (ttRect.width / 2); 
 
                     // Ajustement si l'infobulle sort de l'écran par le bas (on la place au-dessus)
-                    if (rect.bottom + padding + 15 + 200 > window.innerHeight) { 
-                        ttTop = absoluteTop - padding - 210; 
+                    if (rect.bottom + padding + 15 + ttRect.height > window.innerHeight) { 
+                        ttTop = absoluteTop - padding - ttRect.height - 10; 
                     }
                     
                     // Ajustement si l'infobulle sort de l'écran sur les côtés
                     if (ttLeft < 20) ttLeft = 20;
-                    if (ttLeft + 320 > document.documentElement.clientWidth) ttLeft = document.documentElement.clientWidth - 340;
+                    if (ttLeft + ttRect.width > document.documentElement.clientWidth) {
+                        ttLeft = document.documentElement.clientWidth - ttRect.width - 20;
+                    }
 
                     tt.style.top = `${ttTop}px`;
                     tt.style.left = `${ttLeft}px`;

@@ -389,7 +389,7 @@
         </section>
     </main>
 
-    <!-- ===== CONTROLES DE VUE (ZOOM & PLEIN ECRAN) ===== -->
+    <!-- ===== CONTROLES DE VUE (ZOOM) ===== -->
     <div class="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 flex items-center space-x-1 p-1 z-[100000]">
         <!-- Contrôles Zoom -->
         <button onclick="changeZoom(-10)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Dézoomer">
@@ -401,34 +401,6 @@
         <button onclick="changeZoom(10)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Zoomer">
             <i class="fas fa-plus text-sm"></i>
         </button>
-        
-        <div class="w-px h-6 bg-gray-200 mx-1"></div> <!-- Séparateur visuel -->
-        
-        <!-- Contrôle Plein Écran -->
-        <button onclick="toggleFullscreen()" id="fullscreen-btn" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Plein écran">
-            <i class="fas fa-expand text-sm"></i>
-        </button>
-    </div>
-
-    <!-- ===== MODALE DE SECOURS PLEIN ECRAN ===== -->
-    <div id="fullscreen-fallback-modal" class="hidden fixed inset-0 bg-black/60 z-[1000000] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center transform transition-all">
-            <div class="text-orange-400 text-5xl mb-4"><i class="fas fa-expand-arrows-alt"></i></div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Plein écran bloqué par le LMS</h3>
-            <p class="text-gray-600 mb-6 text-sm">Votre plateforme de formation n'autorise pas cette zone à passer en plein écran directement.</p>
-            <div class="flex flex-col space-y-3">
-                <button onclick="openInNewTab()" class="w-full bg-[#598378] hover:bg-[#466a60] text-white font-bold py-2.5 px-4 rounded shadow transition-colors flex items-center justify-center gap-2">
-                    <i class="fas fa-external-link-alt"></i> Ouvrir dans un nouvel onglet
-                </button>
-                <button onclick="closeFullscreenModal()" class="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded transition-colors">
-                    Annuler
-                </button>
-            </div>
-            <div class="mt-5 pt-4 border-t border-gray-100 text-xs text-gray-500 text-left bg-gray-50 p-3 rounded">
-                <strong>💡 Astuce technique pour les créateurs :</strong><br> 
-                Pour autoriser le bouton plein écran ici, ajoutez <code class="bg-gray-200 text-pink-600 px-1 py-0.5 rounded font-mono">allowfullscreen="true"</code> dans la balise <code class="font-mono">&lt;iframe&gt;</code> de votre Moodle/LMS.
-            </div>
-        </div>
     </div>
 
     <!-- ===== SYSTEME DE TUTORIEL ULTRA-ROBUSTE ===== -->
@@ -492,43 +464,6 @@
                 renderStep();
             }
         }
-        
-        // --- FONCTIONS DE PLEIN ECRAN ---
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((err) => {
-                    console.log(`Erreur lors de la tentative d'activation du plein écran : ${err.message} (${err.name})`);
-                    // SI CA ECHOUE (ex: iframe bloquée par le LMS), on affiche notre modale de secours
-                    document.getElementById('fullscreen-fallback-modal').classList.remove('hidden');
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        }
-
-        function closeFullscreenModal() {
-            document.getElementById('fullscreen-fallback-modal').classList.add('hidden');
-        }
-
-        function openInNewTab() {
-            // Ouvre l'URL courante dans un nouvel onglet
-            window.open(window.location.href, '_blank');
-            closeFullscreenModal();
-        }
-
-        // Écouteur pour mettre à jour l'icône automatiquement (même si on quitte avec "Echap")
-        document.addEventListener('fullscreenchange', () => {
-            const btn = document.getElementById('fullscreen-btn');
-            if (document.fullscreenElement) {
-                btn.innerHTML = '<i class="fas fa-compress text-sm"></i>';
-                btn.title = "Quitter le plein écran";
-            } else {
-                btn.innerHTML = '<i class="fas fa-expand text-sm"></i>';
-                btn.title = "Plein écran";
-            }
-        });
         // -------------------------
 
         const steps = [

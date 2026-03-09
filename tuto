@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon espace - 1001 Parcours</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #10b981 0%, #1e3a8a 100%);
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 15px),
+                              linear-gradient(135deg, #10b981 0%, #1e3a8a 100%);
+        }
+
+        .pulse-animation {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Top Header -->
+    <header class="bg-[#1e2330] text-white flex items-center justify-between px-4 py-3 text-sm">
+        <div class="flex items-center space-x-4">
+            <button class="text-gray-300 hover:text-white"><i class="fas fa-bars text-xl"></i></button>
+            <div class="border-r border-gray-600 pr-4">
+                <!-- LOGO INTÉGRÉ ICI -->
+                <img src="Sans titre-1.png" alt="1001 Parcours" class="h-8 object-contain bg-white/10 rounded px-2 py-1">
+            </div>
+            <h1 class="text-lg font-medium pl-2">Mon espace</h1>
+        </div>
+        
+        <div class="flex items-center space-x-6">
+            <div class="relative">
+                <input type="text" placeholder="Rechercher" class="py-1 px-3 rounded text-gray-800 text-sm w-64 focus:outline-none">
+            </div>
+            <a href="#" class="hover:text-blue-300">Notifications</a>
+            <a href="#" class="hover:text-blue-300">Messages</a>
+            <a href="#" class="hover:text-blue-300">Mon compte</a>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <div class="hero-gradient h-40 w-full flex items-end pb-6 px-12">
+        <h2 class="text-4xl font-bold text-white tracking-wide">Mon espace</h2>
+    </div>
+
+    <!-- Secondary Navigation -->
+    <nav class="bg-white border-b border-gray-200 px-12 py-3 flex justify-between items-center text-sm text-gray-600">
+        <div class="flex space-x-8">
+            <a href="#" class="hover:text-blue-600">Accueil</a>
+            <a href="#" class="hover:text-blue-600">Me former</a>
+            <a href="#" class="hover:text-blue-600">Ma bibliothèque</a>
+            <a href="#" class="hover:text-blue-600">Mes communautés</a>
+            <a href="#" class="hover:text-blue-600">Mes évaluations</a>
+        </div>
+        <button class="text-gray-500 hover:text-gray-800"><i class="fas fa-cog text-lg"></i></button>
+    </nav>
+
+    <!-- Main Content Layout -->
+    <main class="max-w-7xl mx-auto flex mt-6 px-4 space-x-6 pb-20">
+        
+        <!-- Left Sidebar -->
+        <aside class="w-1/4 flex-shrink-0">
+            <!-- Card -->
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 flex justify-between items-start">
+                <div>
+                    <h3 class="font-bold text-gray-900 text-sm mb-3">2025 - Auto diagnostic<br>partenaire habilité RS<br>CCE</h3>
+                    <span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded">En cours</span>
+                </div>
+                <div class="w-16 h-12 bg-gray-100 rounded overflow-hidden">
+                    <div class="w-full h-full bg-green-50 flex items-center justify-center text-[8px] text-green-800 text-center p-1 border border-green-200">
+                        Laboratoire Qualité
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Menu -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-2 text-sm">
+                
+                <!-- Section Accueil -->
+                <div class="mb-2">
+                    <button class="flex items-center w-full text-left font-bold text-gray-800 p-2 hover:bg-gray-50 rounded">
+                        <i class="fas fa-chevron-up text-xs mr-2 text-gray-400"></i> Accueil
+                    </button>
+                    <div class="ml-2 mt-1">
+                        <div class="relative border-l border-dashed border-gray-400 ml-2 py-2">
+                            <div class="relative pl-6 mb-3">
+                                <div class="absolute -left-[7px] top-2 w-3.5 h-3.5 bg-white border-[3px] border-[#3b5998] rounded-full"></div>
+                                <a href="#" onclick="showView('welcome')" class="block bg-[#3b5998] text-white px-3 py-1.5 rounded text-sm w-full">Bienvenue</a>
+                            </div>
+                            <div class="relative pl-6 mb-3">
+                                <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
+                                <a href="#" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Questionnaire saisie manuelle</a>
+                            </div>
+                            <div class="relative pl-6">
+                                <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
+                                <a href="#" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Comment remplir les questionnaires ?</a>
+                            </div>
+                        </div>
+                        <!-- BOUTON LANCEMENT TUTORIEL -->
+                        <div class="mt-4 mb-2 pl-2">
+                            <button onclick="startTutorial()" class="w-full pulse-animation bg-gradient-to-r from-[#598378] to-[#719A86] text-white font-bold py-2 px-3 rounded shadow-md hover:shadow-lg transition-all text-xs flex items-center justify-center space-x-2 relative z-10">
+                                <i class="fas fa-magic"></i>
+                                <span>Lancer le tutoriel</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Partie tronc commun -->
+                <div class="mb-2 mt-4">
+                    <button class="flex items-center w-full text-left font-bold text-gray-800 p-2 hover:bg-gray-50 rounded">
+                        <i class="fas fa-chevron-up text-xs mr-2 text-gray-400"></i> Partie tronc commun
+                    </button>
+                    <div class="ml-2 mt-1">
+                        <div class="relative border-l border-dashed border-gray-400 ml-2 py-2">
+                            <div class="relative pl-6">
+                                <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
+                                <a href="#" id="menu-questionnaire-general" onclick="showView('pre-test')" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Questionnaire général</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section CCE (Simplifiée pour l'espace) -->
+                <div class="mb-2 mt-4">
+                    <button class="flex items-center w-full text-left font-bold text-gray-800 p-2 hover:bg-gray-50 rounded">
+                        <i class="fas fa-chevron-up text-xs mr-2 text-gray-400"></i> CCE
+                    </button>
+                    <div class="ml-2 mt-1">
+                        <div class="relative border-l border-dashed border-gray-400 ml-2 py-2">
+                            <div class="relative pl-6 mb-3">
+                                <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
+                                <a href="#" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Animer une équipe de travail - RS5366</a>
+                            </div>
+                            <div class="relative pl-6 mb-3">
+                                <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
+                                <a href="#" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Manager un projet - RS5367</a>
+                            </div>
+                            <div class="relative pl-6">
+                                <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
+                                <span class="block px-3 py-1 text-gray-400 italic text-sm">... autres modules ...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Right Content Area (Dynamic Views) -->
+        <section class="flex-1 bg-white p-8 rounded-lg shadow-sm border border-gray-100 min-h-screen relative">
+            
+            <!-- VUE 1 : ACCUEIL LABORATOIRE (Défaut) -->
+            <div id="view-welcome" class="view-panel">
+                <div class="flex justify-between items-center mb-6 text-gray-400">
+                    <div class="flex space-x-2">
+                        <button class="hover:text-gray-600"><i class="fas fa-book-open"></i></button>
+                    </div>
+                    <div class="flex space-x-3 items-center">
+                        <button class="hover:text-gray-600"><i class="fas fa-ellipsis-h"></i></button>
+                        <button class="hover:text-gray-600"><i class="fas fa-chevron-left text-sm"></i></button>
+                        <button class="hover:text-gray-600"><i class="fas fa-chevron-right text-sm"></i></button>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Bienvenue</h2>
+                <p class="text-sm text-gray-800 mb-8 leading-relaxed">
+                    Bienvenue dans votre espace d'auto diagnostic ! Ci-dessous, vous trouverez des explications sur le fonctionnement de la saisie des questionnaires :
+                </p>
+
+                <div class="w-full bg-[#fdfbf7] border border-gray-100 rounded-lg p-12 text-center relative overflow-hidden mb-6 h-96 flex flex-col justify-center items-center">
+                    <div class="absolute top-4 left-4 w-32 opacity-50">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 50 Q 30 20 50 50 T 90 50" stroke="#719A86" stroke-width="8" stroke-linecap="round"/>
+                            <path d="M10 70 Q 30 40 50 70 T 90 70" stroke="#719A86" stroke-width="8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    
+                    <h1 class="text-6xl font-bold text-[#6d4c53] mb-4">Laboratoire</h1>
+                    <h1 class="text-6xl font-bold text-[#6d4c53] mb-8">Qualité</h1>
+                    <p class="text-[#598378] text-xl tracking-wide">Testez et trouvez la bonne</p>
+                    <p class="text-[#598378] text-xl tracking-wide">formule qualité pour votre OF</p>
+
+                    <div class="absolute bottom-4 right-12 text-[#688f83]">
+                        <i class="fas fa-flask text-8xl opacity-80"></i>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-6">Modifié le: mardi 18 novembre 2025, 10:35</p>
+
+                <div class="flex space-x-4 mt-8">
+                    <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
+                    <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
+                </div>
+            </div>
+
+            <!-- VUE 2 : PRÉ-TEST (Page avant de lancer le quiz) -->
+            <div id="view-pre-test" class="view-panel hidden">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Questionnaire général</h2>
+                <div class="bg-gray-50 border border-gray-200 p-6 rounded text-center my-10">
+                    <p class="text-sm text-gray-600 mb-6">Méthode d'évaluation: Dernière tentative</p>
+                    <button id="btn-faire-le-test" onclick="showView('questionnaire')" class="bg-[#598378] hover:bg-[#466a60] text-white px-6 py-2 rounded text-md font-medium transition-colors shadow-sm">
+                        Faire le test
+                    </button>
+                </div>
+            </div>
+
+            <!-- VUE 3 : QUESTIONNAIRE (Pendant le quiz) -->
+            <div id="view-questionnaire" class="view-panel hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Questionnaire général</h2>
+                
+                <!-- Pagination -->
+                <div class="flex space-x-2 mb-2">
+                    <span class="border border-gray-300 px-3 py-1 rounded bg-gray-200 font-bold text-sm">1</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">2</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">3</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">4</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">5</span>
+                </div>
+                <a href="#" class="text-blue-600 text-sm hover:underline mb-8 inline-block">Terminer le test...</a>
+
+                <!-- Question Block -->
+                <div class="flex bg-gray-50/50 rounded border border-gray-200 overflow-hidden mb-8">
+                    <!-- Infos question (gauche) -->
+                    <div class="w-1/4 bg-gray-100 p-4 border-r border-gray-200 text-sm">
+                        <p class="font-bold text-gray-800 mb-3">Question <span class="text-lg">1</span></p>
+                        <p class="text-gray-600 mb-3">Pas encore répondu</p>
+                        <p class="text-gray-600 mb-4">Noté sur 1,00</p>
+                        <p class="text-gray-500 hover:text-gray-800 cursor-pointer"><i class="fas fa-flag text-gray-300 mr-1"></i> Marquer la question</p>
+                    </div>
+                    <!-- Contenu question (droite) -->
+                    <div class="w-3/4 p-6 bg-white" id="question-block-1">
+                        <h3 class="font-bold text-gray-800 italic mb-4">1.1 Connaissance, prise en compte et maîtrise des engagements liés à l'habilitation</h3>
+                        <p class="text-sm text-gray-800 mb-6">Les équipes connaissent les ressources et leurs emplacements (m@cci, oscar, diplomation ou autre plateforme dédiée).</p>
+                        
+                        <p class="text-sm text-gray-700 mb-3">Veuillez choisir une réponse :</p>
+                        <div id="question-radios" class="space-y-3 p-2 bg-yellow-50/30 rounded border border-transparent">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-800">Oui, je le constate</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-800">Parfois, mais pas systématiquement</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-800">Non</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Navigation Quiz -->
+                <div class="flex justify-between items-center border-t border-gray-200 pt-4 mt-8">
+                    <div>
+                        <!-- Hidden on first page usually, but kept for visual -->
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="btn-terminer-test" onclick="showView('summary')" class="text-blue-600 hover:underline text-sm font-medium mr-4">Terminer le test...</button>
+                        <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
+                        <button id="btn-page-suivante" class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VUE 4 : RÉSUMÉ (Fin du quiz) -->
+            <div id="view-summary" class="view-panel hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Questionnaire général</h2>
+                <h3 class="text-xl font-bold text-gray-700 mb-6">Résumé de la tentative</h3>
+                
+                <div class="border border-gray-200 rounded overflow-hidden mb-8">
+                    <table class="w-full text-sm text-left text-gray-700">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 font-bold">Libellé de la question</th>
+                                <th class="px-6 py-3 font-bold">État</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100"><td class="px-6 py-3">1</td><td class="px-6 py-3">Réponse enregistrée</td></tr>
+                            <tr class="border-b border-gray-100"><td class="px-6 py-3">2</td><td class="px-6 py-3">Réponse enregistrée</td></tr>
+                            <tr class="border-b border-gray-100"><td class="px-6 py-3">3</td><td class="px-6 py-3">Réponse enregistrée</td></tr>
+                            <tr class="border-b border-gray-100"><td class="px-6 py-3">4</td><td class="px-6 py-3">Réponse enregistrée</td></tr>
+                            <tr><td class="px-6 py-3">5</td><td class="px-6 py-3">Réponse enregistrée</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex flex-col items-center space-y-4">
+                    <button onclick="showView('questionnaire')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded text-sm font-medium transition-colors">
+                        Retour à la tentative
+                    </button>
+                    <button id="btn-tout-envoyer" class="bg-[#598378] hover:bg-[#466a60] text-white px-6 py-2 rounded text-sm font-bold transition-colors shadow">
+                        Tout envoyer et terminer
+                    </button>
+                </div>
+            </div>
+
+            <!-- VUE 5 : QUESTIONNAIRE (Q5) POUR LE TUTORIEL -->
+            <div id="view-questionnaire-q5" class="view-panel hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Questionnaire général</h2>
+                
+                <div class="flex space-x-2 mb-2">
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">1</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">2</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">3</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm">4</span>
+                    <span class="border border-gray-300 px-3 py-1 rounded bg-gray-200 font-bold text-sm">5</span>
+                </div>
+                <a href="#" class="text-blue-600 text-sm hover:underline mb-8 inline-block">Terminer le test...</a>
+
+                <div class="flex bg-gray-50/50 rounded border border-gray-200 overflow-hidden mb-8">
+                    <div class="w-1/4 bg-gray-100 p-4 border-r border-gray-200 text-sm">
+                        <p class="font-bold text-gray-800 mb-3">Question <span class="text-lg">5</span></p>
+                        <p class="text-gray-600 mb-3">Pas encore répondu</p>
+                        <p class="text-gray-600 mb-4">Noté sur 1,00</p>
+                        <p class="text-gray-500 hover:text-gray-800 cursor-pointer"><i class="fas fa-flag text-gray-300 mr-1"></i> Marquer la question</p>
+                    </div>
+                    <div class="w-3/4 p-6 bg-white">
+                        <h3 class="font-bold text-gray-800 italic mb-4">2.1 Communication sur les formations et sur le réseau</h3>
+                        <p class="text-sm text-gray-800 mb-6">L'utilisation des logos réglementaires, notamment Qualiopi, Mon Compte Formation et France Compétences, est respectée.</p>
+                        
+                        <p class="text-sm text-gray-700 mb-3">Veuillez choisir une réponse :</p>
+                        <div class="space-y-3 p-2 bg-yellow-50/30 rounded border border-transparent">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" checked name="q5" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-800 font-bold">Oui, je le constate</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="q5" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-800">Parfois, mais pas systématiquement</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="q5" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-800">Non</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center border-t border-gray-200 pt-4 mt-8">
+                    <div>
+                        <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-gray-300 px-4 py-2 rounded text-sm font-medium transition-colors">Page précédente</button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="btn-terminer-test-q5" onclick="showView('summary')" class="text-blue-600 hover:underline text-sm font-medium mr-4">Terminer le test...</button>
+                        <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
+                        <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VUE 6 : ECRAN DE FIN DU TUTORIEL -->
+            <div id="view-tutorial-end" class="view-panel hidden flex-col items-center justify-center h-full text-center py-20">
+                <div class="bg-green-50 text-green-600 rounded-full w-24 h-24 flex items-center justify-center text-5xl mb-6 shadow-sm mx-auto">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Félicitations !</h2>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">Vous avez terminé le tutoriel d'aide à la saisie des questionnaires. Vous êtes maintenant prêt(e) à démarrer votre auto-diagnostic.</p>
+                <div class="flex justify-center space-x-4">
+                    <button onclick="startTutorial()" class="bg-white border border-[#598378] text-[#598378] hover:bg-green-50 px-6 py-2 rounded font-medium transition-colors">Relancer le tutoriel</button>
+                    <button onclick="showView('welcome')" class="bg-[#598378] hover:bg-[#466a60] text-white px-6 py-2 rounded font-medium transition-colors shadow">Retour à l'accueil</button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- ===== NOUVEAU SYSTEME DE TUTORIEL ULTRA-ROBUSTE ===== -->
+    <div id="tutorial-container" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 100vh; z-index: 99999;">
+        
+        <!-- Couche de fond invisible et fixe (attrape les clics partout) -->
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;"></div>
+
+        <!-- Le "trou" qui met en valeur (génère l'assombrissement avec outline au lieu de box-shadow) -->
+        <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; outline: 9999px solid rgba(0,0,0,0.7); border: 3px solid #719A86; border-radius: 6px; transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;"></div>
+
+        <!-- ZONE INTERACTIVE CLIQUABLE (Pour avancer en cliquant sur l'élément mis en valeur) -->
+        <div id="tutorial-interactive-area" onclick="nextStep()" style="display: none; position: absolute; z-index: 3; cursor: pointer; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Cliquez pour continuer"></div>
+
+        <!-- L'infobulle (avec z-index supérieur garanti) -->
+        <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-80 flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
+            <div class="p-5 flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <span id="tutorial-title" class="text-xs font-bold text-[#598378] uppercase tracking-wider bg-green-50 px-2 py-1 rounded">ÉTAPE 1</span>
+                    <button onclick="endTutorial(false); showView('welcome');" class="text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times"></i></button>
+                </div>
+                <p id="tutorial-text" class="text-gray-800 text-sm mt-3 font-medium leading-relaxed"></p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-b-xl border-t border-gray-100 flex justify-between items-center">
+                <span id="tutorial-counter" class="text-xs font-bold text-gray-400">1 / 5</span>
+                <div class="space-x-2">
+                    <button id="tutorial-prev" onclick="prevStep()" class="text-gray-500 hover:text-gray-800 text-xs px-2 py-1 disabled:opacity-30"><i class="fas fa-arrow-left"></i></button>
+                    <button id="tutorial-next" onclick="nextStep()" class="bg-[#598378] text-white text-xs px-3 py-1.5 rounded hover:bg-[#466a60] transition-colors shadow-sm font-bold">Suivant <i class="fas fa-arrow-right ml-1"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIQUE JAVASCRIPT DU TUTORIEL -->
+    <script>
+        let currentStepIndex = 0;
+        let isTutorialActive = false;
+
+        const steps = [
+            {
+                target: '#menu-questionnaire-general',
+                title: 'ÉTAPE 1',
+                content: 'Cliquez sur le questionnaire que vous souhaitez remplir dans le menu.',
+                setup: () => { showView('welcome'); },
+                waitForClick: true
+            },
+            {
+                target: '#btn-faire-le-test',
+                title: 'ÉTAPE 1 (suite)',
+                content: 'Puis, cliquez sur le bouton "Faire le test".',
+                setup: () => { showView('pre-test'); },
+                waitForClick: true
+            },
+            {
+                target: '#question-block-1',
+                title: 'ÉTAPE 2',
+                content: 'Lisez la question et sélectionnez votre réponse parmi les choix proposés.',
+                setup: () => { showView('questionnaire'); }
+            },
+            {
+                target: '#btn-page-suivante',
+                title: 'ÉTAPE 3',
+                content: "Une fois l'ensemble des réponses sélectionnées sur une même page, cliquez sur « Suivant » ou « Page suivante ».",
+                setup: () => { showView('questionnaire'); },
+                waitForClick: true
+            },
+            {
+                target: '#btn-terminer-test-q5',
+                title: 'ÉTAPE 4',
+                content: "Après avoir sélectionné vos réponses sur TOUTES les pages du questionnaire, cliquez sur « Terminer le test... ».",
+                setup: () => { showView('questionnaire-q5'); },
+                waitForClick: true
+            },
+            {
+                target: '#btn-tout-envoyer',
+                title: 'ÉTAPE 5',
+                content: "Si vous ne souhaitez pas effectuer de modification et valider définitivement votre saisie, cliquez sur « Tout envoyer et terminer ».",
+                setup: () => { showView('summary'); },
+                waitForClick: true
+            }
+        ];
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + viewId).classList.remove('hidden');
+        }
+
+        function startTutorial() {
+            if (isTutorialActive) return;
+            isTutorialActive = true;
+            currentStepIndex = 0;
+            
+            // Afficher le conteneur complet
+            document.getElementById('tutorial-container').style.display = 'block';
+            
+            // Initialiser le cadre hors de l'écran (pour éviter un mouvement brusque au démarrage)
+            const hole = document.getElementById('tutorial-hole');
+            hole.style.transition = 'none';
+            hole.style.top = '-9999px';
+            hole.style.left = '-9999px';
+            hole.style.width = '0px';
+            hole.style.height = '0px';
+            
+            // Lancer la première étape après une fraction de seconde
+            setTimeout(() => {
+                hole.style.transition = 'top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease';
+                renderStep();
+            }, 50);
+        }
+
+        function endTutorial(showEndScreen = false) {
+            isTutorialActive = false;
+            document.getElementById('tutorial-container').style.display = 'none';
+            if (showEndScreen) {
+                showView('tutorial-end');
+            }
+        }
+
+        function nextStep() {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                renderStep();
+            } else {
+                endTutorial(true);
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderStep();
+            }
+        }
+
+        function renderStep() {
+            const step = steps[currentStepIndex];
+            
+            // Exécuter l'action liée à la vue
+            if (step.setup) step.setup();
+
+            // Délai critique pour laisser le temps au DOM de s'afficher (sinon width/height sont à 0)
+            setTimeout(() => {
+                const targetEl = document.querySelector(step.target);
+                if (!targetEl) {
+                    console.error("Élément cible introuvable :", step.target);
+                    return;
+                }
+
+                // Faire défiler l'écran automatiquement vers l'élément s'il n'est pas visible
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Un second délai pour laisser le défilement se faire avant de calculer les positions
+                setTimeout(() => {
+                    // Calculs des positions absolues (y compris si l'utilisateur a scrollé)
+                    const rect = targetEl.getBoundingClientRect();
+                    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+                    const absoluteTop = rect.top + scrollTop;
+                    const absoluteLeft = rect.left + scrollLeft;
+                    const padding = 8;
+                    
+                    // Placement du cadre (le trou)
+                    const hole = document.getElementById('tutorial-hole');
+                    hole.style.top = `${absoluteTop - padding}px`;
+                    hole.style.left = `${absoluteLeft - padding}px`;
+                    hole.style.width = `${rect.width + padding * 2}px`;
+                    hole.style.height = `${rect.height + padding * 2}px`;
+
+                    // Remplissage de l'infobulle
+                    const tt = document.getElementById('tutorial-tooltip');
+                    document.getElementById('tutorial-title').innerText = step.title;
+                    document.getElementById('tutorial-text').innerText = step.content;
+                    document.getElementById('tutorial-counter').innerText = `${currentStepIndex + 1} / ${steps.length}`;
+                    
+                    document.getElementById('tutorial-prev').disabled = currentStepIndex === 0;
+                    
+                    const nextBtn = document.getElementById('tutorial-next');
+                    if (currentStepIndex === steps.length - 1) {
+                        nextBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Terminer';
+                        nextBtn.className = 'bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition-colors shadow-sm font-bold';
+                    } else {
+                        nextBtn.innerHTML = 'Suivant <i class="fas fa-arrow-right ml-1"></i>';
+                        nextBtn.className = 'bg-[#598378] text-white text-xs px-3 py-1.5 rounded hover:bg-[#466a60] transition-colors shadow-sm font-bold';
+                    }
+
+                    // Gestion de la zone interactive cliquable
+                    const interactiveArea = document.getElementById('tutorial-interactive-area');
+                    if (step.waitForClick) {
+                        interactiveArea.style.display = 'block';
+                        interactiveArea.style.top = `${absoluteTop - padding}px`;
+                        interactiveArea.style.left = `${absoluteLeft - padding}px`;
+                        interactiveArea.style.width = `${rect.width + padding * 2}px`;
+                        interactiveArea.style.height = `${rect.height + padding * 2}px`;
+                        nextBtn.style.display = 'none'; // Cache le bouton "Suivant"
+                    } else {
+                        interactiveArea.style.display = 'none';
+                        nextBtn.style.display = 'inline-block'; // Affiche le bouton "Suivant"
+                    }
+
+                    // Placement intelligent de l'infobulle
+                    let ttTop = absoluteTop + rect.height + padding + 15;
+                    let ttLeft = absoluteLeft + (rect.width / 2) - 160; 
+
+                    // Ajustement si l'infobulle sort de l'écran par le bas (on la place au-dessus)
+                    if (rect.bottom + padding + 15 + 200 > window.innerHeight) { 
+                        ttTop = absoluteTop - padding - 210; 
+                    }
+                    
+                    // Ajustement si l'infobulle sort de l'écran sur les côtés
+                    if (ttLeft < 20) ttLeft = 20;
+                    if (ttLeft + 320 > document.documentElement.clientWidth) ttLeft = document.documentElement.clientWidth - 340;
+
+                    tt.style.top = `${ttTop}px`;
+                    tt.style.left = `${ttLeft}px`;
+
+                }, 350); // Ce délai garantit que le scroll de la page est terminé et que les coordonnées sont bonnes
+
+            }, 50); 
+        }
+
+        // Recalcul en direct si l'utilisateur redimensionne la fenêtre
+        window.addEventListener('resize', () => {
+            if(isTutorialActive) renderStep();
+        });
+
+    </script>
+</body>
+</html>

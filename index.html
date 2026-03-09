@@ -35,7 +35,7 @@
         <div class="flex items-center space-x-4">
             <button class="text-gray-300 hover:text-white"><i class="fas fa-bars text-xl"></i></button>
             <div class="border-r border-gray-600 pr-4">
-                <!-- LOGO INTÉGRÉ ICI (Remplacé par un placeholder pour la démo) -->
+                <!-- LOGO INTÉGRÉ ICI -->
                 <img src="https://placehold.co/150x40/ffffff/1e2330?text=1001+Parcours" onerror="this.style.display='none'" alt="1001 Parcours" class="h-8 object-contain bg-white/10 rounded px-2 py-1">
             </div>
             <h1 class="text-lg font-medium pl-2 flex items-center">
@@ -183,7 +183,7 @@
                 </button>
             </div>
 
-            <!-- VUE 1 : ACCUEIL LABORATOIRE (Masquée par défaut maintenant) -->
+            <!-- VUE 1 : ACCUEIL LABORATOIRE -->
             <div id="view-welcome" class="view-panel hidden">
                 <div class="flex justify-between items-center mb-6 text-gray-400">
                     <div class="flex space-x-2">
@@ -287,7 +287,7 @@
                 <!-- Footer Navigation Quiz -->
                 <div class="flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 pt-4 mt-8 gap-4">
                     <div>
-                        <!-- Hidden on first page usually, but kept for visual -->
+                        <!-- Empty -->
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
                         <button id="btn-terminer-test" onclick="showView('summary')" class="text-blue-600 hover:underline text-sm font-medium mr-4">Terminer le test...</button>
@@ -384,7 +384,7 @@
                 </div>
             </div>
 
-            <!-- VUE 6 : RÉSUMÉ DES TENTATIVES (Nouvelle vue post-test) -->
+            <!-- VUE 6 : RÉSUMÉ DES TENTATIVES (Post-test) -->
             <div id="view-attempts-summary" class="view-panel hidden">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Questionnaire général</h2>
                 <p class="text-sm text-gray-800 mb-6">Méthode d'évaluation : Dernière tentative</p>
@@ -423,7 +423,7 @@
                 </div>
             </div>
 
-            <!-- VUE 7 : RÉVISION (Anciennement VUE 6) -->
+            <!-- VUE 7 : RÉVISION -->
             <div id="view-revision" class="view-panel hidden">
                 <h2 class="text-3xl font-bold text-gray-900 mb-6">Questionnaire général – révision</h2>
 
@@ -457,7 +457,7 @@
 
                 <!-- Question Block 1 (Review) -->
                 <div id="review-q1" class="flex flex-col md:flex-row bg-white rounded overflow-hidden mb-8">
-                    <!-- Infos question (gauche) -->
+                    <!-- Infos question -->
                     <div class="w-full md:w-1/4 bg-gray-50/50 p-4 border-r border-gray-100 text-sm">
                         <p class="font-bold text-gray-800 mb-3">Question <span class="text-lg">1</span></p>
                         <p class="text-gray-800 mb-3 font-medium">Partiellement<br>correct</p>
@@ -465,7 +465,7 @@
                         <p class="text-gray-500 hover:text-gray-800 cursor-pointer mb-4"><i class="fas fa-flag text-gray-300 mr-1"></i> Marquer la question</p>
                         <p class="text-blue-600 hover:underline cursor-pointer"><i class="fas fa-cog text-blue-400 mr-1 text-xs"></i> Modifier la question</p>
                     </div>
-                    <!-- Contenu question (droite) -->
+                    <!-- Contenu question -->
                     <div class="w-full md:w-3/4 p-6 bg-white border border-gray-100 border-l-0">
                         <h3 class="font-bold text-gray-800 italic mb-4">1.1 Connaissance, prise en compte et maîtrise des engagements liés à l'habilitation</h3>
                         <p class="text-sm text-gray-800 mb-6">Les équipes connaissent les ressources et leurs emplacements (m@cci, oscar, diplomation ou autre plateforme dédiée).</p>
@@ -491,7 +491,7 @@
                 <a href="#" class="text-blue-600 text-sm hover:underline mt-4 inline-block">Terminer la relecture</a>
             </div>
 
-            <!-- VUE 8 : ECRAN DE FIN DU TUTORIEL (Anciennement VUE 7) -->
+            <!-- VUE 8 : ECRAN DE FIN DU TUTORIEL -->
             <div id="view-tutorial-end" class="view-panel hidden flex-col items-center justify-center h-full text-center py-20 min-h-[400px]">
                 <div class="bg-green-50 text-green-600 rounded-full w-24 h-24 flex items-center justify-center text-5xl mb-6 shadow-sm mx-auto">
                     <i class="fas fa-check"></i>
@@ -523,21 +523,21 @@
     <!-- ===== SYSTEME DE TUTORIEL ULTRA-ROBUSTE ===== -->
     <div id="tutorial-container" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 100vh; z-index: 99999;">
         
-        <!-- Couche de fond invisible et fixe (attrape les clics partout) -->
+        <!-- Couche de fond invisible et fixe -->
         <div id="tutorial-bg-blocker" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;"></div>
 
-        <!-- Le "trou" qui met en valeur (génère l'assombrissement avec outline au lieu de box-shadow) -->
+        <!-- Le "trou" mis en valeur -->
         <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; outline: 9999px solid rgba(0,0,0,0.7); border: 3px solid #719A86; border-radius: 6px; transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;"></div>
 
-        <!-- ZONE INTERACTIVE CLIQUABLE (Pour avancer en cliquant sur l'élément mis en valeur) -->
+        <!-- ZONE INTERACTIVE CLIQUABLE -->
         <div id="tutorial-interactive-area" onclick="nextStep()" style="display: none; position: absolute; z-index: 3; cursor: pointer; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Cliquez pour continuer"></div>
 
-        <!-- L'infobulle (avec z-index supérieur garanti) -->
+        <!-- L'infobulle -->
         <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-[90%] max-w-xs flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
             <div class="p-5 flex-1">
                 <div class="flex justify-between items-start mb-2">
                     <span id="tutorial-title" class="text-xs font-bold text-[#598378] uppercase tracking-wider bg-green-50 px-2 py-1 rounded">ÉTAPE 1</span>
-                    <button onclick="endTutorial(false); showView('welcome');" class="text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times"></i></button>
+                    <button onclick="endTutorial(false); showView('tutorial-start');" class="text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times"></i></button>
                 </div>
                 <p id="tutorial-text" class="text-gray-800 text-sm mt-3 font-medium leading-relaxed"></p>
             </div>
@@ -555,17 +555,13 @@
     <script>
         let currentStepIndex = 0;
         let isTutorialActive = false;
-        let currentZoom = 100; // Variable globale pour le zoom
+        let currentZoom = 100;
         let radioTimeout = null;
 
-        // --- NOUVELLE FONCTION POUR LE CLIC DES BOUTONS RADIO ---
         function handleRadioChange() {
-            // Si on est dans le tutoriel et qu'on est précisément à l'étape du choix de réponse (Index 2)
             if (isTutorialActive && currentStepIndex === 2) {
                 clearTimeout(radioTimeout);
-                // Petit délai de 250ms pour voir le bouton se cocher avant de passer à l'étape suivante
                 radioTimeout = setTimeout(() => {
-                    // On vérifie qu'on est toujours sur l'étape 2 (au cas où l'utilisateur a cliqué sur "Suivant" entre-temps)
                     if (isTutorialActive && currentStepIndex === 2) {
                         nextStep();
                     }
@@ -573,17 +569,14 @@
             }
         }
 
-        // Bloquer les clics en dehors de la zone ciblée quand l'interaction directe est autorisée
         function preventOutsideClicks(e) {
             if (isTutorialActive && steps[currentStepIndex] && steps[currentStepIndex].allowInteraction) {
                 const targetEl = document.querySelector(steps[currentStepIndex].target);
                 const tooltipEl = document.getElementById('tutorial-tooltip');
                 
-                // Autoriser le clic si c'est à l'intérieur de l'élément ciblé ou de l'infobulle
                 if (targetEl && targetEl.contains(e.target)) return;
                 if (tooltipEl && tooltipEl.contains(e.target)) return;
                 
-                // Sinon on bloque tout
                 e.preventDefault();
                 e.stopPropagation();
             }
@@ -592,7 +585,6 @@
         document.addEventListener('mousedown', preventOutsideClicks, true);
         document.addEventListener('touchstart', preventOutsideClicks, { capture: true, passive: false });
 
-        // --- FONCTIONS DE ZOOM ---
         function changeZoom(delta) {
             currentZoom += delta;
             if (currentZoom < 50) currentZoom = 50;
@@ -606,25 +598,18 @@
         }
 
         function applyZoom() {
-            // Modification du font-size root : c'est la méthode la plus propre pour redimensionner 
-            // toute une interface Tailwind (qui utilise des rem) sans casser les calculs de layout.
             document.documentElement.style.fontSize = `${currentZoom}%`;
             document.getElementById('zoom-display').innerText = `${currentZoom}%`;
-            
-            // Recalculer instantanément la position du tutoriel si actif
-            if (isTutorialActive) {
-                renderStep();
-            }
+            if (isTutorialActive) renderStep();
         }
-        // -------------------------
 
         const steps = [
             {
                 target: '#menu-questionnaire-general',
                 title: 'ÉTAPE 1',
                 content: 'Cliquez sur le questionnaire que vous souhaitez remplir dans le menu.',
-                setup: () => { showView('welcome'); } 
-                // waitForClick retiré : l'utilisateur doit désormais cliquer sur "Suivant" au lieu du menu
+                setup: () => { showView('welcome'); },
+                waitForClick: true // L'utilisateur DOIT cliquer pour avancer
             },
             {
                 target: '#btn-faire-le-test',
@@ -638,7 +623,7 @@
                 title: 'ÉTAPE 2',
                 content: 'Lisez la question et sélectionnez votre réponse parmi les choix proposés.',
                 setup: () => { showView('questionnaire'); },
-                allowInteraction: true // Permet de cliquer physiquement sur les vrais boutons radio
+                allowInteraction: true 
             },
             {
                 target: '#btn-page-suivante',
@@ -693,19 +678,13 @@
             if (isTutorialActive) return;
             isTutorialActive = true;
             currentStepIndex = 0;
-            
-            // Afficher le conteneur complet
             document.getElementById('tutorial-container').style.display = 'block';
-            
-            // Initialiser le cadre hors de l'écran (pour éviter un mouvement brusque au démarrage)
             const hole = document.getElementById('tutorial-hole');
             hole.style.transition = 'none';
             hole.style.top = '-9999px';
             hole.style.left = '-9999px';
             hole.style.width = '0px';
             hole.style.height = '0px';
-            
-            // Lancer la première étape après une fraction de seconde
             setTimeout(() => {
                 hole.style.transition = 'top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease';
                 renderStep();
@@ -738,30 +717,31 @@
 
         function renderStep() {
             const step = steps[currentStepIndex];
-            
-            // Exécuter l'action liée à la vue
             if (step.setup) step.setup();
 
-            // Gestion du bloqueur de fond pour permettre l'interaction directe avec l'élément (ex: boutons radio)
+            // Gestion du bouton suivant de l'infobulle (caché par défaut si waitForClick)
+            const nextBtn = document.getElementById('tutorial-next');
+            nextBtn.style.display = step.waitForClick ? 'none' : 'inline-block';
+
             const bgBlocker = document.getElementById('tutorial-bg-blocker');
             if (bgBlocker) {
                 bgBlocker.style.pointerEvents = step.allowInteraction ? 'none' : 'auto';
             }
 
-            // Délai critique pour laisser le temps au DOM de s'afficher (sinon width/height sont à 0)
             setTimeout(() => {
                 const targetEl = document.querySelector(step.target);
-                if (!targetEl) {
-                    console.error("Élément cible introuvable :", step.target);
-                    return;
-                }
+                if (!targetEl) return;
 
-                // Faire défiler l'écran automatiquement vers l'élément s'il n'est pas visible
                 targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                // Un second délai pour laisser le défilement se faire avant de calculer les positions
+                // Appliquer style pointer sur le menu à l'étape 1
+                if (currentStepIndex === 0) {
+                    targetEl.style.cursor = 'pointer';
+                } else {
+                    document.getElementById('menu-questionnaire-general').style.cursor = 'default';
+                }
+
                 setTimeout(() => {
-                    // Calculs des positions absolues (y compris si l'utilisateur a scrollé)
                     const rect = targetEl.getBoundingClientRect();
                     const scrollTop = window.scrollY || document.documentElement.scrollTop;
                     const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
@@ -770,14 +750,12 @@
                     const absoluteLeft = rect.left + scrollLeft;
                     const padding = 8;
                     
-                    // Placement du cadre (le trou)
                     const hole = document.getElementById('tutorial-hole');
                     hole.style.top = `${absoluteTop - padding}px`;
                     hole.style.left = `${absoluteLeft - padding}px`;
                     hole.style.width = `${rect.width + padding * 2}px`;
                     hole.style.height = `${rect.height + padding * 2}px`;
 
-                    // Remplissage de l'infobulle
                     const tt = document.getElementById('tutorial-tooltip');
                     document.getElementById('tutorial-title').innerText = step.title;
                     document.getElementById('tutorial-text').innerText = step.content;
@@ -785,7 +763,6 @@
                     
                     document.getElementById('tutorial-prev').disabled = currentStepIndex === 0;
                     
-                    const nextBtn = document.getElementById('tutorial-next');
                     if (currentStepIndex === steps.length - 1) {
                         nextBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Terminer';
                         nextBtn.className = 'bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition-colors shadow-sm font-bold';
@@ -794,7 +771,6 @@
                         nextBtn.className = 'bg-[#598378] text-white text-xs px-3 py-1.5 rounded hover:bg-[#466a60] transition-colors shadow-sm font-bold';
                     }
 
-                    // Gestion de la zone interactive cliquable
                     const interactiveArea = document.getElementById('tutorial-interactive-area');
                     if (step.waitForClick) {
                         interactiveArea.style.display = 'block';
@@ -802,24 +778,18 @@
                         interactiveArea.style.left = `${absoluteLeft - padding}px`;
                         interactiveArea.style.width = `${rect.width + padding * 2}px`;
                         interactiveArea.style.height = `${rect.height + padding * 2}px`;
-                        nextBtn.style.display = 'none'; // Cache le bouton "Suivant"
                     } else {
                         interactiveArea.style.display = 'none';
-                        nextBtn.style.display = 'inline-block'; // Affiche le bouton "Suivant"
                     }
 
-                    // Placement intelligent de l'infobulle
-                    // On mesure la vraie taille de l'infobulle pour un placement parfait quel que soit le zoom
                     const ttRect = tt.getBoundingClientRect();
                     let ttTop = absoluteTop + rect.height + padding + 15;
                     let ttLeft = absoluteLeft + (rect.width / 2) - (ttRect.width / 2); 
 
-                    // Ajustement si l'infobulle sort de l'écran par le bas (on la place au-dessus)
                     if (rect.bottom + padding + 15 + ttRect.height > window.innerHeight) { 
                         ttTop = absoluteTop - padding - ttRect.height - 10; 
                     }
                     
-                    // Ajustement si l'infobulle sort de l'écran sur les côtés
                     if (ttLeft < 20) ttLeft = 20;
                     if (ttLeft + ttRect.width > document.documentElement.clientWidth) {
                         ttLeft = document.documentElement.clientWidth - ttRect.width - 20;
@@ -828,16 +798,14 @@
                     tt.style.top = `${ttTop}px`;
                     tt.style.left = `${ttLeft}px`;
 
-                }, 350); // Ce délai garantit que le scroll de la page est terminé et que les coordonnées sont bonnes
+                }, 350);
 
             }, 50); 
         }
 
-        // Recalcul en direct si l'utilisateur redimensionne la fenêtre
         window.addEventListener('resize', () => {
             if(isTutorialActive) renderStep();
         });
-
     </script>
 </body>
 </html>

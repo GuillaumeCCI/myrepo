@@ -380,8 +380,9 @@
         </section>
     </main>
 
-    <!-- ===== CONTROLES DE ZOOM ===== -->
+    <!-- ===== CONTROLES DE VUE (ZOOM & PLEIN ECRAN) ===== -->
     <div class="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 flex items-center space-x-1 p-1 z-[100000]">
+        <!-- Contrôles Zoom -->
         <button onclick="changeZoom(-10)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Dézoomer">
             <i class="fas fa-minus text-sm"></i>
         </button>
@@ -390,6 +391,13 @@
         </button>
         <button onclick="changeZoom(10)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Zoomer">
             <i class="fas fa-plus text-sm"></i>
+        </button>
+        
+        <div class="w-px h-6 bg-gray-200 mx-1"></div> <!-- Séparateur visuel -->
+        
+        <!-- Contrôle Plein Écran -->
+        <button onclick="toggleFullscreen()" id="fullscreen-btn" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors" title="Plein écran">
+            <i class="fas fa-expand text-sm"></i>
         </button>
     </div>
 
@@ -424,7 +432,7 @@
         </div>
     </div>
 
-    <!-- LOGIQUE JAVASCRIPT DU TUTORIEL -->
+    <!-- LOGIQUE JAVASCRIPT DU TUTORIEL & CONTROLES -->
     <script>
         let currentStepIndex = 0;
         let isTutorialActive = false;
@@ -454,6 +462,31 @@
                 renderStep();
             }
         }
+        
+        // --- FONCTIONS DE PLEIN ECRAN ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    console.log(`Erreur lors de la tentative d'activation du plein écran : ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Écouteur pour mettre à jour l'icône automatiquement (même si on quitte avec "Echap")
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreen-btn');
+            if (document.fullscreenElement) {
+                btn.innerHTML = '<i class="fas fa-compress text-sm"></i>';
+                btn.title = "Quitter le plein écran";
+            } else {
+                btn.innerHTML = '<i class="fas fa-expand text-sm"></i>';
+                btn.title = "Plein écran";
+            }
+        });
         // -------------------------
 
         const steps = [

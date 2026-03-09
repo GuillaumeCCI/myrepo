@@ -118,13 +118,6 @@
                                 <a href="#" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Comment remplir les questionnaires ?</a>
                             </div>
                         </div>
-                        <!-- BOUTON LANCEMENT TUTORIEL -->
-                        <div class="mt-4 mb-2 pl-2">
-                            <button onclick="startTutorial()" class="w-full pulse-animation bg-gradient-to-r from-[#598378] to-[#719A86] text-white font-bold py-2 px-3 rounded shadow-md hover:shadow-lg transition-all text-xs flex items-center justify-center space-x-2 relative z-10">
-                                <i class="fas fa-magic"></i>
-                                <span>Lancer le tutoriel</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -137,7 +130,7 @@
                         <div class="relative border-l border-dashed border-gray-400 ml-2 py-2">
                             <div class="relative pl-6">
                                 <div class="absolute -left-[6px] top-2 w-3 h-3 bg-white border border-gray-400 rounded-full"></div>
-                                <a href="#" id="menu-questionnaire-general" onclick="showView('pre-test')" class="block px-3 py-1 text-blue-600 hover:underline text-sm">Questionnaire général</a>
+                                <span id="menu-questionnaire-general" class="block px-3 py-1 text-blue-600 text-sm">Questionnaire général</span>
                             </div>
                         </div>
                     </div>
@@ -172,8 +165,26 @@
         <!-- Right Content Area (Dynamic Views) -->
         <section class="flex-1 bg-white p-6 md:p-8 rounded-lg shadow-sm border border-gray-100 min-h-[500px] relative">
             
-            <!-- VUE 1 : ACCUEIL LABORATOIRE (Défaut) -->
-            <div id="view-welcome" class="view-panel">
+            <!-- VUE 0 : ECRAN DE LANCEMENT DU TUTORIEL (Affichée par défaut) -->
+            <div id="view-tutorial-start" class="view-panel flex flex-col items-center justify-center h-full text-center py-10 md:py-20 min-h-[400px]">
+                <div class="bg-yellow-100 text-yellow-600 rounded-full w-24 h-24 flex items-center justify-center text-5xl mb-6 shadow-sm mx-auto">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Bienvenue sur votre espace !</h2>
+                <p class="text-gray-600 mb-10 max-w-lg mx-auto leading-relaxed">
+                    Avant de commencer votre auto-diagnostic, nous vous invitons à suivre ce court tutoriel interactif. Il vous guidera pas à pas dans l'utilisation de la plateforme.
+                </p>
+                <button onclick="startTutorial()" class="pulse-animation bg-[#598378] hover:bg-[#466a60] text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-3 w-full md:w-auto">
+                    <i class="fas fa-play"></i>
+                    Démarrer le tutoriel
+                </button>
+                <button onclick="showView('welcome')" class="mt-8 text-gray-500 hover:text-gray-800 underline text-sm transition-colors">
+                    Passer le tutoriel et accéder à mon espace
+                </button>
+            </div>
+
+            <!-- VUE 1 : ACCUEIL LABORATOIRE (Masquée par défaut maintenant) -->
+            <div id="view-welcome" class="view-panel hidden">
                 <div class="flex justify-between items-center mb-6 text-gray-400">
                     <div class="flex space-x-2">
                         <button class="hover:text-gray-600"><i class="fas fa-book-open"></i></button>
@@ -258,15 +269,15 @@
                         <p class="text-sm text-gray-700 mb-3">Veuillez choisir une réponse :</p>
                         <div id="question-radios" class="space-y-3 p-2 bg-yellow-50/30 rounded border border-transparent">
                             <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" onchange="handleRadioChange()">
                                 <span class="text-sm text-gray-800">Oui, je le constate</span>
                             </label>
                             <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" onchange="handleRadioChange()">
                                 <span class="text-sm text-gray-800">Parfois, mais pas systématiquement</span>
                             </label>
                             <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="q1" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" onchange="handleRadioChange()">
                                 <span class="text-sm text-gray-800">Non</span>
                             </label>
                         </div>
@@ -373,8 +384,115 @@
                 </div>
             </div>
 
-            <!-- VUE 6 : ECRAN DE FIN DU TUTORIEL -->
-            <div id="view-tutorial-end" class="view-panel hidden flex-col items-center justify-center h-full text-center py-20">
+            <!-- VUE 6 : RÉSUMÉ DES TENTATIVES (Nouvelle vue post-test) -->
+            <div id="view-attempts-summary" class="view-panel hidden">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Questionnaire général</h2>
+                <p class="text-sm text-gray-800 mb-6">Méthode d'évaluation : Dernière tentative</p>
+
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Résumé de vos tentatives précédentes</h3>
+                
+                <div class="border-t border-b border-gray-200 mb-6">
+                    <table class="w-full text-sm text-left text-gray-800">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-2 font-bold w-1/4 text-center">Tentative</th>
+                                <th class="px-4 py-2 font-bold w-1/2">État</th>
+                                <th class="px-4 py-2 font-bold w-1/4 text-center">Relecture</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-4 text-center">Prévisualisation</td>
+                                <td class="px-4 py-4">
+                                    Terminé<br>
+                                    <span class="text-gray-500 text-xs">Remis lundi 9 mars 2026, 16:41</span>
+                                </td>
+                                <td class="px-4 py-4 text-center">
+                                    <a href="#" id="link-relecture" onclick="showView('revision')" class="text-blue-600 hover:underline">Relecture</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button class="border border-gray-300 bg-white text-blue-600 px-4 py-1.5 rounded text-sm mb-8 hover:bg-gray-50">Prévisualiser le test maintenant</button>
+
+                <div class="flex space-x-4">
+                    <button class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">Marquer comme terminé</button>
+                    <button class="bg-white hover:bg-gray-50 text-[#3b5998] border border-[#3b5998] px-4 py-2 rounded text-sm font-medium transition-colors">Suivant</button>
+                </div>
+            </div>
+
+            <!-- VUE 7 : RÉVISION (Anciennement VUE 6) -->
+            <div id="view-revision" class="view-panel hidden">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Questionnaire général – révision</h2>
+
+                <!-- Navigation squares -->
+                <div id="review-squares-container" class="flex space-x-1.5 mb-3 inline-flex">
+                    <a href="#review-q1" class="w-10 h-10 flex items-center justify-center border border-gray-500 rounded-sm font-bold text-blue-700 bg-[#ffffcc] border-b-[5px] border-b-[#b3b300]">1</a>
+                    <a href="#" class="w-10 h-10 flex items-center justify-center border border-gray-500 rounded-sm font-bold text-blue-700 bg-[#e6f4e6] border-b-[5px] border-b-[#00aa00]">2</a>
+                    <a href="#" class="w-10 h-10 flex items-center justify-center border border-gray-500 rounded-sm font-bold text-blue-700 bg-[#e6f4e6] border-b-[5px] border-b-[#00aa00]">3</a>
+                    <a href="#" class="w-10 h-10 flex items-center justify-center border border-gray-500 rounded-sm font-bold text-blue-700 bg-[#e6f4e6] border-b-[5px] border-b-[#00aa00]">4</a>
+                    <a href="#" class="w-10 h-10 flex items-center justify-center border border-gray-500 rounded-sm font-bold text-blue-700 bg-[#e6f4e6] border-b-[5px] border-b-[#00aa00]">5</a>
+                </div>
+
+                <div class="mb-5 flex flex-col space-y-1">
+                    <a href="#" class="text-blue-600 text-sm hover:underline">Afficher une page à la fois</a>
+                    <a href="#" class="text-blue-600 text-sm hover:underline">Terminer la relecture</a>
+                </div>
+
+                <button class="border border-gray-300 bg-white text-blue-600 px-4 py-1.5 rounded text-sm mb-6 hover:bg-gray-50">Prévisualiser à nouveau</button>
+
+                <!-- Summary Table -->
+                <div class="bg-white border-t border-b border-gray-200 mb-8 py-2">
+                    <table class="w-full text-sm text-left text-gray-800">
+                        <tbody>
+                            <tr><td class="px-4 py-1.5 font-bold w-1/4 md:w-1/6 text-right">Commencé le</td><td class="px-4 py-1.5">mercredi 18 février 2026, 09:14</td></tr>
+                            <tr class="bg-gray-50/80"><td class="px-4 py-1.5 font-bold w-1/4 md:w-1/6 text-right">État</td><td class="px-4 py-1.5">Terminé</td></tr>
+                            <tr><td class="px-4 py-1.5 font-bold w-1/4 md:w-1/6 text-right">Terminé le</td><td class="px-4 py-1.5">lundi 9 mars 2026, 16:41</td></tr>
+                            <tr class="bg-gray-50/80"><td class="px-4 py-1.5 font-bold w-1/4 md:w-1/6 text-right">Temps mis</td><td class="px-4 py-1.5">19 jours 7 heures</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Question Block 1 (Review) -->
+                <div id="review-q1" class="flex flex-col md:flex-row bg-white rounded overflow-hidden mb-8">
+                    <!-- Infos question (gauche) -->
+                    <div class="w-full md:w-1/4 bg-gray-50/50 p-4 border-r border-gray-100 text-sm">
+                        <p class="font-bold text-gray-800 mb-3">Question <span class="text-lg">1</span></p>
+                        <p class="text-gray-800 mb-3 font-medium">Partiellement<br>correct</p>
+                        <p class="text-gray-600 mb-4">Noté sur 1,00</p>
+                        <p class="text-gray-500 hover:text-gray-800 cursor-pointer mb-4"><i class="fas fa-flag text-gray-300 mr-1"></i> Marquer la question</p>
+                        <p class="text-blue-600 hover:underline cursor-pointer"><i class="fas fa-cog text-blue-400 mr-1 text-xs"></i> Modifier la question</p>
+                    </div>
+                    <!-- Contenu question (droite) -->
+                    <div class="w-full md:w-3/4 p-6 bg-white border border-gray-100 border-l-0">
+                        <h3 class="font-bold text-gray-800 italic mb-4">1.1 Connaissance, prise en compte et maîtrise des engagements liés à l'habilitation</h3>
+                        <p class="text-sm text-gray-800 mb-6">Les équipes connaissent les ressources et leurs emplacements (m@cci, oscar, diplomation ou autre plateforme dédiée).</p>
+                        
+                        <p class="text-sm text-gray-700 mb-3">Veuillez choisir une réponse :</p>
+                        <div class="space-y-2 p-1">
+                            <label class="flex items-center space-x-3 opacity-60">
+                                <input type="radio" disabled class="w-4 h-4 border-gray-300">
+                                <span class="text-sm text-gray-800">Oui, je le constate</span>
+                            </label>
+                            <div class="flex items-center space-x-3 bg-[#faefe3] p-2 rounded -mx-2">
+                                <input type="radio" checked disabled class="w-4 h-4 border-gray-300">
+                                <span class="text-sm text-gray-800">Parfois, mais pas systématiquement <i class="fas fa-check text-orange-500 ml-1"></i></span>
+                            </div>
+                            <label class="flex items-center space-x-3 opacity-60">
+                                <input type="radio" disabled class="w-4 h-4 border-gray-300">
+                                <span class="text-sm text-gray-800">Non</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="#" class="text-blue-600 text-sm hover:underline mt-4 inline-block">Terminer la relecture</a>
+            </div>
+
+            <!-- VUE 8 : ECRAN DE FIN DU TUTORIEL (Anciennement VUE 7) -->
+            <div id="view-tutorial-end" class="view-panel hidden flex-col items-center justify-center h-full text-center py-20 min-h-[400px]">
                 <div class="bg-green-50 text-green-600 rounded-full w-24 h-24 flex items-center justify-center text-5xl mb-6 shadow-sm mx-auto">
                     <i class="fas fa-check"></i>
                 </div>
@@ -382,7 +500,6 @@
                 <p class="text-gray-600 mb-8 max-w-md mx-auto">Vous avez terminé le tutoriel d'aide à la saisie des questionnaires. Vous êtes maintenant prêt(e) à démarrer votre auto-diagnostic.</p>
                 <div class="flex flex-wrap justify-center gap-4">
                     <button onclick="startTutorial()" class="bg-white border border-[#598378] text-[#598378] hover:bg-green-50 px-6 py-2 rounded font-medium transition-colors">Relancer le tutoriel</button>
-                    <button onclick="showView('welcome')" class="bg-[#598378] hover:bg-[#466a60] text-white px-6 py-2 rounded font-medium transition-colors shadow">Retour à l'accueil</button>
                 </div>
             </div>
 
@@ -407,7 +524,7 @@
     <div id="tutorial-container" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 100vh; z-index: 99999;">
         
         <!-- Couche de fond invisible et fixe (attrape les clics partout) -->
-        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;"></div>
+        <div id="tutorial-bg-blocker" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;"></div>
 
         <!-- Le "trou" qui met en valeur (génère l'assombrissement avec outline au lieu de box-shadow) -->
         <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; outline: 9999px solid rgba(0,0,0,0.7); border: 3px solid #719A86; border-radius: 6px; transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;"></div>
@@ -439,6 +556,41 @@
         let currentStepIndex = 0;
         let isTutorialActive = false;
         let currentZoom = 100; // Variable globale pour le zoom
+        let radioTimeout = null;
+
+        // --- NOUVELLE FONCTION POUR LE CLIC DES BOUTONS RADIO ---
+        function handleRadioChange() {
+            // Si on est dans le tutoriel et qu'on est précisément à l'étape du choix de réponse (Index 2)
+            if (isTutorialActive && currentStepIndex === 2) {
+                clearTimeout(radioTimeout);
+                // Petit délai de 250ms pour voir le bouton se cocher avant de passer à l'étape suivante
+                radioTimeout = setTimeout(() => {
+                    // On vérifie qu'on est toujours sur l'étape 2 (au cas où l'utilisateur a cliqué sur "Suivant" entre-temps)
+                    if (isTutorialActive && currentStepIndex === 2) {
+                        nextStep();
+                    }
+                }, 250); 
+            }
+        }
+
+        // Bloquer les clics en dehors de la zone ciblée quand l'interaction directe est autorisée
+        function preventOutsideClicks(e) {
+            if (isTutorialActive && steps[currentStepIndex] && steps[currentStepIndex].allowInteraction) {
+                const targetEl = document.querySelector(steps[currentStepIndex].target);
+                const tooltipEl = document.getElementById('tutorial-tooltip');
+                
+                // Autoriser le clic si c'est à l'intérieur de l'élément ciblé ou de l'infobulle
+                if (targetEl && targetEl.contains(e.target)) return;
+                if (tooltipEl && tooltipEl.contains(e.target)) return;
+                
+                // Sinon on bloque tout
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
+        document.addEventListener('click', preventOutsideClicks, true);
+        document.addEventListener('mousedown', preventOutsideClicks, true);
+        document.addEventListener('touchstart', preventOutsideClicks, { capture: true, passive: false });
 
         // --- FONCTIONS DE ZOOM ---
         function changeZoom(delta) {
@@ -471,8 +623,8 @@
                 target: '#menu-questionnaire-general',
                 title: 'ÉTAPE 1',
                 content: 'Cliquez sur le questionnaire que vous souhaitez remplir dans le menu.',
-                setup: () => { showView('welcome'); },
-                waitForClick: true
+                setup: () => { showView('welcome'); } 
+                // waitForClick retiré : l'utilisateur doit désormais cliquer sur "Suivant" au lieu du menu
             },
             {
                 target: '#btn-faire-le-test',
@@ -485,7 +637,8 @@
                 target: '#question-block-1',
                 title: 'ÉTAPE 2',
                 content: 'Lisez la question et sélectionnez votre réponse parmi les choix proposés.',
-                setup: () => { showView('questionnaire'); }
+                setup: () => { showView('questionnaire'); },
+                allowInteraction: true // Permet de cliquer physiquement sur les vrais boutons radio
             },
             {
                 target: '#btn-page-suivante',
@@ -507,6 +660,27 @@
                 content: "Si vous ne souhaitez pas effectuer de modification et valider définitivement votre saisie, cliquez sur « Tout envoyer et terminer ».",
                 setup: () => { showView('summary'); },
                 waitForClick: true
+            },
+            {
+                target: '#link-relecture',
+                title: 'ÉTAPE 6',
+                content: "Une fois que vous avez terminé et envoyé, vous pouvez revenir sur le test comme au début. En cliquant sur « Relecture », vous arrivez au récapitulatif de vos réponses.",
+                setup: () => { showView('attempts-summary'); },
+                waitForClick: true
+            },
+            {
+                target: '#review-squares-container',
+                title: 'ÉTAPE 7',
+                content: "Vous voici sur la page de révision ! En haut, le récapitulatif visuel : les couleurs indiquent le statut de vos réponses (ex: jaune = partiel, vert = correct). Cliquez sur le carré 1 pour voir.",
+                setup: () => { showView('revision'); window.scrollTo(0,0); },
+                waitForClick: true
+            },
+            {
+                target: '#review-q1',
+                title: 'ÉTAPE 8',
+                content: "En cliquant sur un carré, vous êtes directement amené au critère concerné pour revoir votre réponse et votre score. Le tutoriel est terminé !",
+                setup: () => { showView('revision'); },
+                waitForClick: false
             }
         ];
 
@@ -567,6 +741,12 @@
             
             // Exécuter l'action liée à la vue
             if (step.setup) step.setup();
+
+            // Gestion du bloqueur de fond pour permettre l'interaction directe avec l'élément (ex: boutons radio)
+            const bgBlocker = document.getElementById('tutorial-bg-blocker');
+            if (bgBlocker) {
+                bgBlocker.style.pointerEvents = step.allowInteraction ? 'none' : 'auto';
+            }
 
             // Délai critique pour laisser le temps au DOM de s'afficher (sinon width/height sont à 0)
             setTimeout(() => {

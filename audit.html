@@ -110,11 +110,10 @@
                 <table class="w-full border-collapse bg-white text-left">
                     <thead>
                         <tr class="bg-teal-700 text-white">
-                            <th class="p-4 border-r border-teal-600 font-semibold text-[15px] w-[18%]">Éléments contrôlés</th>
-                            <th class="p-4 border-r border-teal-600 font-semibold text-[15px] w-[38%]">Points à vérifier lors de l'audit</th>
+                            <th class="p-4 border-r border-teal-600 font-semibold text-[15px] w-[25%]">Éléments contrôlés</th>
+                            <th class="p-4 border-r border-teal-600 font-semibold text-[15px]">Points à vérifier lors de l'audit</th>
                             <th class="p-4 border-r border-teal-600 font-semibold text-[15px] w-[130px] text-center">Répertoire</th>
-                            <th class="p-4 border-r border-teal-600 font-semibold text-[15px] w-[160px] text-center">Évaluation</th>
-                            <th class="p-4 font-semibold text-[15px]">Justification / Observation</th>
+                            <th class="px-2 py-4 font-semibold text-[15px] w-[140px] text-center">Évaluation</th>
                         </tr>
                     </thead>
                     <tbody id="grid-body">
@@ -132,11 +131,10 @@
                     <table class="w-full border-collapse mb-8">
                         <thead>
                             <tr class="bg-gray-50">
-                                <th class="border border-gray-300 p-3 font-semibold text-gray-700 text-[15px] text-left w-[55%]">Synthèse des constats d'audit</th>
-                                <th class="border border-gray-300 p-3 font-semibold text-[15px] text-center bg-green-100 text-green-800 w-[70px]">C</th>
-                                <th class="border border-gray-300 p-3 font-semibold text-[15px] text-center bg-red-100 text-red-800 w-[70px]">NC</th>
-                                <th class="border border-gray-300 p-3 font-semibold text-[15px] text-center bg-gray-100 text-gray-600 w-[70px]">NA</th>
-                                <th class="border border-gray-300 p-3 font-semibold text-gray-700 text-[15px] text-center">Commentaires</th>
+                                <th class="border border-gray-300 p-3 font-semibold text-gray-700 text-[15px] text-left">Synthèse des constats d'audit</th>
+                                <th class="border border-gray-300 p-3 font-semibold text-[15px] text-center bg-green-100 text-green-800 w-[90px]">C</th>
+                                <th class="border border-gray-300 p-3 font-semibold text-[15px] text-center bg-red-100 text-red-800 w-[90px]">NC</th>
+                                <th class="border border-gray-300 p-3 font-semibold text-[15px] text-center bg-gray-100 text-gray-600 w-[90px]">NA</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -145,19 +143,18 @@
                                 <td id="count-C" class="border border-gray-300 p-3 text-center font-mono font-bold text-green-800 text-lg">0</td>
                                 <td id="count-NC" class="border border-gray-300 p-3 text-center font-mono font-bold text-red-800 text-lg">0</td>
                                 <td id="count-NA" class="border border-gray-300 p-3 text-center font-mono font-bold text-gray-600 text-lg">0</td>
-                                <td class="border border-gray-300 bg-gray-50"></td>
                             </tr>
                             <tr class="bg-green-50">
                                 <td class="border border-gray-300 p-4 text-center text-[15px] font-medium text-green-800">CAS N°1 – Maîtrise satisfaisante<br><span class="text-sm font-normal">Aucune non-conformité (0 NC)</span></td>
-                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300"></td>
+                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td>
                             </tr>
                             <tr class="bg-orange-50">
                                 <td class="border border-gray-300 p-4 text-center text-[15px] font-medium text-orange-800">CAS N°2 – Maîtrise partielle<br><span class="text-sm font-normal">jusqu'à 3 NC maximum</span></td>
-                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300"></td>
+                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td>
                             </tr>
                             <tr class="bg-red-50">
                                 <td class="border border-gray-300 p-4 text-center text-[15px] font-medium text-red-800">CAS N°3 – Maîtrise insuffisante<br><span class="text-sm font-normal">Plus de 3 NC</span></td>
-                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300"></td>
+                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -175,7 +172,7 @@
                             </div>
                         </div>
                         <div class="mt-8 text-[13px] text-gray-500 italic bg-blue-50 p-3 rounded-lg border border-blue-100 text-center">
-                            NB : les actions correctives permettant de lever les NC devront être décrites à l'auditeur sous 3 mois (colonne L).
+                            NB : les actions correctives permettant de lever les NC devront être décrites à l'auditeur sous 3 mois.
                         </div>
                     </div>
                 </div>
@@ -240,7 +237,6 @@
         // --- ETAT DE L'APPLICATION ---
         let zoom = 1;
         let evaluations = {}; // { "1.1": "C", "1.2": "NC", ... }
-        let comments = {};    // { "1.1": "Texte...", ... }
 
         // --- FONCTIONS DE RENDU ---
 
@@ -278,7 +274,7 @@
                 // Ligne Titre Catégorie
                 html += `
                     <tr class="bg-green-100 border-b border-gray-300">
-                        <td colspan="5" class="px-5 py-3.5 font-bold text-green-900 uppercase tracking-widest text-[15px]">
+                        <td colspan="4" class="px-5 py-3.5 font-bold text-green-900 uppercase tracking-widest text-[15px]">
                             ${category}
                         </td>
                     </tr>
@@ -306,7 +302,7 @@
 
                     html += `
                         <tr class="audit-row border-b border-gray-200">
-                            ${isStartOfGroup ? `<td rowspan="${rowSpan}" class="p-5 border-r border-gray-200 bg-white align-top text-[15px] font-medium text-gray-700 max-w-[220px]">${item.controlElement}</td>` : ''}
+                            ${isStartOfGroup ? `<td rowspan="${rowSpan}" class="p-5 border-r border-gray-200 bg-white align-top text-[15px] font-medium text-gray-700 max-w-[280px]">${item.controlElement}</td>` : ''}
                             
                             <td class="p-5 border-r border-gray-200 align-top relative group ${item.explanation ? 'cursor-help' : 'cursor-default'}">
                                 <div class="flex items-start gap-3">
@@ -320,20 +316,12 @@
                                 ${item.directory}
                             </td>
 
-                            <td class="p-4 border-r border-gray-200 align-top">
-                                <div class="flex justify-center gap-2">
-                                    <button id="btn-${item.id}-C" onclick="toggleEval('${item.id}', 'C')" class="eval-btn w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-500 text-[14px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50">C</button>
-                                    <button id="btn-${item.id}-NC" onclick="toggleEval('${item.id}', 'NC')" class="eval-btn w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-500 text-[14px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50">NC</button>
-                                    <button id="btn-${item.id}-NA" onclick="toggleEval('${item.id}', 'NA')" class="eval-btn w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-500 text-[14px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50">NA</button>
+                            <td class="px-2 py-4 align-top">
+                                <div class="flex justify-center gap-1.5">
+                                    <button id="btn-${item.id}-C" onclick="toggleEval('${item.id}', 'C')" class="eval-btn w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-500 text-[13px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50">C</button>
+                                    <button id="btn-${item.id}-NC" onclick="toggleEval('${item.id}', 'NC')" class="eval-btn w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-500 text-[13px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50">NC</button>
+                                    <button id="btn-${item.id}-NA" onclick="toggleEval('${item.id}', 'NA')" class="eval-btn w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-500 text-[13px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50">NA</button>
                                 </div>
-                            </td>
-
-                            <td class="p-3 align-top">
-                                <textarea 
-                                    oninput="updateComment('${item.id}', this.value)"
-                                    placeholder="Commentaires..."
-                                    class="w-full min-h-[80px] p-3 text-[14px] border border-gray-200 rounded-lg outline-none resize-y box-border font-sans focus:border-blue-400 focus:ring-1 focus:ring-blue-400 bg-gray-50 focus:bg-white transition-colors shadow-inner"
-                                >${comments[item.id] || ""}</textarea>
                             </td>
                         </tr>
                     `;
@@ -364,18 +352,14 @@
                 const btn = document.getElementById(`btn-${id}-${state}`);
                 if (!btn) return;
                 
-                // Réinitialiser
-                btn.className = `eval-btn w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-500 text-[14px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50`;
+                // Réinitialiser (boutons légèrement plus petits)
+                btn.className = `eval-btn w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-500 text-[13px] font-bold shadow-sm hover:border-gray-400 hover:bg-gray-50`;
                 
                 // Appliquer le style si sélectionné
                 if (val === state) {
                     btn.classList.add(`selected-${state}`);
                 }
             });
-        }
-
-        function updateComment(id, value) {
-            comments[id] = value;
         }
 
         function updateFooterCounts() {

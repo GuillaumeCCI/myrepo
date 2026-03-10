@@ -530,7 +530,8 @@
         <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; outline: 9999px solid rgba(0,0,0,0.7); border: 3px solid #719A86; border-radius: 6px; transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;"></div>
 
         <!-- ZONE INTERACTIVE CLIQUABLE -->
-        <div id="tutorial-interactive-area" onclick="nextStep()" style="display: none; position: absolute; z-index: 3; cursor: pointer; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Cliquez pour continuer"></div>
+        <!-- MODIFICATION ICI : On s'assure que le clic sur cette zone déclenche bien nextStep() -->
+        <div id="tutorial-interactive-area" onclick="if(steps[currentStepIndex].waitForClick) nextStep()" style="display: none; position: absolute; z-index: 3; cursor: pointer; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Cliquez pour continuer"></div>
 
         <!-- L'infobulle -->
         <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-[90%] max-w-xs flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
@@ -609,7 +610,8 @@
                 title: 'ÉTAPE 1',
                 content: 'Cliquez sur le questionnaire que vous souhaitez remplir dans le menu.',
                 setup: () => { showView('welcome'); },
-                waitForClick: true // L'utilisateur DOIT cliquer pour avancer
+                waitForClick: true, // L'utilisateur DOIT cliquer pour avancer (la zone invisible intercepte ce clic)
+                allowInteraction: false // On bloque l'interaction réelle pour éviter que le menu ne fasse n'importe quoi, c'est la zone invisible qui gère
             },
             {
                 target: '#btn-faire-le-test',
@@ -621,14 +623,14 @@
             {
                 target: '#question-block-1',
                 title: 'ÉTAPE 2',
-                content: 'Lisez la question et sélectionnez votre réponse parmi les choix proposés.',
+                content: 'Lisez le critère et sélectionnez votre réponse parmi les choix proposés.',
                 setup: () => { showView('questionnaire'); },
                 allowInteraction: true 
             },
             {
                 target: '#btn-page-suivante',
                 title: 'ÉTAPE 3',
-                content: "Une fois l'ensemble des réponses sélectionnées sur une même page, cliquez sur « Suivant » ou « Page suivante ».",
+                content: "Une fois l'ensemble des réponses sélectionnées sur une même page, cliquez sur « Suivant ».",
                 setup: () => { showView('questionnaire'); },
                 waitForClick: true
             },
@@ -656,14 +658,14 @@
             {
                 target: '#review-squares-container',
                 title: 'ÉTAPE 7',
-                content: "Vous voici sur la page de révision ! En haut, le récapitulatif visuel : les couleurs indiquent le statut de vos réponses (ex: jaune = partiel, vert = correct). Cliquez sur le carré 1 pour voir.",
+                content: "Vous voici sur la page de révision ! En haut, le récapitulatif visuel : les couleurs indiquent le statut de vos réponses (Rouge : non, jaune : Parfois mais pas systématiquement, vert : oui, je le constate). Cliquez sur le carré 1 pour voir.",
                 setup: () => { showView('revision'); window.scrollTo(0,0); },
                 waitForClick: true
             },
             {
                 target: '#review-q1',
                 title: 'ÉTAPE 8',
-                content: "En cliquant sur un carré, vous êtes directement amené au critère concerné pour revoir votre réponse et votre score. Le tutoriel est terminé !",
+                content: "En cliquant sur un carré, vous êtes directement amené au critère concerné pour revoir votre réponse. Le tutoriel est terminé !",
                 setup: () => { showView('revision'); },
                 waitForClick: false
             }
@@ -772,14 +774,32 @@
                     }
 
                     const interactiveArea = document.getElementById('tutorial-interactive-area');
-                    if (step.waitForClick) {
+                    if (step.waitForClick && !step.allowInteraction) {
+                        // Affiche la zone interactive invisible UNIQUEMENT si on attend un clic 
+                        // ET qu'on n'autorise pas l'interaction directe (comme pour les boutons radio)
                         interactiveArea.style.display = 'block';
                         interactiveArea.style.top = `${absoluteTop - padding}px`;
                         interactiveArea.style.left = `${absoluteLeft - padding}px`;
                         interactiveArea.style.width = `${rect.width + padding * 2}px`;
                         interactiveArea.style.height = `${rect.height + padding * 2}px`;
-                    } else {
+                        // Cache le bouton "Suivant" car c'est le clic sur la zone qui fera avancer
+                        nextBtn.style.display = 'none'; 
+                    } else if (step.waitForClick && step.allowInteraction) {
+                        // Cas spécifique (ex: lien relecture) : on attend un vrai clic sur le vrai élément
                         interactiveArea.style.display = 'none';
+                        nextBtn.style.display = 'none';
+                        
+                        // Ajout temporaire d'un écouteur d'événement sur l'élément cible pour passer à l'étape suivante
+                        const clickHandler = () => {
+                            nextStep();
+                            targetEl.removeEventListener('click', clickHandler);
+                        };
+                        targetEl.addEventListener('click', clickHandler);
+
+                    } else {
+                        // Cas normal : on affiche le bouton "Suivant"
+                        interactiveArea.style.display = 'none';
+                        nextBtn.style.display = 'inline-block';
                     }
 
                     const ttRect = tt.getBoundingClientRect();

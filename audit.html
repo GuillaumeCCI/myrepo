@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grille Audit RNCP - RS</title>
+    <!-- Utilisation de Tailwind CSS pour le style (chargé automatiquement) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Styles personnalisés pour adoucir les interactions */
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .audit-row { transition: all 0.2s ease-in-out; }
+        .audit-row:hover {
+            background-color: white;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            transform: scale(1.005);
+            z-index: 10;
+            position: relative;
+        }
+        .tooltip-arrow {
+            position: absolute;
+            left: -6px;
+            top: 16px;
+            width: 14px;
+            height: 14px;
+            background-color: #1e293b;
+            transform: rotate(45deg);
+            border-radius: 2px;
+        }
+        /* Style des boutons d'évaluation */
+        .eval-btn { transition: all 0.15s; }
+        .eval-btn.selected-C { background-color: #dcfce7; border-color: #16a34a; color: #166534; border-width: 2px; }
+        .eval-btn.selected-NC { background-color: #fee2e2; border-color: #dc2626; color: #991b1b; border-width: 2px; }
+        .eval-btn.selected-NA { background-color: #f3f4f6; border-color: #9ca3af; color: #4b5563; border-width: 2px; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen overflow-x-hidden text-gray-800 pb-12">
+
+    <!-- Contrôles de Zoom -->
+    <div class="fixed bottom-8 right-8 flex flex-col gap-2 bg-white p-2 rounded-xl shadow-xl border border-gray-200 z-50">
+        <button onclick="changeZoom(0.1)" class="p-2 rounded-lg text-gray-700 hover:bg-gray-100 flex justify-center items-center" title="Zoom +">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <div id="zoom-level" class="text-center text-xs font-mono text-gray-500 py-1 border-t border-b border-gray-100">100%</div>
+        <button onclick="changeZoom(-0.1)" class="p-2 rounded-lg text-gray-700 hover:bg-gray-100 flex justify-center items-center" title="Zoom -">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button onclick="resetZoom()" class="p-2 rounded-lg text-blue-600 hover:bg-gray-100 flex justify-center items-center" title="Réinitialiser">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        </button>
+    </div>
+
+    <!-- Conteneur principal avec Zoom -->
+    <div id="app-wrapper" class="pt-12 px-8 origin-top transition-transform duration-200 w-full flex justify-center">
+        <div class="max-w-7xl w-full">
+            
+            <!-- EN-TÊTE -->
+            <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-8">
+                <h1 class="text-xl font-bold text-center text-teal-700 mb-6 uppercase tracking-wide">
+                    Grille et rapport d'audit du certificateur d'un centre habilité RNCP - RS
+                </h1>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Gauche -->
+                    <div class="flex flex-col gap-4">
+                        <div class="grid grid-cols-[150px_1fr] gap-2 items-center">
+                            <label class="font-bold text-blue-700 text-sm">Partenaire audité</label>
+                            <input type="text" placeholder="Nom du partenaire" class="border-b border-gray-300 px-2 py-1 outline-none focus:border-blue-500 text-sm w-full">
+                        </div>
+                        <div class="grid grid-cols-[150px_1fr] gap-2 items-center">
+                            <label class="font-bold text-blue-700 text-sm">Interlocuteur audité</label>
+                            <input type="text" placeholder="Nom de l'interlocuteur" class="border-b border-gray-300 px-2 py-1 outline-none focus:border-blue-500 text-sm w-full">
+                        </div>
+                        <div class="grid grid-cols-[150px_1fr] gap-2 items-center">
+                            <label class="font-bold text-blue-700 text-sm">Auditeur</label>
+                            <input type="text" placeholder="Nom de l'auditeur" class="border-b border-gray-300 px-2 py-1 outline-none focus:border-blue-500 text-sm w-full">
+                        </div>
+                        <div class="grid grid-cols-[150px_1fr] gap-2 items-center mt-2">
+                            <label class="font-bold text-white bg-blue-600 px-2 py-1 rounded text-sm text-center">Date de l'audit</label>
+                            <input type="date" class="border-b border-gray-300 px-2 py-1 outline-none focus:border-blue-500 text-sm w-full">
+                        </div>
+                    </div>
+
+                    <!-- Droite -->
+                    <div class="flex flex-col gap-4">
+                        <div class="border border-gray-300 rounded-md p-4 bg-gray-50">
+                            <h3 class="font-bold text-blue-700 mb-2 border-b border-gray-300 pb-1 text-sm">Légende</h3>
+                            <div class="text-[13px] flex flex-col gap-1">
+                                <div><strong>C :</strong> Conforme, existe, utilisation régulière</div>
+                                <div><strong>NC :</strong> Inexistant, ne répond pas aux exigences</div>
+                                <div><strong>NA :</strong> Non applicable</div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-300 rounded-md overflow-hidden bg-white">
+                            <div class="bg-white px-3 py-2 border-b border-gray-300 text-center">
+                                <div class="font-bold text-blue-700 text-[13px]">Certifications auditées et pertinence de l'échantillonnage</div>
+                                <div class="text-[11px] text-gray-500">Préciser la certification, la session et les dates</div>
+                            </div>
+                            <input type="text" placeholder="échantillon 1" class="w-full border-b border-gray-200 px-3 py-1.5 text-[13px] outline-none focus:bg-blue-50">
+                            <input type="text" placeholder="échantillon 2" class="w-full border-b border-gray-200 px-3 py-1.5 text-[13px] outline-none focus:bg-blue-50">
+                            <input type="text" placeholder="échantillon 3" class="w-full border-b border-gray-200 px-3 py-1.5 text-[13px] outline-none focus:bg-blue-50">
+                            <input type="text" placeholder="Justifier le choix de l'échantillon" class="w-full px-3 py-1.5 text-[13px] outline-none focus:bg-blue-50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRILLE D'AUDIT -->
+            <div class="overflow-x-auto shadow-[0_4px_20px_rgba(0,0,0,0.08)] rounded-lg border border-gray-200">
+                <table class="w-full border-collapse bg-white text-left">
+                    <thead>
+                        <tr class="bg-teal-700 text-white">
+                            <th class="p-3 border-r border-teal-600 font-semibold text-[13px] w-[18%]">Éléments contrôlés</th>
+                            <th class="p-3 border-r border-teal-600 font-semibold text-[13px] w-[38%]">Points à vérifier lors de l'audit</th>
+                            <th class="p-3 border-r border-teal-600 font-semibold text-[13px] w-[110px] text-center">Répertoire</th>
+                            <th class="p-3 border-r border-teal-600 font-semibold text-[13px] w-[130px] text-center">Évaluation</th>
+                            <th class="p-3 font-semibold text-[13px]">Justification / Observation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grid-body">
+                        <!-- Le contenu sera généré par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PIED DE PAGE (Synthèse) -->
+            <div class="mt-8 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div class="bg-teal-700 text-white p-4 font-bold text-center uppercase tracking-wide">
+                    Synthèse de l'audit
+                </div>
+                <div class="p-6">
+                    <table class="w-full border-collapse mb-8">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 p-2.5 font-semibold text-gray-700 text-[13px] text-left w-[55%]">Synthèse des constats d'audit</th>
+                                <th class="border border-gray-300 p-2.5 font-semibold text-[13px] text-center bg-green-100 text-green-800 w-[60px]">C</th>
+                                <th class="border border-gray-300 p-2.5 font-semibold text-[13px] text-center bg-red-100 text-red-800 w-[60px]">NC</th>
+                                <th class="border border-gray-300 p-2.5 font-semibold text-[13px] text-center bg-gray-100 text-gray-600 w-[60px]">NA</th>
+                                <th class="border border-gray-300 p-2.5 font-semibold text-gray-700 text-[13px] text-center">Commentaires</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-gray-300 p-2 text-right text-[13px] text-gray-500 font-medium">Décompte automatique</td>
+                                <td id="count-C" class="border border-gray-300 p-2 text-center font-mono font-bold text-green-800">0</td>
+                                <td id="count-NC" class="border border-gray-300 p-2 text-center font-mono font-bold text-red-800">0</td>
+                                <td id="count-NA" class="border border-gray-300 p-2 text-center font-mono font-bold text-gray-600">0</td>
+                                <td class="border border-gray-300 bg-gray-50"></td>
+                            </tr>
+                            <tr class="bg-green-50">
+                                <td class="border border-gray-300 p-3 text-center text-[13px] font-medium text-green-800">CAS N°1 – Maîtrise satisfaisante<br><span class="text-xs font-normal">Aucune non-conformité (0 NC)</span></td>
+                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300"></td>
+                            </tr>
+                            <tr class="bg-orange-50">
+                                <td class="border border-gray-300 p-3 text-center text-[13px] font-medium text-orange-800">CAS N°2 – Maîtrise partielle<br><span class="text-xs font-normal">jusqu'à 3 NC maximum</span></td>
+                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300"></td>
+                            </tr>
+                            <tr class="bg-red-50">
+                                <td class="border border-gray-300 p-3 text-center text-[13px] font-medium text-red-800">CAS N°3 – Maîtrise insuffisante<br><span class="text-xs font-normal">Plus de 3 NC</span></td>
+                                <td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300 bg-gray-100"></td><td class="border border-gray-300"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="border border-gray-300 rounded-lg p-4">
+                        <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Signatures</h3>
+                        <div class="grid grid-cols-2 gap-12 h-24">
+                            <div>
+                                <p class="text-[13px] font-medium text-gray-500 mb-2">Représentant du partenaire audité :</p>
+                                <div class="border-b-2 border-dashed border-gray-300 h-16"></div>
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-medium text-gray-500 mb-2">Auditeur :</p>
+                                <div class="border-b-2 border-dashed border-gray-300 h-16"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-[11px] text-gray-400 italic">
+                            NB : les actions correctives permettant de lever les NC devront être décrites à l'auditeur sous 3 mois (colonne L).
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center text-xs text-gray-400">
+                Survolez les icônes (i) pour voir les explications détaillées.
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT : Logique et Données -->
+    <script>
+        // --- DONNÉES ---
+        const auditData = [
+            // Respect des engagements et régularité
+            { id:"1.1", category:"Respect des engagements et régularité", controlElement:"Connaissance, prise en compte et maîtrise des engagements liés à l'habilitation", checkPoint:"Les équipes maîtrisent les engagements propres au réseau audité, tels que définis dans le cahier des charges de la certification correspondante.", directory:"RNCP et RS", explanation:"Les équipes connaissent précisément les obligations fixées par le cahier des charges et sont capables d'expliquer concrètement comment elles les appliquent dans leur pratique quotidienne lors de la mise en œuvre des certifications." },
+            { id:"1.2", category:"Respect des engagements et régularité", controlElement:"", checkPoint:"Les documents obligatoires du/des réseaux sont disponibles et à jour, les audités connaissent les ressources et leurs emplacements (m@cci, oscar, diplomation ou autre plateforme dédiée).", directory:"RNCP et RS", explanation:"Les documents exigés par le réseau existent, sont actualisés et le partenaire audité sait où ils sont stockés et comment y accéder sur les plateformes mentionnées." },
+            { id:"1.3", category:"Respect des engagements et régularité", controlElement:"", checkPoint:"Un référent de la certification est identifié, ses accès aux plateformes sont valides.", directory:"RNCP et RS", explanation:"Une personne est officiellement désignée pour la certification et dispose des accès nécessaires pour utiliser les outils et plateformes liés à cette certification." },
+            { id:"2.1", category:"Respect des engagements et régularité", controlElement:"Les conditions d'honorabilité", checkPoint:"Le certificat Qualiopi est valide, si l'échéance de surveillance ou de renouvellement est dans moins de 4 mois, l'audit qualiopi est planifié.", directory:"RNCP et RS", explanation:"L'organisme détient une certification Qualiopi en cours de validité et aucune échéance proche n'est laissée sans anticipation." },
+            { id:"3.1", category:"Respect des engagements et régularité", controlElement:"Engagement CCI France et réseaux", checkPoint:"Le référent est garant du déploiement des certifications, il est en contact avec l'animateur du réseau concerné", directory:"RNCP et RS", explanation:"Le référent assure le suivi de la certification et maintient un lien régulier avec le réseau auquel la certification est rattachée." },
+            { id:"3.2", category:"Respect des engagements et régularité", controlElement:"", checkPoint:"Le paiement des cotisations au réseau est à jour.", directory:"RNCP et RS", explanation:"L'organisme s'est acquitté des cotisations dues pour appartenir au réseau." },
+            { id:"3.3", category:"Respect des engagements et régularité", controlElement:"", checkPoint:"Aucune cession de l'habilitation à un organisme tiers n'est constatée.", directory:"RNCP et RS", explanation:"L'organisme habilité ne transfère pas son droit à mettre en œuvre la certification à une autre structure." },
+
+            // Respect de l'offre, des moyens et des contenus
+            { id:"4.1", category:"Respect de l'offre, des moyens et des contenus", controlElement:"Communication sur les formations et sur le réseau", checkPoint:"Les exigences de communication sont connues par l'organisme, par le référent et par la/les personnes en charge de la promotion et de la communication (correspondance des contenus publiés avec les programmes du certificateur).", directory:"RNCP et RS", explanation:"Tous les supports et contenus qui communiquent sur la formation respectent strictement les exigences du certificateur (intitulé exact, lien vers la fiche RS, conformité des programmes diffusés, etc.)." },
+            { id:"4.2", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"La cohérence et la transparence de la communication montrent que : le partenaire respecte la politique de communication élaborée par CCI France ; l'intitulé de la certification est conforme au dossier déposé auprès de France Compétences ; les codes RS ou RNCP sont publiés avec leur intitulé et la référence à CCI France ; les informations communiquées au public sont conformes aux cahiers des charges.", directory:"RNCP et RS", explanation:"- le partenaire respecte la politique de communication élaborée par CCI France :\nCela signifie que les supports et messages diffusés suivent les règles définies par CCI France.\n\n- l'intitulé de la certification est conforme au dossier déposé auprès de France Compétences :\nCela signifie que le nom de la certification utilisé dans la communication est exactement celui qui a été déclaré.\n\n- les codes RS ou RNCP sont publiés avec leur intitulé et la référence à CCI France :\nCela signifie que les références officielles de la certification sont correctement mentionnées ou accessibles via un lien vers France Compétences.\n\n- les informations communiquées au public par le partenaire habilité sont conformes aux cahiers des charges :\nCela signifie que les informations diffusées correspondent à ce qui est autorisé par les documents de référence." },
+            { id:"4.3", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"La cohérence et la transparence de la communication montrent que : les logos et éléments chartés CCI et réseau sont respectés. les logos et éléments chartés réglementaires Qualiopi, MCF et France Compétences sont respectés. la communication sur les partenariats est claire et sans équivoque, le cas échéant.", directory:"RNCP et RS", explanation:"- les logos et éléments chartés CCI et réseau sont respectés :\nCela signifie que les logos utilisés sont conformes aux chartes graphiques en vigueur.\n\n- les logos et éléments chartés réglementaires Qualiopi, MCF et France Compétences sont respectés :\nCela signifie que les logos réglementaires sont utilisés conformément aux règles prévues.\n\n- la communication sur les partenariats est claire et sans équivoque, le cas échéant :\nCela signifie que les partenariats annoncés sont compréhensibles et ne prêtent pas à confusion." },
+            { id:"5.1", category:"Respect de l'offre, des moyens et des contenus", controlElement:"Contenus et respect du cahier des charges", checkPoint:"Il existe des éléments permettant de démontrer le respect du cahier des charges de la certification, tel qu'un tableau de correspondance ou de croisement des compétences avec le programme. Une observation détaillée et observée sur l'ensemble du cycle permet d'attester de cette conformité (déroulé pédagogique, planning, modularisation etc...).", directory:"RNCP et RS" },
+            { id:"5.2", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"Respect des durées de formation indiquées dans le cahier des charges de la certification concernée.", directory:"RNCP et RS" },
+            { id:"5.3", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"Respect des durées de temps entreprise indiquées dans le cahier des charges de la certification.", directory:"RNCP" },
+            { id:"6.1", category:"Respect de l'offre, des moyens et des contenus", controlElement:"Capacité de l'organisme à assurer l'adéquation des moyens pédagogiques, techniques et d'encadrement", checkPoint:"L'organisme de formation déploie et maintient les moyens pédagogiques et techniques définis dans le référentiel de la certification et le cahier des charges.", directory:"RNCP et RS", explanation:"Les moyens pédagogiques et techniques prévus par le certificateur existent réellement, sont conformes à ses préconisations et sont maintenus en état de fonctionnement (présentiel, distanciel, outils numériques, etc.)." },
+            { id:"6.2", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"Les contenus et leur mise en œuvre prévus pour l'acquisition des compétences, y compris transversales, sont assurés.", directory:"RNCP et RS", explanation:"Chaque préconisation du certificateur destinée à préparer aux compétences visées est respectée compétence par compétence (ex. : simulation de négociation obligatoire pour une compétence liée à la négociation)." },
+            { id:"6.3", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"L'organisme de formation assure l'encadrement requis par la certification en mobilisant les compétences et qualifications de l'équipe pédagogique (conseiller, formateur, accompagnateur, responsable de filière, etc.).", directory:"RNCP et RS", explanation:"Le partenaire met en place les moyens d'encadrement adaptés afin d'assurer l'organisation, la supervision et la sécurisation des évaluations certificatives.\n\nCela implique notamment :\n– la désignation d'un représentant de la certification au sein de la structure, responsable de la coordination du dispositif ;\n– l'organisation des sessions d'évaluation (convocations, planning, logistique) ;\n– la supervision du déroulement des épreuves, y compris en distanciel ;\n– l'interface avec les évaluateurs, les jurys et le certificateur ;\n– la gestion de la traçabilité documentaire et des outils nationaux (1001 Parcours, Sphinx)." },
+            { id:"6.4", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"Accueil des candidats en situation de handicap – Le handicap est pris en compte dans le cycle de formation dès l'entrée en formation du bénéficiaire. Une observation détaillée sur l'ensemble des bénéficiaires du cycle permet d'attester de cette conformité.", directory:"RNCP et RS", explanation:"Le partenaire dispose des moyens nécessaires pour aménager la formation et/ou l'épreuve de certification afin de garantir l'équité de l'évaluation pour les personnes en situation de handicap." },
+            { id:"7.1", category:"Respect de l'offre, des moyens et des contenus", controlElement:"Suivi de l'évolution de la certification", checkPoint:"Les interlocuteurs du partenaire sont inscrits aux espaces des réseaux et communiquent régulièrement avec l'animateur.", directory:"RNCP et RS", explanation:"Les connexions aux plateformes du réseau sont effectives et vérifiables (1001 Parcours, échanges mails, etc.) et les resources mises à disposition sont identifiées et exploitées." },
+            { id:"7.2", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"Les ressources disponibles sur les plateformes du certificateur sont connues et utilisées.", directory:"RNCP et RS", explanation:"Les documents de déploiement (formations, autodiagnostics, templates, PV, etc.) sont utilisés sans modification et l'organisme participe à la vie du réseau lors des temps collectifs." },
+            { id:"7.3", category:"Respect de l'offre, des moyens et des contenus", controlElement:"", checkPoint:"L'organisme de formation participe ponctuellement à des travaux ou groupes de travail du réseau ou aux rencontres annuelles (groupe communication, groupe commercialisation, GTN, JTN...).", directory:"RNCP et RS", explanation:"L'organisme peut attester de sa participation à au moins un groupe de travail ou événement proposé par CCI France." },
+
+            // Conformité des évaluations certificatives
+            { id:"8.1", category:"Conformité des évaluations certificatives", controlElement:"Inscriptions des candidats et respect de la certification", checkPoint:"La mise en œuvre des procédures et/ou tests de positionnement peut être attestée.", directory:"RNCP et RS", explanation:"Les outils de positionnement du certificateur sont utilisés et correctement complétés (compte rendu d'entretien, test d'évaluation) et les conditions d'accès à la certification sont respectées." },
+            { id:"8.2", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Respect des pré-requis.", directory:"RNCP et RS", explanation:"Les prérequis de certification et de formation sont précisés et vérifiés pour chaque candidat conformément à la fiche France Compétences et au cahier des charges pédagogique." },
+            { id:"8.3", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les candidats sont saisis dans la plateforme de la certification concernée (Diplomation, Sphinx, Oscar, CCI Business Builder) de manière exhaustive et la procédure est respectée.", directory:"RNCP et RS", explanation:"Tous les candidats présentés sont enregistrés dans les outils prévus (Diplomation, Sphinx, Oscar, CCI Business Builder) et cette saisie est conforme aux PV et traçable." },
+            { id:"9.1", category:"Conformité des évaluations certificatives", controlElement:"Accueil des candidats en situation de handicap", checkPoint:"Le handicap est pris en compte dans l'adaptation de l'évaluation certificative finale conformément au règlement d'examen de la certification. Une observation détaillée sur l'ensemble des bénéficiaires du cycle permet d'attester de cette conformité (concerne uniquement les partenaires habilités à organiser l'évaluation).", directory:"RNCP et RS", explanation:"Les aménagements d'épreuves pour les personnes en situation de handicap sont réalisés conformément au processus CCIF et une personne est clairement désignée pour piloter l'évaluation." },
+            { id:"10.1", category:"Conformité des évaluations certificatives", controlElement:"Convocation", checkPoint:"La convocation est transmise au candidat à l'avance et sa preuve d'envoi est conservée.", directory:"RNCP et RS", explanation:"Une information fiable et complète sur les modalités d'évaluation est transmise au candidat et la preuve d'envoi est conservée." },
+            { id:"11.1", category:"Conformité des évaluations certificatives", controlElement:"Organisation des évaluations (concerne uniquement les partenaires habilités à organiser l'évaluation)", checkPoint:"Un responsable de processus d'évaluation est identifié.", directory:"RNCP" },
+            { id:"11.2", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Le responsable de processus d'évaluation identifie les sujets d'évaluation et sait comment y accéder.", directory:"RNCP et RS", explanation:"Le responsable accède aux sujets sur la plateforme 1001 Parcours et les utilise sans modification, dans le respect du cadre prévu." },
+            { id:"11.3", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les sujets utilisés sont ceux prescrits par le réseau, validés, utilisés dans leur intégralité sans modification et récupérés à la fin des épreuves.", directory:"RNCP et RS", explanation:"Les sujets ne sont pas modifiés, sont récupérés en fin d'épreuve et restent confidentiels ; tous les documents nécessaires au jury sont correctement renseignés." },
+            { id:"11.4", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les durées des évaluations sont conformes au cahier des charges.", directory:"RNCP et RS", explanation:"Les modalités, contenus et durées définis par CCI France dans les programmes disponibles sur 1001 Parcours sont strictement respectés." },
+            { id:"11.5", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les supports de validation (barème de notation, grille de validation, pv de jury...) sont complétés et fournis aux jurys de certification.", directory:"RNCP et RS", explanation:"Les documents d'analyse des productions des candidats sont correctement complétés et transmis aux jurys conformément à la procédure nationale." },
+            { id:"11.6", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"La composition du jury d'évaluation respecte les exigences du cahier des charges.", directory:"RNCP et RS", explanation:"La composition du jury correspond strictement aux règles définies dans le cahier des charges de la certification concernée." },
+            { id:"12.1", category:"Conformité des évaluations certificatives", controlElement:"Gestion des évaluations certificatives (concerne uniquement les partenaires habilités à organiser l'évaluation)", checkPoint:"Participation du parrain aux deux premières sessions de jury de certification.", directory:"RNCP", explanation:"La présence du parrain est vérifiée lors des deux premières sessions de certification." },
+            { id:"12.2", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Conformité des jurys de certification au regard du cahier des charges.", directory:"RNCP et RS", explanation:"Les jurys respectent les règles établies et connaissent leurs rôles et attendus avant de siéger." },
+            { id:"12.3", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les membres du jury ont été informés préalablement sur les attendus du jury de certification.", directory:"RNCP et RS", explanation:"Chaque membre du jury a validé la formation e-learning dédiée (badge d'agrément) avant de participer aux évaluations." },
+            { id:"12.4", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les jurys ont formulé une analyse et partagé un retour d'expérience (adéquation des compétences visées à la certification et au métier, compétences pertinentes, obsolètes ou manquantes, temps imparti, organisation mise en place pour l'évaluation certificative...).", directory:"RNCP et RS", explanation:"Les comptes rendus et retours d'expérience sont formalisés et transmis conformément à la procédure." },
+            { id:"13.1", category:"Conformité des évaluations certificatives", controlElement:"Résultats (concerne uniquement les partenaires habilités à organiser l'évaluation)", checkPoint:"Les procès-verbaux des jurys de certification sont transmis au certificateur.", directory:"RS", explanation:"Les PV sont accessibles au certificateur via les plateformes prévues (Diplomation, Oscar, 1001 Parcours)." },
+            { id:"13.2", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Les résultats, en distinguant les candidats certifiés des non certifiés, sont intégrés dans la plateforme du réseau concerné, conformément à la procédure établie.", directory:"RNCP et RS", explanation:"Les résultats sont saisis de manière exhaustive et distingués selon le statut des candidats." },
+            { id:"13.3", category:"Conformité des évaluations certificatives", controlElement:"", checkPoint:"Le délai de divulgation des résultats de 6 semaines maximum est respecté.", directory:"RNCP et RS", explanation:"Le candidat est informé de sa réussite dans un délai maximal de 6 semaines et l'organisme est en mesure d'en apporter la preuve." },
+            { id:"14.1", category:"Conformité des évaluations certificatives", controlElement:"Suivi des certifiés", checkPoint:"Les enquêtes de suivi des certifiés sont menées de manière exhaustive et conformément aux attentes de France Compétences.", directory:"RNCP et RS", explanation:"Le suivi post-certification est réalisé soit automatiquement via les plateformes, soit en réponse aux sollicitations des animateurs de réseau, conformément aux exigences de France Compétences." },
+        ];
+
+        // --- ETAT DE L'APPLICATION ---
+        let zoom = 1;
+        let evaluations = {}; // { "1.1": "C", "1.2": "NC", ... }
+        let comments = {};    // { "1.1": "Texte...", ... }
+
+        // --- FONCTIONS DE RENDU ---
+
+        function formatExplanation(text) {
+            if (!text) return "";
+            let html = "";
+            const lines = text.split("\n");
+            lines.forEach(line => {
+                const t = line.trim();
+                if (!t) html += "<div style='height:4px;'></div>";
+                else if (t.startsWith("-") || t.startsWith("–")) {
+                    html += `<div class="font-bold text-white mt-2 mb-0.5">${line}</div>`;
+                } else {
+                    html += `<div class="text-blue-200 mb-0.5">${line}</div>`;
+                }
+            });
+            return html;
+        }
+
+        function renderGrid() {
+            const tbody = document.getElementById("grid-body");
+            let html = "";
+            
+            // Grouper par catégorie
+            const groups = {};
+            auditData.forEach(item => {
+                if (!groups[item.category]) groups[item.category] = [];
+                groups[item.category].push(item);
+            });
+
+            // Icône SVG pour l'info
+            const infoIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
+
+            Object.entries(groups).forEach(([category, items]) => {
+                // Ligne Titre Catégorie
+                html += `
+                    <tr class="bg-green-100 border-b border-gray-300">
+                        <td colspan="5" class="px-4 py-2.5 font-bold text-green-900 uppercase tracking-widest text-[13px]">
+                            ${category}
+                        </td>
+                    </tr>
+                `;
+
+                // Lignes d'items
+                items.forEach((item, index) => {
+                    const isStartOfGroup = !!item.controlElement;
+                    let rowSpan = 1;
+                    if (isStartOfGroup) {
+                        for (let i = index + 1; i < items.length; i++) {
+                            if (!items[i].controlElement) rowSpan++; else break;
+                        }
+                    }
+
+                    const tooltipHtml = item.explanation ? `
+                        <div class="absolute left-full top-0 ml-3 w-[340px] bg-slate-800 text-white rounded-lg p-4 text-[13px] leading-relaxed shadow-[0_20px_40px_rgba(0,0,0,0.35)] z-[200] hidden group-hover:block pointer-events-none">
+                            <div class="tooltip-arrow"></div>
+                            <div class="relative z-10">
+                                <div class="font-bold text-blue-300 border-b border-slate-700 pb-1.5 mb-2.5">Explication :</div>
+                                ${formatExplanation(item.explanation)}
+                            </div>
+                        </div>
+                    ` : '';
+
+                    html += `
+                        <tr class="audit-row border-b border-gray-200">
+                            ${isStartOfGroup ? `<td rowspan="${rowSpan}" class="p-4 border-r border-gray-200 bg-white align-top text-[13px] font-medium text-gray-700 max-w-[200px]">${item.controlElement}</td>` : ''}
+                            
+                            <td class="p-4 border-r border-gray-200 align-top relative group ${item.explanation ? 'cursor-help' : 'cursor-default'}">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-[13px] text-gray-800 flex-1">${item.checkPoint}</span>
+                                    ${item.explanation ? `<span class="text-blue-500 shrink-0 mt-0.5">${infoIcon}</span>` : ''}
+                                </div>
+                                ${tooltipHtml}
+                            </td>
+
+                            <td class="p-4 border-r border-gray-200 align-top text-center text-xs text-gray-500 whitespace-nowrap">
+                                ${item.directory}
+                            </td>
+
+                            <td class="p-2 border-r border-gray-200 align-top">
+                                <div class="flex justify-center gap-1">
+                                    <button id="btn-${item.id}-C" onclick="toggleEval('${item.id}', 'C')" class="eval-btn w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 text-[11px] font-bold">C</button>
+                                    <button id="btn-${item.id}-NC" onclick="toggleEval('${item.id}', 'NC')" class="eval-btn w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 text-[11px] font-bold">NC</button>
+                                    <button id="btn-${item.id}-NA" onclick="toggleEval('${item.id}', 'NA')" class="eval-btn w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 text-[11px] font-bold">NA</button>
+                                </div>
+                            </td>
+
+                            <td class="p-2 align-top">
+                                <textarea 
+                                    oninput="updateComment('${item.id}', this.value)"
+                                    placeholder="Commentaires..."
+                                    class="w-full min-h-[60px] p-2 text-xs border border-gray-200 rounded outline-none resize-y box-border font-sans focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                                >${comments[item.id] || ""}</textarea>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
+            tbody.innerHTML = html;
+            // Mettre à jour les boutons selon l'état existant (si on recharge par exemple)
+            Object.keys(evaluations).forEach(id => updateButtonStyles(id));
+            updateFooterCounts();
+        }
+
+        // --- LOGIQUE D'INTERACTION ---
+
+        function toggleEval(id, value) {
+            if (evaluations[id] === value) {
+                delete evaluations[id]; // Dé-sélectionner
+            } else {
+                evaluations[id] = value; // Sélectionner
+            }
+            updateButtonStyles(id);
+            updateFooterCounts();
+        }
+
+        function updateButtonStyles(id) {
+            const val = evaluations[id];
+            ['C', 'NC', 'NA'].forEach(state => {
+                const btn = document.getElementById(`btn-${id}-${state}`);
+                if (!btn) return;
+                
+                // Réinitialiser
+                btn.className = `eval-btn w-8 h-8 rounded border border-gray-300 bg-white text-gray-500 text-[11px] font-bold`;
+                
+                // Appliquer le style si sélectionné
+                if (val === state) {
+                    btn.classList.add(`selected-${state}`);
+                }
+            });
+        }
+
+        function updateComment(id, value) {
+            comments[id] = value;
+        }
+
+        function updateFooterCounts() {
+            let counts = { C: 0, NC: 0, NA: 0 };
+            Object.values(evaluations).forEach(val => {
+                if (counts[val] !== undefined) counts[val]++;
+            });
+
+            document.getElementById('count-C').innerText = counts.C;
+            document.getElementById('count-NC').innerText = counts.NC;
+            document.getElementById('count-NA').innerText = counts.NA;
+        }
+
+        function changeZoom(delta) {
+            zoom = Math.max(0.5, Math.min(zoom + delta, 2));
+            applyZoom();
+        }
+
+        function resetZoom() {
+            zoom = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const wrapper = document.getElementById('app-wrapper');
+            wrapper.style.transform = `scale(${zoom})`;
+            wrapper.style.width = `${100 / zoom}%`;
+            document.getElementById('zoom-level').innerText = `${Math.round(zoom * 100)}%`;
+        }
+
+        // Initialisation au chargement de la page
+        window.onload = () => {
+            renderGrid();
+        };
+
+    </script>
+</body>
+</html>

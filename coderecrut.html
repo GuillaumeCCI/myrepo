@@ -75,6 +75,8 @@
     const Heart = ({size=16,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
     const SidebarIcon = ({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>;
     const AlertTriangle = ({size=14,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+    const Maximize = ({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;
+    const Minimize = ({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
 
     // ── Pedagogical constants ────────────────────────────────────────────────
     const TYPE_EXPLANATIONS = {
@@ -404,7 +406,7 @@
           ],
           D: [{ condition: () => true, text: "C'est un artisan très reconnu du Languedoc, grand spécialiste des blés anciens et du levain naturel. Il a une approche presque philosophique du pain et du rapport aux terroirs.", score: 2, cDelta: -1, feedback: "Lucas explique avec passion, mais perçoit rapidement que l'intervieweur n'est pas complètement issu de ce courant." }],
           E: [
-            { condition: (c) => c >= 3, text: "C'était ma seule façon de continuer à apprendre sans être dépendant de l'équipement d'un employeur. Les journées chez Martin étaient longues, on n'avait pas de temps dédié à l'expérimentation. Mon jardin, c'était mon laboratoire du week-end.", score: 4, cDelta: 1, feedback: "Superbe ! La remarque bienveillante a légitimé sa démarche atypique et lui permet d'expliquer sa débrouillardise." },
+            { condition: (c) => c >= 3, text: "C'était ma seule façon de continuer à apprendre sans être dépendant de l'équipement d'un employeur. Les journées chez Martin étaient longues, on n'avait pas de temps dédié à l'expérimentation. Mon jardin, c'est mon laboratoire du week-end.", score: 4, cDelta: 1, feedback: "Superbe ! La remarque bienveillante a légitimé sa démarche atypique et lui permet d'expliquer sa débrouillardise." },
             { condition: () => true, text: "Oui c'est vrai, c'est parce que j'aime vraiment expérimenter de nouvelles techniques avec des temps longs.", score: 4 }
           ]
         }
@@ -731,6 +733,7 @@
       const [isMenuOpen, setIsMenuOpen] = useState(true);
       const [isPlanOpen, setIsPlanOpen] = useState(true);
       const [pendingFollowUp, setPendingFollowUp] = useState(null);
+      const [isFullscreen, setIsFullscreen] = useState(false);
       const chatEndRef = useRef(null);
 
       useEffect(() => {
@@ -741,6 +744,26 @@
             }, 50);
         }
       }, [gameState.history, feedback, pendingFollowUp, pendingRewards, isMenuOpen]);
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.log(`Erreur lors du passage en plein écran: ${err.message}`);
+          });
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
+      };
 
       const currentRoundData = ROUNDS[gameState.currentRoundIndex];
 
@@ -1170,11 +1193,19 @@
                   La confiance conditionne directement l'envie de Lucas de s'ouvrir. Plus elle est haute, plus ses réponses seront développées et révélatrices.
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-right hidden sm:block">
                 <p className="text-xs text-stone-400 uppercase font-semibold tracking-wider">Étape</p>
                 <p className="text-xl font-serif">{gameState.currentRoundIndex + 1}<span className="text-stone-300 text-sm">/{ROUNDS.length}</span></p>
               </div>
               <div className="h-8 w-px bg-stone-200 hidden md:block"></div>
+              
+              {/* Fullscreen Toggle */}
+              <button onClick={toggleFullscreen}
+                className={`flex items-center justify-center p-2 rounded-lg transition-colors ${isFullscreen ? 'bg-stone-100 text-stone-800' : 'bg-white text-stone-400 hover:bg-stone-50 hover:text-stone-600'}`}
+                title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}>
+                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+              </button>
+
               <button onClick={() => setIsPlanOpen(!isPlanOpen)}
                 className={`hidden md:flex items-center justify-center p-2 rounded-lg transition-colors ${isPlanOpen ? 'bg-stone-100 text-stone-800' : 'bg-white text-stone-400 hover:bg-stone-50 hover:text-stone-600'}`}
                 title="Afficher/Masquer le plan">
@@ -1298,7 +1329,7 @@
                   </div>
                 )}
                 {/* Scroll target anchor */}
-                <div ref={chatEndRef} />
+                <div ref={chatEndRef} className="h-[360px] shrink-0" />
               </div>
 
               {/* Overlay Modal for Rewards (Level up / Badges) */}

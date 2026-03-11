@@ -182,6 +182,9 @@
       );
     };
 
+    // ── Utility ────────────────────────────────────────────────────────────────
+    const getOpenness = (confidence) => confidence;
+
     // ── Data ───────────────────────────────────────────────────────────────────
     const ROUNDS = [
       {
@@ -225,11 +228,11 @@
           A: [
             { condition: (c) => c >= 4, text: "J'ai 28 ans, boulanger de formation. J'ai fait quatre ans chez Martin à Caen, une structure de trois personnes. Le patron est parti à la retraite l'année dernière. Entre-temps j'ai travaillé en free-lance comme traiteur pour rester actif, mais c'est la boulangerie qui me manquait. Votre annonce m'a tout de suite parlé avec le levain naturel et le bio.", score: 4, cDelta: 1, feedback: "Lucas mentionne spontanément le free-lance, signe d'une confiance déjà bien installée." },
             { condition: (c) => c >= 2, text: "J'ai 28 ans, je suis boulanger depuis ma formation. J'ai travaillé quatre ans chez Boulangerie Martin à Caen, une petite structure artisanale. Le patron a fermé pour partir à la retraite. Depuis j'ai fait quelques missions, et là je cherche un poste dans une vraie boulangerie artisanale.", score: 4 },
-            { condition: () => true, text: "Je suis boulanger de métier. J'ai travaillé pendant quatre ans chez la Boulangerie Martin à Caen, mais elle a fermé l'année dernière. Du coup, je suis à la recherche d'un nouveau poste aujourd'hui.", score: 4, feedback: "Réponse minimale et prudente. Comme il n'est pas encore en confiance, Lucas s'en tient strictement aux faits basiques de son CV." }
+            { condition: () => true, text: "Je suis boulanger de métier. J'ai travaillé pendant quatre ans chez la Boulangerie Martin à Caen, mais elle a fermé l'année dernière. Du coup, je suis à la recherche d'un nouveau poste aujourd'hui.", score: 4, cDelta: 1, feedback: "Réponse minimale et prudente. Comme il n'est pas encore en confiance, Lucas s'en tient strictement aux faits, mais votre approche ouverte aide à le rassurer." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "Je suis boulanger depuis ma formation. J'ai travaillé quatre ans chez Boulangerie Martin à Caen, une petite structure de trois personnes. Le patron est parti à la retraite et a fermé. Depuis, j'ai fait quelques missions, et là je cherche un poste dans une boulangerie qui partage ces mêmes valeurs.", score: 3, feedback: "La formulation 'parlez-moi de vous' est légèrement plus vague, ce qui produit une réponse un peu moins précise mais très honnête." },
-            { condition: () => true, text: "Je suis boulanger. J'ai passé quatre ans chez Martin à Caen, puis la boulangerie a fermé. C'est pour ça que je cherche un emploi aujourd'hui.", score: 3, feedback: "Réponse très brève. Le manque de confiance actuel le pousse à en dire le moins possible. Conseil : Essayez de le rassurer." }
+            { condition: () => true, text: "Je suis boulanger. J'ai passé quatre ans chez Martin à Caen, puis la boulangerie a fermé. C'est pour ça que je cherche un emploi aujourd'hui.", score: 3, cDelta: 1, feedback: "Réponse très brève. Le manque de confiance actuel le pousse à en dire le moins possible, mais l'espace que vous lui laissez permet de remonter la pente." }
           ],
           C: [{ condition: () => true, text: "Ça s'est fait assez naturellement. J'ai fait un stage en boulangerie en troisième et j'ai aimé ça, surtout de travailler la matière et de produire quelque chose de concret. Après ça, j'ai suivi la formation complète.", score: 2, feedback: "Réponse honnête et intéressante, mais cette question fait sauter l'étape de présentation générale de son parcours récent." }],
           D: [{ condition: () => true, text: "Euh… 28 ans. Et je ne suis pas marié, si c'est vraiment ce que vous voulez savoir.", score: 0, cDelta: -2, feedback: "L'âge et la situation familiale sont des informations protégées. Cette question efface d'un coup toute la confiance." }]
@@ -247,7 +250,7 @@
           A: [{ condition: () => true, text: "J'ai regardé votre site et vos réseaux. Vous faites des pains au levain naturel, vous livrez des restaurants du quartier. J'habite à dix minutes, je suis même passé acheter du pain ici un samedi matin.", score: 1, feedback: "Lucas répond de manière polie sur la rubrique suivante. Toutefois, le gap de huit mois reste une zone d'ombre non résolue sur son CV." }],
           B: [
             { condition: (c) => c >= 3, text: "J'ai travaillé en free-lance comme traiteur, avec des repas pour des particuliers ou de petits événements. C'était une façon de tester autre chose. Mais j'ai réalisé que c'est vraiment la boulangerie qui me manquait : la régularité, le rapport aux clients le matin. Le traiteur c'est ponctuel, ça ne me correspondait pas autant.", score: 4, cDelta: 1, feedback: "Excellente relance. Cette réponse va avoir un effet en cascade positif sur toutes les questions suivantes concernant son parcours." },
-            { condition: () => true, text: "J'ai fait un peu de free-lance, surtout de la restauration pour des particuliers. Ce n'était rien de très structuré.", score: 4, feedback: "Lucas reste sur la défensive. Comme il ne se sent pas totalement en confiance, il donne le minimum d'informations sur ce choix." }
+            { condition: () => true, text: "J'ai fait un peu de free-lance, surtout de la restauration pour des particuliers. Ce n'était rien de très structuré.", score: 4, cDelta: 1, feedback: "Lucas reste sur la défensive. Comme il ne se sent pas totalement en confiance, il donne le minimum d'informations, mais votre relance ouverte adoucit l'échange." }
           ],
           C: [{ condition: () => true, text: "Le patron avait 67 ans et pas de successeur. Il m'a prévenu six mois à l'avance que c'était son choix de fermer pour prendre sa retraite.", score: 2, feedback: "L'information est confirmée, mais elle était déjà sous-entendue dans le CV." }],
           D: [{ condition: () => true, text: "Non, pas vraiment. J'ai eu une période de transition, comme beaucoup de personnes quand leur employeur ferme la boutique. J'ai soufflé quelques semaines, puis j'ai travaillé en free-lance comme traiteur. Ce n'était pas une période vide. Je ne suis pas sûr de comprendre pourquoi vous le formulez de cette façon.", score: 0, cDelta: -2, feedback: "Lucas se sent mis en cause. La formulation 'sans activité' était inexacte, fermée et légèrement accusatrice. Conseil : Privilégiez des termes neutres." }]
@@ -278,7 +281,7 @@
           ],
           D: [
             { condition: (c) => c >= 3, text: "J'ai vu que vous étiez très axés sur des farines anciennes et du pain au levain naturel. J'ai aussi remarqué que vous privilégiez les filières courtes, ce qui me semble très cohérent avec la philosophie globale de votre boutique.", score: 4, cDelta: 1, feedback: "La question ouverte a permis une réponse riche et naturelle, qui montre une vraie démarche de préparation de sa part." },
-            { condition: () => true, text: "J'ai consulté votre site internet et j'ai vu que vous faisiez des pains au levain et des produits bio de manière très artisanale.", score: 4 }
+            { condition: () => true, text: "J'ai consulté votre site internet et j'ai vu que vous faisiez des pains au levain et des produits bio de manière très artisanale.", score: 4, cDelta: 1, feedback: "Même s'il ne développe pas autant qu'il l'aurait fait en toute confiance, cette question pertinente montre votre écoute et recrée du lien." }
           ]
         }
       },
@@ -294,12 +297,12 @@
           A: [
             { condition: (c) => c >= 4, text: "Parce que vos méthodes de travail correspondent à ce que j'aime faire. De plus, dans une structure de votre taille, j'espère pouvoir évoluer vers un rôle différent à l'avenir. J'aimerais beaucoup devenir référent technique ou encadrer des apprentis, comme je l'ai fait chez Martin pendant un an avec grand plaisir.", score: 4, cDelta: 1, setFlags: { mentionedReferent: true, mentionedApprentice: true }, feedback: "Superbe dynamique ! La confiance haute permet d'obtenir des informations spontanées très riches (ambition + expérience de formateur)." },
             { condition: (c) => c >= 2, text: "Parce que la façon dont vous travaillez le produit ici, avec de longues fermentations, est très proche de la philosophie que je souhaite défendre au quotidien.", score: 4, feedback: "Lucas donne une vraie phrase, mais reste prudent. Son manque de confiance l'empêche de dévoiler ses ambitions réelles (comme former un apprenti). Conseil : Creusez avec bienveillance." },
-            { condition: () => true, text: "C'est avant tout parce que je trouve que vos produits sont de très bonne qualité et que l'équipe a l'air sympa.", score: 4, feedback: "Réponse brève et prudente. Ne sachant pas ce que vous attendez, Lucas reste sur des généralités sans révéler ses vrais moteurs. Conseil : Laissez-lui l'espace pour s'exprimer." }
+            { condition: () => true, text: "C'est avant tout parce que je trouve que vos produits sont de très bonne qualité et que l'équipe a l'air sympa.", score: 4, cDelta: 1, feedback: "Réponse brève et prudente. Lucas reste sur des généralités sans révéler ses vrais moteurs, mais votre bienveillance l'aide à se détendre." }
           ],
           B: [
             { condition: (c) => c >= 4, text: "Parce que tout est cohérent ici, que ce soit le levain, le bio ou la taille humaine. J'ai l'impression que dans une structure comme la vôtre, on peut avoir un vrai rôle de fond. J'aimerais à terme être un peu plus qu'un simple boulanger : pourquoi pas référent technique, ou encadrer un apprenti.", score: 3, cDelta: 1, setFlags: { mentionedReferent: true, mentionedApprentice: true }, feedback: "L'ambition de devenir référent sort très spontanément quand la confiance est bonne." },
             { condition: (c) => c >= 2, text: "Parce que votre approche est vraiment artisanale. Ce n'est pas semi-industriel ou basé sur des pâtons congelés. Et votre choix du bio est cohérent avec ce que je recherche.", score: 3, feedback: "Une réponse honnête et réfléchie qui différencie bien l'entreprise." },
-            { condition: () => true, text: "Je dirais que c'est principalement pour votre approche artisanale globale.", score: 3, feedback: "Réponse a minima due à un climat assez froid. Conseil : Valorisez sa présence pour l'encourager à développer." }
+            { condition: () => true, text: "Je dirais que c'est principalement pour votre approche artisanale globale.", score: 3, cDelta: 1, feedback: "Réponse a minima due à un climat assez froid. Néanmoins, lui demander son avis permet de regagner peu à peu sa confiance." }
           ],
           C: [{ condition: () => true, text: "Ce que ça pourrait m'apporter... Sûrement de progresser, de pouvoir travailler des farines intéressantes, ou d'apprendre de nouvelles techniques.", score: 2, cDelta: -1, feedback: "Cette formulation, très centrée sur ses propres besoins, lui donne l'impression d'être jugé ou évalué de manière classique, ce qui bride son naturel." }],
           D: [{ condition: () => true, text: "Je ne fuis absolument rien. Je cherche simplement un nouveau défi professionnel positif.", score: 0, cDelta: -1, feedback: "Réponse très sèche. La formulation négative ('fuir') a immédiatement créé une tension inutile et dégradé la relation de confiance." }]
@@ -318,7 +321,7 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "Quelqu'un qui peut être l'interlocuteur privilégié pour un apprenti ou une nouvelle recrue. Pas forcément un manager, mais quelqu'un capable d'expliquer pourquoi on fait les choses de telle façon. Chez Martin, j'ai eu un apprenti pendant un an et je trouvais ça très enrichissant pour moi comme pour lui.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "Je parle de quelqu'un qui a la capacité de former les autres en interne de manière fluide.", score: 4 }
+            { condition: () => true, text: "Je parle de quelqu'un qui a la capacité de former les autres en interne de manière fluide.", score: 4, cDelta: 1, feedback: "Lucas n'ose pas trop développer de peur d'être jugé, mais il apprécie qu'on lui demande de préciser sa pensée." }
           ],
           B: [{ condition: () => true, text: "…", score: 0, cDelta: -2, feedback: "Lucas enregistre la froideur de la réplique. Il se fermera et ne parlera plus de son ambition de lui-même pour tout le reste de l'entretien. Conseil : Ne coupez pas court à ce qu'il vous confie." }],
           C: [{ condition: () => true, text: "…", score: 1, cDelta: -1, feedback: "Lucas comprend que l'intervieweur suit scolairement un document plutôt que de rebondir sur ses propos avec logique." }],
@@ -328,7 +331,7 @@
           ],
           E: [
             { condition: (c) => c >= 3, text: "Exactement. C'est quelque chose que j'ai découvert en travaillant avec l'apprenti. Devoir expliquer un geste technique, c'est aussi l'occasion de comprendre profondément pourquoi on le fait soi-même. Ça m'a rendu meilleur dans mon travail au quotidien.", score: 4, cDelta: 1, feedback: "Excellent choix. La reformulation bienveillante a créé un espace d'échange idéal. Lucas est allé beaucoup plus loin que ce qu'une simple question aurait provoqué." },
-            { condition: () => true, text: "Oui, c'est à peu près ça l'idée de fond.", score: 4 }
+            { condition: () => true, text: "Oui, c'est à peu près ça l'idée de fond.", score: 4, cDelta: 1, feedback: "Excellente reformulation. Lucas n'est pas encore assez à l'aise pour rebondir longuement, mais cette empathie fait remonter la confiance en flèche." }
           ]
         }
       },
@@ -347,7 +350,7 @@
         responses: {
           D: [
             { condition: (c) => c >= 3, text: "J'aimerais progresser, sans pour autant chercher un titre hiérarchique. Je veux avoir plus de responsabilités, participer à la création de nouvelles recettes, ou éventuellement encadrer un apprenti si l'occasion se présente. C'est ce genre de mission que j'ai apprécié chez mon ancien patron.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "Je cherche surtout à progresser professionnellement et à avoir de nouvelles responsabilités à terme.", score: 4 }
+            { condition: () => true, text: "Je cherche surtout à progresser professionnellement et à avoir de nouvelles responsabilités à terme.", score: 4, cDelta: 1, feedback: "Question très pertinente qui recentre sur ses besoins. Lucas n'en dit pas trop mais se détend visiblement." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "C'est une question toujours un peu compliquée, car je ne sais pas où en sera votre structure dans trois ans, ni comment j'y aurai évolué. Honnêtement, j'espère être parfaitement intégré, y avoir ma place, et avoir grandi techniquement. Si une opportunité se présente, pourquoi pas prendre un rôle plus large, participer au développement ou encadrer quelqu'un.", score: 2, feedback: "La longueur de sa réponse trahit l'habitude de cette question très clichée. Lucas reste sur la réserve pour ne pas faire de faux pas." },
@@ -355,7 +358,7 @@
           ],
           A: [
             { condition: (c) => c >= 3, text: "Parce que votre concept est très artisanal et très cohérent autour du bio, du levain et du circuit court. Les autres offres que j'ai étudiées ne correspondaient pas aussi bien à ma vision globale du métier.", score: 3 },
-            { condition: () => true, text: "Je vous ai choisis prioritairement pour votre positionnement très qualitatif sur le secteur.", score: 3 }
+            { condition: () => true, text: "Je vous ai choisis prioritairement pour votre positionnement très qualitatif sur le secteur.", score: 3, cDelta: 1, feedback: "Lucas donne une réponse standard par prudence, mais apprécie l'approche ouverte de la question." }
           ],
           C: [{ condition: () => true, text: "Ce que ça pourrait m'apporter... Principalement de l'expérience, la possibilité de travailler des farines intéressantes et de m'améliorer au quotidien.", score: 2 }]
         }
@@ -371,7 +374,7 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "J'ai passé mon CAP Boulanger en 2015, puis une mention complémentaire en Pâtisserie en 2016. Depuis, pas de nouveau diplôme, mais j'ai suivi un stage très utile chez un artisan alsacien sur les pains spéciaux. Je mise beaucoup sur l'autoformation. Par exemple, ma dernière lecture en date c'était un livre de Roland Feuillas sur le pain au levain.", score: 3, setFlags: { mentionedFeuillas: true }, feedback: "Réponse complète et structurée." },
-            { condition: () => true, text: "J'ai un CAP Boulanger et une mention complémentaire en Pâtisserie. Ensuite, j'ai fait un stage et je me forme tout seul.", score: 3, feedback: "Réponse minimale. Il ne détaille pas ses lectures spontanément car la confiance n'est pas au rendez-vous. Conseil : Sollicitez-le davantage." }
+            { condition: () => true, text: "J'ai un CAP Boulanger et une mention complémentaire en Pâtisserie. Ensuite, j'ai fait un stage et je me forme tout seul.", score: 3, cDelta: 1, feedback: "Réponse minimale. Il ne détaille pas ses lectures par méfiance, mais le climat s'adoucit légèrement." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "La dernière formation financée remonte à un stage en Alsace il y a deux ans. J'ai passé une semaine entière chez un boulanger spécialiste des pains spéciaux. Sinon, depuis mon diplôme en 2016, je me forme principalement par moi-même à travers des livres et des tests chez moi.", score: 2, feedback: "Lucas développe de lui-même pour compenser ce qu'il perçoit comme un vide dans son CV." },
@@ -379,7 +382,7 @@
           ],
           C: [
             { condition: (c) => c >= 3, text: "Je lis beaucoup de choses techniques, des ouvrages de boulangers ou des forums spécialisés. J'ai aussi fait ce stage chez un artisan alsacien. Et surtout, je teste beaucoup le week-end : j'ai même construit un petit four à pain dans mon jardin. C'est là que j'essaie de nouvelles farines anciennes, comme le petit épeautre. C'est ma meilleure méthode d'apprentissage.", score: 4, cDelta: 1, setFlags: { mentionedWoodOven: true, mentionedFeuillas: true }, feedback: "Le four à bois personnel apparaît ! C'est un signal fort sur sa démarche autonome qui n'aurait jamais émergé avec une question fermée." },
-            { condition: () => true, text: "J'ai l'habitude de beaucoup lire sur le sujet et de tester de nouvelles choses dès que j'en ai l'occasion chez moi.", score: 4 }
+            { condition: () => true, text: "J'ai l'habitude de beaucoup lire sur le sujet et de tester de nouvelles choses dès que j'en ai l'occasion chez moi.", score: 4, cDelta: 1, feedback: "Lucas reste pudique sur ses expérimentations (four à bois caché), mais l'intérêt que vous lui portez porte ses fruits." }
           ],
           D: [{ condition: () => true, text: "J'ai fait un stage entre-temps, et je me forme beaucoup en autonomie de mon côté, tout simplement.", score: 0, cDelta: -1, feedback: "La formulation accusatrice 'c'est ça ?' sonne comme un reproche déguisé. Lucas l'a très bien perçu et se referme logiquement." }]
         }
@@ -397,17 +400,17 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "Cela m'a apporté une compréhension bien plus profonde de la fermentation. Chez mon ancien patron, on faisait du levain assez mécaniquement. Feuillas aborde la pâte comme une matière vivante, il explique l'impact de l'humidité ou de la température. J'ai commencé à modifier mes temps de fermentation en fonction des saisons, et ça a changé mes résultats.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "Cela m'a permis d'acquérir une bien meilleure compréhension théorique de la fermentation des pâtes.", score: 4 }
+            { condition: () => true, text: "Cela m'a permis d'acquérir une bien meilleure compréhension théorique de la fermentation des pâtes.", score: 4, cDelta: 1, feedback: "Une bonne question de relance qui montre de l'intérêt et fait du bien à la relation, même si Lucas reste synthétique." }
           ],
           B: [{ condition: () => true, text: "J'étais boulanger chez Martin, à Caen. J'y ai passé quatre ans.", score: 1, cDelta: -1, feedback: "Lucas répond sagement à votre question directe. Il vient de vous envoyer un signal fort de passion, et vous venez de l'ignorer totalement." }],
           C: [
             { condition: (c) => c >= 3, text: "Oui, j'ai aménagé un petit four à pain dans le jardin. Ça me sert à travailler les farines anciennes le week-end en toute tranquillité. C'est d'ailleurs comme ça que j'ai mis au point le pain aux céréales anciennes que j'ai fini par proposer dans la boulangerie.", score: 3, cDelta: 1, setFlags: { mentionedCerealBread: true }, feedback: "Une information précieuse débloquée : l'élaboration du pain aux céréales apparaît pour la première fois." },
-            { condition: () => true, text: "Oui, j'en ai monté un petit dans mon jardin pour faire mes tests quand j'ai un peu de temps libre.", score: 3 }
+            { condition: () => true, text: "Oui, j'en ai monté un petit dans mon jardin pour faire mes tests quand j'ai un peu de temps libre.", score: 3, cDelta: 1, feedback: "Le fait de creuser ce point précis montre que vous écoutez. La confiance remonte." }
           ],
           D: [{ condition: () => true, text: "C'est un artisan très reconnu du Languedoc, grand spécialiste des blés anciens et du levain naturel. Il a une approche presque philosophique du pain et du rapport aux terroirs.", score: 2, cDelta: -1, feedback: "Lucas explique avec passion, mais perçoit rapidement que l'intervieweur n'est pas complètement issu de ce courant." }],
           E: [
             { condition: (c) => c >= 3, text: "C'était ma seule façon de continuer à apprendre sans être dépendant de l'équipement d'un employeur. Les journées chez Martin étaient longues, on n'avait pas de temps dédié à l'expérimentation. Mon jardin, c'est mon laboratoire du week-end.", score: 4, cDelta: 1, feedback: "Superbe ! La remarque bienveillante a légitimé sa démarche atypique et lui permet d'expliquer sa débrouillardise." },
-            { condition: () => true, text: "Oui c'est vrai, c'est parce que j'aime vraiment expérimenter de nouvelles techniques avec des temps longs.", score: 4 }
+            { condition: () => true, text: "Oui c'est vrai, c'est parce que j'aime vraiment expérimenter de nouvelles techniques avec des temps longs.", score: 4, cDelta: 1, feedback: "Cette valorisation de son profil fait mouche. Il n'ose pas en dire beaucoup plus, mais la dynamique redevient positive." }
           ]
         }
       },
@@ -429,7 +432,7 @@
           ],
           C: [
             { condition: (c) => c >= 3, text: "On démarrait la journée à quatre heures du matin pour le pétrissage et le façonnage. J'étais seul en production avec le patron jusqu'à huit heures. Ensuite, je gérais l'intégralité des cuissons jusqu'à midi et les livraisons aux restaurants le mardi. L'après-midi, c'était le nettoyage et les commandes. Sur les deux dernières années, le patron ne venait même plus l'après-midi, je gérais le fournil seul.", score: 4, cDelta: 1, feedback: "Cette réponse ouverte révèle une grande autonomie, bien au-delà de ce que son CV laisse transparaître." },
-            { condition: () => true, text: "Je démarrais à quatre heures pour le pétrissage et la cuisson. Ensuite, je m'occupais du magasin et des livraisons, puis de la préparation pour le lendemain l'après-midi.", score: 4, feedback: "Lucas donne les faits, de façon chronologique, mais omet de mentionner sa forte autonomie par manque de chaleur dans l'échange. Conseil : Valorisez-le pour le faire parler." }
+            { condition: () => true, text: "Je démarrais à quatre heures pour le pétrissage et la cuisson. Ensuite, je m'occupais du magasin et des livraisons, puis de la préparation pour le lendemain l'après-midi.", score: 4, cDelta: 1, feedback: "Lucas omet de mentionner sa forte autonomie par manque de chaleur dans l'échange. La question ouverte aide tout de même à reconstruire la confiance." }
           ]
         }
       },
@@ -444,11 +447,11 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "C'était une très bonne expérience formatrice. J'avais beaucoup d'autonomie et de vraies responsabilités. Mon patron était exigeant mais très juste. Je regrette honnêtement que ça se soit terminé ainsi.", score: 3 },
-            { condition: () => true, text: "C'était une bonne expérience dans l'ensemble de mon point de vue.", score: 3 }
+            { condition: () => true, text: "C'était une bonne expérience dans l'ensemble de mon point de vue.", score: 3, cDelta: 1, feedback: "Il reste évasif, mais vous marquez des points en lui demandant son ressenti personnel." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "L'autonomie, sans aucun doute. Très tôt, le patron a su me faire confiance. À peine 24 ans et je gérais déjà seul les livraisons ou les commandes avec les restaurateurs. Sans oublier le contact client du matin. J'ai aussi pu prendre un apprenti sous mon aile, c'était vraiment valorisant.", score: 4, cDelta: 1, setFlags: { mentionedApprentice: true }, feedback: "Si la notion d'apprenti n'était pas encore sortie, l'angle de la question permet de débloquer cette information clé." },
-            { condition: () => true, text: "J'y ai surtout appris l'autonomie et la polyvalence. J'avais des responsabilités assez larges pour une si petite équipe au quotidien.", score: 4 }
+            { condition: () => true, text: "J'y ai surtout appris l'autonomie et la polyvalence. J'avais des responsabilités assez larges pour une si petite équipe au quotidien.", score: 4, cDelta: 1, feedback: "Question très pertinente. Lucas n'ose pas parler de l'apprenti, mais il apprécie cette invitation à se valoriser." }
           ],
           C: [{ condition: () => true, text: "Je ne cherche pas à 'changer' d'entreprise à proprement parler, la mienne a définitivement fermé. C'est une situation un peu différente. L'ancien gérant n'a trouvé personne pour reprendre son activité quand il a pris sa retraite.", score: 2, cDelta: -1, feedback: "La question standardisée, posée sans tenir compte de la réalité de son CV (fermeture d'entreprise), lui donne l'impression que vous n'avez pas lu son dossier avec attention." }],
           D: [{ condition: () => true, text: "Non… (Il marque une légère pause, incertain.) Nous n'étions que trois au quotidien. Quand il y avait quelque chose à régler, on se le disait simplement en direct au fournil sans attendre la fin de l'année.", score: 0, cDelta: -1, feedback: "Lucas ne comprend pas du tout la pertinence d'une telle démarche RH pour une micro-structure artisanale. Il perçoit un décalage entre vos processus et son univers." }]
@@ -466,7 +469,7 @@
           A: [{ condition: () => true, text: "Exactement. Ce n'était absolument pas un choix de ma part. Il n'y avait malheureusement pas de successeur et la fermeture était la seule issue possible.", score: 3, cDelta: 1, feedback: "La reformulation permet de valider les faits. Cela rassure Lucas car il sent que vous l'écoutez avec attention." }],
           B: [
             { condition: (c) => c >= 3, text: "C'est la régularité du métier qui m'a manqué. Le free-lance, c'est un coup d'adrénaline puis le vide absolu. En boulangerie, il y a un rythme très sain : les mêmes gestes chaque matin, mais avec une pâte qui est toujours un peu différente. Et j'aime le rapport avec les habitués réguliers du quartier.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "C'est vraiment le rythme et la régularité de l'artisanat qui me manquent. Ça n'a rien à voir avec la précarité du free-lance.", score: 4 }
+            { condition: () => true, text: "C'est vraiment le rythme et la régularité de l'artisanat qui me manquent. Ça n'a rien à voir avec la précarité du free-lance.", score: 4, cDelta: 1, feedback: "Bonne relance. Lucas vous livre un élément clé de sa motivation et se sent un peu plus écouté." }
           ],
           C: [
             { condition: (c) => c >= 3, text: "J'ai consulté quelques annonces, c'est vrai. J'ai même passé un entretien la semaine dernière pour une place à Rouen, mais on m'a proposé un fonctionnement beaucoup trop industriel. Votre offre est la première qui m'ait paru totalement alignée avec mes envies.", score: 2, feedback: "Lucas vous indique très honnêtement qu'il n'est pas désespéré et qu'il sélectionne scrupuleusement les annonces." },
@@ -486,7 +489,7 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "Je contrôlais les températures des frigos, le nettoyage quotidien des plans de travail, et la gestion des dates de péremption. Pour être très honnête, on n'avait pas de classeur d'enregistrement formel, je gardais un suivi mental. Je sais que la documentation écrite est obligatoire dans d'autres structures.", score: 3, cDelta: 1, feedback: "Bonne question ouverte. Lucas détaille bien ses missions et fait preuve de franchise quant à ses limites théoriques." },
-            { condition: () => true, text: "Je m'occupais des températures, du nettoyage et des dates limites. Chez mon ancien patron, on vérifiait ça systématiquement chaque matin.", score: 3 }
+            { condition: () => true, text: "Je m'occupais des températures, du nettoyage et des dates limites. Chez mon ancien patron, on vérifiait ça systématiquement chaque matin.", score: 3, cDelta: 1, feedback: "Lucas répond factuellement par précaution, mais cette demande de précision lui montre que vous analysez bien son CV." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "Oui, la boulangerie avait organisé une demi-journée d'initiation avec une entreprise externe il y a trois ou quatre ans.", score: 2 },
@@ -498,7 +501,7 @@
           ],
           D: [
             { condition: (c) => c >= 3, text: "Dès mon arrivée, je ferais le tour des températures des chambres froides, puis je vérifierais les dates des matières premières et l'état du matériel de façonnage. Mais je précise que chez Martin on gérait ça sans grille d'évaluation stricte. Il faudra sans doute que je m'habitue à vos propres fiches de traçabilité interne.", score: 4, cDelta: 1, feedback: "La mise en situation est idéale : Lucas se projette concrètement, liste ses priorités, et confesse de lui-même ce qu'il lui reste à apprendre." },
-            { condition: () => true, text: "Je vérifierais les températures, les dates et l'état des surfaces de travail. Après, chez Martin on faisait tout ça de tête, sans remplir de fiche de contrôle.", score: 4, feedback: "Il donne une réponse standard mais ne se livre pas trop sur la façon dont il pourra s'adapter, de peur d'être pénalisé." }
+            { condition: () => true, text: "Je vérifierais les températures, les dates et l'état des surfaces de travail. Après, chez Martin on faisait tout ça de tête, sans remplir de fiche de contrôle.", score: 4, cDelta: 1, feedback: "Excellente projection qui l'oblige à être honnête. Il se livre sur ses limites, ce qui prouve que la confiance s'installe à nouveau." }
           ]
         }
       },
@@ -517,7 +520,7 @@
           A: [
             { condition: (c) => c >= 4, text: "Oui, j'apprécie beaucoup ça. J'ai par exemple développé une nouvelle recette de pain aux céréales anciennes sur mon temps libre. Le patron n'avait rien demandé, mais je voulais valider la texture avant de lui en parler. Il a validé et on l'a mis en vente. Ça a eu un gros succès avec les restaurateurs du coin.", score: 3, cDelta: 1, setFlags: { mentionedCerealBread: true }, feedback: "L'excellente dynamique permet à Lucas de dévoiler une action d'intrapreneuriat valorisante qu'il a initiée lui-même." },
             { condition: (c) => c >= 2, text: "Je pense que oui. Par exemple, j'ai proposé de nouvelles recettes dans mon ancienne boulangerie, notamment un pain aux céréales anciennes qu'on a décidé de commercialiser par la suite.", score: 3, setFlags: { mentionedCerealBread: true } },
-            { condition: () => true, text: "Oui, je suis plutôt à l'aise pour proposer de nouvelles choses quand on m'en laisse l'occasion bien sûr.", score: 3 }
+            { condition: () => true, text: "Oui, je suis plutôt à l'aise pour proposer de nouvelles choses quand on m'en laisse l'occasion bien sûr.", score: 3, cDelta: 1, feedback: "Il tâte le terrain et reste sur la réserve, mais l'approche est bonne pour le décrisper." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "Des procédures écrites, non. Quand j'ai encadré l'apprenti, je lui ai fait une petite présentation orale pendant les premiers jours pour qu'il prenne ses marques au plus vite. Mais c'était informel. C'est vraiment quelque chose que vous mettez en place ici pour une équipe de six personnes ?", score: 0, cDelta: -1, feedback: "Lucas répond avec sincérité, mais sa question finale traduit son incompréhension face à ce qu'il juge être de la sur-administration." },
@@ -529,11 +532,11 @@
           ],
           D: [
             { condition: (c) => c >= 3, text: "Chez mon ancien patron, j'ai eu l'idée d'un pain aux farines anciennes, à base de petit épeautre. Il était très sceptique au départ sur la rentabilité de ce produit. J'ai peaufiné la recette chez moi le week-end et je lui ai fait goûter les résultats. En septembre, il a fini par l'intégrer, et des restaurants venaient spécifiquement pour l'acheter chez nous.", score: 4, cDelta: 1, setFlags: { mentionedCerealBread: true } },
-            { condition: () => true, text: "J'ai eu l'occasion de proposer le lancement d'un nouveau pain aux céréales anciennes pour renouveler notre gamme d'artisan.", score: 4 }
+            { condition: () => true, text: "J'ai eu l'occasion de proposer le lancement d'un nouveau pain aux céréales anciennes pour renouveler notre gamme d'artisan.", score: 4, cDelta: 1, feedback: "Lucas vous donne un exemple, sans trop s'étaler. La confiance grimpe grâce à cette question comportementale." }
           ],
           E: [
             { condition: (c) => c >= 3, text: "Je trouvais l'idée pertinente mais impossible à tester pendant le coup de feu quotidien. Je me suis donc servi de mon petit four personnel, à la maison, pour avancer sur ma recette tranquillement, sans risque financier pour le patron. Une fois satisfait, je lui ai présenté le produit fini pour validation.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "J'avais vraiment envie de vérifier la viabilité de mon idée sans faire prendre de risques inutiles à mon patron sur l'instant.", score: 4 }
+            { condition: () => true, text: "J'avais vraiment envie de vérifier la viabilité de mon idée sans faire prendre de risques inutiles à mon patron sur l'instant.", score: 4, cDelta: 1, feedback: "Superbe reformulation. Lucas est flatté et regagne en assurance." }
           ]
         }
       },
@@ -549,11 +552,11 @@
           A: [{ condition: () => true, text: "Oui… (Silence.) En boutique, on est constamment au contact de la clientèle, en particulier pour une petite affaire de quartier. On apprend vite à reconnaître les habitués et à anticiper leurs préférences. Ensuite, il y a l'aspect pédagogique avec l'apprenti où il faut user de beaucoup de patience, ou encore les rapports très rapides avec les livreurs. Globalement, je sais m'adapter à mes interlocuteurs.", score: 1, cDelta: 1, feedback: "Lucas s'efforce de donner une bonne réponse pour justifier un 'Oui', mais cela reste déclaratif car la question manquait de précision." }],
           B: [
             { condition: (c) => c >= 3, text: "Un matin, un client très régulier m'a pris à partie parce que son pain n'était pas assez cuit à son goût. Il n'avait pas tort, on avait eu un défaut technique au four. Je ne me suis pas défilé, je lui ai expliqué le souci, je me suis excusé et j'ai remplacé son pain. Il est revenu nous voir le lendemain. Être transparent et direct désamorce souvent les crises de ce genre.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "Une fois, un client s'est plaint de la cuisson de sa commande. Je lui ai expliqué le souci technique qu'on avait rencontré et je lui ai fait un échange standard. Il est reparti satisfait.", score: 4 }
+            { condition: () => true, text: "Une fois, un client s'est plaint de la cuisson de sa commande. Je lui ai expliqué le souci technique qu'on avait rencontré et je lui ai fait un échange standard. Il est reparti satisfait.", score: 4, cDelta: 1, feedback: "Un exemple classique, car il n'ose pas trop se mouiller. Mais la perche tendue aide à renouer le dialogue." }
           ],
           C: [
             { condition: (c) => c >= 3, text: "J'apprécie le contact humain et j'aime partager autour de mon métier. Même si la production demande de la concentration en solo, j'aimais beaucoup passer en boutique pour échanger avec les clients, ou encadrer mon apprenti en lui expliquant le sens de chaque étape.", score: 3 },
-            { condition: () => true, text: "J'apprécie le contact avec la clientèle et j'aime échanger sur mon métier avec le reste de l'équipe de production.", score: 3 }
+            { condition: () => true, text: "J'apprécie le contact avec la clientèle et j'aime échanger sur mon métier avec le reste de l'équipe de production.", score: 3, cDelta: 1, feedback: "Simple et courtois. La relation s'améliore lentement." }
           ],
           D: [{ condition: () => true, text: "Oui, je dirais que oui. Comme je vous le disais, dans ce métier on échange tous les matins avec des dizaines de personnes, donc il le faut bien au quotidien.", score: 0, cDelta: 1 }]
         }
@@ -569,15 +572,15 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "Principalement sur la gestion des températures, des grammages ou des temps de fermentation. Un degré d'écart ou dix minutes de pousse en moins peuvent ruiner le résultat de votre nuit de travail. Mon ancien patron savait qu'il pouvait me confier ça les yeux fermés sur ses jours de repos.", score: 3 },
-            { condition: () => true, text: "Je dirais que je suis rigoureux sur la fermentation et la cuisson. Ce sont ces petits détails chronométriques qui font tout le résultat à la fin.", score: 3 }
+            { condition: () => true, text: "Je dirais que je suis rigoureux sur la fermentation et la cuisson. Ce sont ces petits détails chronométriques qui font tout le résultat à la fin.", score: 3, cDelta: 1, feedback: "Bonne question. Lucas ne détaille pas outre mesure mais apprécie qu'on le lance sur son cœur de métier." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "Une nuit d'hiver plus fraîche que prévu a ralenti la fermentation du levain de façon inattendue. Plutôt que de suivre le chronomètre habituel, j'ai décidé de laisser quarante-cinq minutes de pousse supplémentaires. Le gérant était inquiet pour l'horaire d'ouverture, mais le goût et l'alvéolage du produit final étaient parfaits. C'est ce genre d'observation de la matière qui fait la différence.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "J'ai plusieurs fois pris la décision de rallonger des temps de pousse ou de cuisson pour rattraper une pâte capricieuse. Ça a toujours évité de mettre en rayon des produits de mauvaise qualité visuelle.", score: 4, feedback: "L'exemple factuel de Lucas manque d'une vraie profondeur technique parce que vous n'avez pas installé un climat assez engageant." }
+            { condition: () => true, text: "J'ai plusieurs fois pris la décision de rallonger des temps de pousse ou de cuisson pour rattraper une pâte capricieuse. Ça a toujours évité de mettre en rayon des produits de mauvaise qualité visuelle.", score: 4, cDelta: 1, feedback: "L'exemple manque d'une vraie profondeur technique parce que Lucas reste sur ses gardes, mais il regagne de la confiance." }
           ],
           C: [
             { condition: (c) => c >= 3, text: "C'est possible, oui. Il m'est arrivé de refaire intégralement une fournée car je trouvais que la couleur ou la croûte n'étaient pas au niveau de ce qu'on voulait vendre. Le patron assumait ma décision, mais je sais qu'en entreprise, bloquer la production pour des détails peut poser des soucis d'organisation. J'apprends encore à doser ce niveau d'exigence sans pénaliser les autres.", score: 4, cDelta: 1, setFlags: { mentionedPerfectionism: true }, feedback: "L'autocritique est d'une maturité rare. Lucas vous fait suffisamment confiance pour partager ce point très sincèrement." },
-            { condition: () => true, text: "J'ai déjà décidé de refaire des fournées complètes à cause d'un léger défaut de cuisson. J'en suis conscient et je sais que ça peut parfois ralentir la production globale du matin.", score: 4, feedback: "Lucas admet son défaut mais se préserve en limitant son explication, par manque de confiance." }
+            { condition: () => true, text: "J'ai déjà décidé de refaire des fournées complètes à cause d'un léger défaut de cuisson. J'en suis conscient et je sais que ça peut parfois ralentir la production globale du matin.", score: 4, cDelta: 1, feedback: "Lucas admet son défaut avec pudeur. Le fait d'accueillir ça sereinement restaure la confiance." }
           ],
           D: [
             { condition: (c) => c >= 4, text: "C'est un grand mot, mais oui, j'ai beaucoup de mal à mettre en vitrine un produit dont je ne suis pas fier. Cela m'a déjà poussé à refaire des fournées entières au dernier moment dans le doute. Je travaille beaucoup sur l'équilibre entre la qualité absolue et le respect strict du rythme de production pour le confort des autres salariés.", score: 2, cDelta: 1, setFlags: { mentionedPerfectionism: true } },
@@ -599,7 +602,7 @@
         responses: {
           A: [
             { condition: (c) => c >= 3, text: "C'est la vraie difficulté du métier. Honnêtement, je pense que je la mettrais en rayon quand même : proposer un pain un peu moins parfait vaut mieux que de ne rien avoir à vendre à la première vague de clients à 7h tapantes. Par contre, je prendrais note du réglage précis pour ajuster le tir dès la deuxième fournée de la matinée.", score: 4, cDelta: 1 },
-            { condition: () => true, text: "Je sortirais la fournée pour la vente pour ne pas ouvrir la vitrine vide, et j'ajusterais immédiatement le tir pour la production de la fournée suivante à l'arrière.", score: 4 }
+            { condition: () => true, text: "Je sortirais la fournée pour la vente pour ne pas ouvrir la vitrine vide, et j'ajusterais immédiatement le tir pour la production de la fournée suivante à l'arrière.", score: 4, cDelta: 1, feedback: "Lucas répond pragmatiquement. Le fait d'être placé dans une situation concrète le met en confiance." }
           ],
           B: [
             { condition: (c) => c >= 3, text: "En fait oui, j'aimerais bien qu'on aborde votre organisation du quotidien. Comment sont répartis les rôles ? Et je voulais aussi savoir si vous accueillez parfois des apprentis, parce que c'est un point qui a beaucoup de valeur à mes yeux.", score: 1, cDelta: 1, feedback: "Lucas utilise l'espace d'expression avec aisance. Cependant, clôturer l'entretien maintenant vous a empêché de creuser son plus gros 'défaut' présumé." },
@@ -608,11 +611,11 @@
           C: [{ condition: () => true, text: "Je comprends très bien cet enjeu économique. J'en ai parfaitement conscience lors de mes choix.", score: 0, cDelta: -2, feedback: "Lucas se ferme complètement et se braque face à la rigidité de votre remarque. Conseil : La bienveillance apporte toujours plus d'information que le jugement moral." }],
           D: [
             { condition: (c) => c >= 3, text: "Mon but est de définir à l'avance des marqueurs clairs de tolérance, de ce qui est vendable et ce qui ne l'est pas. S'il y a un compromis à faire, j'essaie de m'y tenir en bonne intelligence. C'est un équilibre que je continue de travailler avec l'expérience, je ne m'en cache pas.", score: 3 },
-            { condition: () => true, text: "J'essaie de faire bien attention à toujours respecter les délais pour ne pas retarder les autres salariés et l'ouverture du point de vente à l'heure.", score: 3 }
+            { condition: () => true, text: "J'essaie de faire bien attention à toujours respecter les délais pour ne pas retarder les autres salariés et l'ouverture du point de vente à l'heure.", score: 3, cDelta: 1, feedback: "L'angle de la question est ouvert et l'aide à rationaliser son défaut." }
           ],
           E: [
             { condition: (c) => c >= 3, text: "C'est exact, et ça a parfois mené à de vifs débats avec mon patron. Son objectif était d'avoir des vitrines pleines, et j'avais parfois trop le nez sur le produit fini. Nous avons donc passé un accord : je me fiais à son standard d'acceptabilité globale, et il respectait mes décisions de jeter un bac si je jugeais le produit vraiment hors normes. C'était un bon compromis pour travailler intelligemment tous les deux.", score: 4, cDelta: 1, feedback: "La reformulation empathique l'a encouragé à révéler toute l'intelligence sociale qu'il avait mise en place pour gérer ce défaut de perfectionnisme." },
-            { condition: () => true, text: "Oui, il fallait savoir en assumer les conséquences face à la direction quand les choses ne se passaient pas comme prévu.", score: 4 }
+            { condition: () => true, text: "Oui, il fallait savoir en assumer les conséquences face à la direction quand les choses ne se passaient pas comme prévu.", score: 4, cDelta: 1, feedback: "C'est une très belle façon de valider son vécu. Lucas se sent compris, la tension redescend fortement." }
           ]
         }
       },
@@ -639,7 +642,7 @@
           ],
           D: [
             { condition: (c) => c >= 3, text: "J'ai un fort besoin d'être dehors, ce qui me pousse à beaucoup pratiquer le trail pour l'effort solitaire. Sinon, je voue un réel intérêt pour la cuisine du monde et ses cultures. Analyser comment tel ou tel peuple s'approprie certaines céréales anciennes m'a d'ailleurs grandement aidé pour élargir mon spectre de farines utilisables en boulangerie tous les jours.", score: 4, cDelta: 1, feedback: "Le lien inattendu et très créatif entre sa pratique sportive/culinaire et son métier est dévoilé par Lucas sans qu'on le lui demande." },
-            { condition: () => true, text: "Ce qui me nourrit personnellement, ce sont mes sorties en trail dans la nature et la découverte de nouvelles approches culinaires chez moi.", score: 4 }
+            { condition: () => true, text: "Ce qui me nourrit personnellement, ce sont mes sorties en trail dans la nature et la découverte de nouvelles approches culinaires chez moi.", score: 4, cDelta: 1, feedback: "L'ouverture de la question lui permet de souffler en parlant de lui. La relation se réchauffe considérablement." }
           ]
         }
       },
@@ -659,7 +662,7 @@
           B: [
             { condition: (c) => c >= 4, text: "Je voulais surtout vous remercier, car nous avons pu aborder des éléments de fond sur ma vision de l'artisanat. J'ai une dernière question importante pour moi : seriez-vous ouverts à ce que je prenne rapidement le tutorat d'un apprenti au sein de votre équipe ?", score: 4, cDelta: 1, feedback: "Formidable dénouement. Lucas se sent assez en confiance pour exposer clairement sa véritable ambition d'avenir." },
             { condition: (c) => c >= 3, text: "Je tenais surtout à vous remercier. Si on ne l'a pas évoqué, sachez que je serais très motivé à l'idée d'importer ma recette de pain aux céréales anciennes dans vos rayons. Ce poste est bien plus pour moi qu'une simple opportunité, c'est l'idée que je me fais d'une belle boulangerie artisanale.", score: 4 },
-            { condition: () => true, text: "Je ne pense pas. J'ai pu exposer mes motivations principales, merci beaucoup de m'avoir reçu.", score: 4 }
+            { condition: () => true, text: "Je ne pense pas. J'ai pu exposer mes motivations principales, merci beaucoup de m'avoir reçu.", score: 4, cDelta: 1, feedback: "Lucas reste formel pour conclure par manque de confiance globale, mais cette main tendue de fin d'entretien est très appréciée." }
           ],
           C: [{ condition: () => true, text: "D'accord, très bien. Je vous remercie de votre temps et de votre accueil, au revoir.", score: 0, cDelta: -2, feedback: "Lucas s'en va. La froideur et la rapidité inattendue de cette conclusion abrupte l'ont laissé sur une impression particulièrement rude." }],
           D: [
@@ -738,7 +741,6 @@
 
       useEffect(() => {
         if (chatEndRef.current) {
-            // Un petit délai pour laisser le menu s'animer s'il vient de s'ouvrir
             setTimeout(() => {
                 chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }, 50);
@@ -801,7 +803,6 @@
           recruiterFollowUp: selectedOption.recruiterFollowUp || null
         };
 
-        // Calculate rewards (level up / badges)
         const newRewardsQueue = [];
         if (newConf >= 4 && prevConf < 4) {
           newRewardsQueue.push({ type: 'confidence', icon: '📈', title: "Confiance en hausse", text: "Vous avez su rassurer Lucas. Il va désormais s'ouvrir davantage et vous donner des réponses plus riches et détaillées." });
@@ -819,7 +820,6 @@
 
         const newlyUnlockedBadges = [];
         BADGES.forEach(b => {
-          // Don't trigger 'no_negative' mid-game
           if (b.id === 'no_negative') return; 
           if (!gameState.unlockedBadges.includes(b.id) && b.check(tempNewState)) {
             newlyUnlockedBadges.push(b.id);
@@ -841,14 +841,13 @@
           unlockedBadges: [...prev.unlockedBadges, ...newlyUnlockedBadges]
         }));
         
-        setIsMenuOpen(false); // Close menu to show feedback clearly
+        setIsMenuOpen(false);
       };
 
       const handleFeedbackContinue = () => {
         setFeedback(null);
         setSelectedOptionId("");
         if (pendingRewards.length > 0) {
-          // Modal will render next
           return;
         }
         checkFollowUpOrAdvance();
@@ -902,7 +901,6 @@
               isFinished: true,
               skippedRoundIds: [...prev.skippedRoundIds, ...newSkipped]
             };
-            // Check final end-game badges
             const finalBadges = [];
             BADGES.forEach(b => {
               if (!finalState.unlockedBadges.includes(b.id) && b.check(finalState)) {
@@ -1167,10 +1165,6 @@
                 <p className="text-xs text-stone-400 uppercase tracking-widest">Recrutement Boulanger</p>
               </div>
             </div>
-            <a href="https://1001parcours.cci.fr/experience/mod/page/view.php?id=1842" target="_blank" rel="noopener noreferrer"
-              className="text-xs font-medium text-stone-400 hover:text-stone-700 underline decoration-stone-200 underline-offset-4 transition-colors hidden md:block">
-              Revenir sur la plateforme 1001 Parcours
-            </a>
             <div className="flex items-center gap-5">
               <div className="relative group cursor-help">
                 <div className="flex items-center gap-3 bg-stone-50 border border-stone-100 rounded-xl px-4 py-2">
@@ -1437,7 +1431,7 @@
                                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5 ${
                                   selectedOptionId === option.id ? 'bg-stone-700 text-stone-200' : 'bg-stone-100 text-stone-500'
                                 }`}>{option.id}</span>
-                                <p className={`text-sm font-medium leading-snug pt-0.5 ${option.narrative ? 'italic text-stone-500' : ''}`}>{option.text}</p>
+                                <p className={`text-sm font-medium leading-snug pt-0.5 ${option.narrative ? 'italic' : ''} ${option.narrative ? (selectedOptionId === option.id ? 'text-stone-300' : 'text-stone-500') : 'text-stone-800'}`}>{option.text}</p>
                               </button>
                               {/* Disabled tooltip */}
                               {isDisabled && option.disabledReason && (

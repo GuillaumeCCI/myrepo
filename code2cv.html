@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formation au Recrutement</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;border:0 solid #e2e8f0}
+    *{margin:0}
+    html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:'DM Sans',sans-serif}
+    body{line-height:inherit;background:#f8fafc}
+    h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}
+    a{color:inherit;text-decoration:inherit}
+    b,strong{font-weight:bolder}
+    table{text-indent:0;border-color:inherit;border-collapse:collapse}
+    button,input,select,textarea{font-family:inherit;font-size:100%;line-height:inherit;color:inherit;margin:0;padding:0}
+    button,select{text-transform:none}
+    button,[type='button']{-webkit-appearance:button;background-color:transparent;background-image:none}
+    ol,ul,menu{list-style:none;margin:0;padding:0}
+    img,svg,video{display:block;vertical-align:middle;max-width:100%}
+    [hidden]{display:none}
+    .custom-scrollbar::-webkit-scrollbar{width:6px}
+    .custom-scrollbar::-webkit-scrollbar-track{background:#f1f5f9;border-radius:3px}
+    .custom-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+    .fade-in{animation:fadeIn .3s ease forwards}
+    .slide-up{animation:slideUp .3s ease forwards}
+    .card-hover{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+    .card-hover:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);border-color:#818cf8 !important}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    /* ── ICONS ────────────────────────────────────────────────────────────── */
+    const ArrowLeft = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
+    const ArrowRight = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6"/></svg>;
+    const CheckCircle2 = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
+    const XCircle = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
+    const Search = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+    const ClipboardList = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>;
+    const Lock = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+    const Check = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17 4 12"/></svg>;
+    const X = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+
+    /* ── DATA ─────────────────────────────────────────────────────────────── */
+    const questions = [
+      { id:1, block:1, blockTitle:"Bloc 1 : Les critères évidents (à repérer)", category:"Formation requise", criterion:"CAP / BEP Boulangerie minimum", expectedPresence:"Oui", highlightIds:['cv-cap'], acceptedIds:['cv-cap-l1'], feedback:{ success:"Le diplôme est explicitement mentionné dans la rubrique Formation. On coche ce critère.", errorPresence:"Regardez bien la rubrique Formation, le diplôme y figure en toutes lettres.", errorJustification:"Le diplôme est bien présent, mais vous n'avez pas sélectionné la ligne qui le prouve directement (le titre du diplôme)."}},
+      { id:2, block:1, blockTitle:"Bloc 1 : Les critères évidents (à repérer)", category:"Formation requise", criterion:"Expérience 2 ans minimum", expectedPresence:"Oui", highlightIds:['cv-profil','cv-chef','cv-exp2-title'], acceptedIds:['cv-exp1-l1','cv-exp2-l1'], multipleValidLocations:true, feedback:{ success:"L'introduction du profil mentionne clairement 8 ans d'expérience, ce qui est limpide et largement supérieur aux 2 ans requis.", errorPresence:"Lisez l'introduction du profil (tout en haut), son nombre d'années d'expérience y est indiqué clairement.", errorJustification:"L'expérience est bien là, mais la phrase d'introduction du profil est la preuve la plus directe et globale pour valider ce critère."}},
+      { id:3, block:1, blockTitle:"Bloc 1 : Les critères évidents (à repérer)", category:"Compétences transversales", criterion:"Normes hygiène & sécurité (HACCP)", expectedPresence:"Oui", highlightIds:['cv-haccp','cv-exp2-l5'], multipleValidLocations:true, feedback:{ success:"La mention est explicite dans sa dernière expérience. Le mot-clé HACCP est bien présent.", errorPresence:"Cherchez bien le sigle HACCP dans le texte, il y figure !", errorJustification:"C'est vrai qu'il parle d'hygiène ailleurs, mais il y a une ligne qui mentionne explicitement le sigle HACCP recherché."}},
+      { id:4, block:2, blockTitle:"Bloc 2 : Les critères à déduire (lecture attentive)", category:"Équipements & outils", criterion:"Four à sole / Four ventilé", expectedPresence:"Oui", highlightIds:['cv-four'], feedback:{ success:"Il fallait lire attentivement les puces de son expérience pour repérer l'utilisation spécifique du four à sole.", errorPresence:"Lisez le détail de ses missions à La Mie Dorée, l'équipement y est mentionné.", errorJustification:"Vous avez repéré qu'il cuisait, mais il faut sélectionner la ligne qui mentionne précisément le type de four."}},
+      { id:5, block:2, blockTitle:"Bloc 2 : Les critères à déduire (lecture attentive)", category:"Missions du service", criterion:"Gestion stocks matières premières", expectedPresence:"Oui", highlightIds:['cv-stocks','cv-exp2-l4'], multipleValidLocations:true, feedback:{ success:"Cette compétence est explicitement listée dans son expérience de Chef de production. Il fallait croiser un peu les termes.", errorPresence:"Regardez les tâches de gestion dans ses expériences, il s'occupe bien des stocks.", errorJustification:"Il y a une ligne qui reprend presque mot pour mot l'intitulé du critère, cherchez bien."}},
+      { id:6, block:2, blockTitle:"Bloc 2 : Les critères à déduire (lecture attentive)", category:"Formation requise", criterion:"Mention complémentaire (Boulangerie spécialisée, Pâtisserie...)", expectedPresence:"Oui", highlightIds:['cv-mc'], acceptedIds:['cv-mc-l1'], feedback:{ success:"La MC est bien présente dans la rubrique Formation. Il fallait identifier que 'MC' ou 'Mention complémentaire' correspondait.", errorPresence:"Regardez la rubrique Formation, il n'a pas qu'un CAP.", errorJustification:"Sélectionnez bien le titre du diplôme et non son descriptif."}},
+      { id:7, block:3, blockTitle:"Bloc 3 : Les critères à inférer (demande du jugement)", category:"Compétences comportementales", criterion:"Créativité", expectedPresence:"Oui", highlightIds:['cv-crea','cv-profil'], multipleValidLocations:true, feedback:{ success:"La mention 'Création de nouvelles recettes' démontre une maîtrise opérationnelle de cette compétence. C'est une preuve par l'action, bien plus forte que le simple mot 'Créatif' dans le profil.", errorPresence:"La créativité peut se déduire de ses actions concrètes. A-t-il inventé des choses ?", errorJustification:"Le mot 'Créatif' est bien dans son profil, mais en analyse de CV, on cherche des preuves factuelles : la création de recettes est la meilleure justification."}},
+      { id:8, block:3, blockTitle:"Bloc 3 : Les critères à inférer (demande du jugement)", category:"Compétences comportementales", criterion:"Autonomie / Sens de l'organisation", expectedPresence:"Oui", highlightIds:['cv-chef','cv-encadrement'], feedback:{ success:"Aucune mention littérale d'organisation dans les tâches, mais le poste de 'Chef de production' et l'encadrement d'un apprenti permettent de l'inférer solidement.", errorPresence:"Même si ce n'est pas écrit tel quel dans les tâches, son niveau de responsabilité le prouve.", errorJustification:"Le mot 'Autonome' est dans la liste de mots-clés, mais son titre de 'Chef de production' et ses responsabilités d'encadrement sont les vraies preuves tangibles."}},
+      { id:9, block:3, blockTitle:"Bloc 3 : Les critères à inférer (demande du jugement)", category:"Équipements & outils", criterion:"Diviseuse / Chambre de fermentation", expectedPresence:"Oui", highlightIds:['cv-diviseuse','cv-chambre'], feedback:{ success:"Il fallait croiser deux passages différents de son expérience au Fournil Saint-Pierre pour valider l'utilisation conjointe de ces deux équipements.", errorPresence:"Lisez bien le détail de sa deuxième expérience, les deux équipements y sont.", errorJustification:"Il fallait bien sélectionner l'option qui regroupe les preuves pour les DEUX équipements mentionnés dans le critère."}}
+    ];
+
+    const gridCriteria = [
+      { id:'m1', category:'Missions du service', label:'Pétrissage / Façonnage', correctKylian:'Partiellement', explanationKylian:"Il indique \"Aide au pétrissage et façonnage\", ce n'est pas une maîtrise complète en autonomie.", correctThomas:'Oui', highlightIds:['cv2-exp-1-petrissage','cv2-comp-petrissage'] },
+      { id:'m2', category:'Missions du service', label:'Cuisson pains & viennoiseries', correctKylian:'Partiellement', explanationKylian:"\"Participation à la cuisson\", il ne gère pas le poste seul.", correctThomas:'Oui', highlightIds:['cv2-exp-1-cuisson','cv2-comp-cuisson'] },
+      { id:'m3', category:'Missions du service', label:'Préparation pâtes levées / feuilletées', correctKylian:'Partiellement', explanationKylian:"Fait \"sous la supervision du chef\", donc pas autonome.", correctThomas:'Oui', highlightIds:['cv2-exp-1-pates'] },
+      { id:'m4', category:'Missions du service', label:'Contrôle qualité produits finis', correctKylian:'Non', explanationKylian:"Aucune mention de contrôle qualité dans son CV.", correctThomas:'Oui', highlightIds:[] },
+      { id:'m5', category:'Missions du service', label:'Gestion stocks matières premières', correctKylian:'Non', explanationKylian:"Aucune mention de gestion des stocks.", correctThomas:'Oui', highlightIds:[] },
+      { id:'m6', category:'Missions du service', label:'Inventaire / Nouvelles recettes', correctKylian:'Non', explanationKylian:"Aucune mention d'inventaire ou de création de recettes.", correctThomas:'Oui', highlightIds:[] },
+      { id:'e1', category:'Équipements & outils', label:'Four à sole / Four ventilé', correctKylian:'Partiellement', explanationKylian:"Il utilise un four ventilé, mais pas de four à sole, et seulement en \"participation\".", correctThomas:'Oui', highlightIds:['cv2-exp-1-cuisson','cv2-comp-cuisson'] },
+      { id:'e2', category:'Équipements & outils', label:'Pétrin mécanique / Façonneuse', correctKylian:'Partiellement', explanationKylian:"Déduit de \"Aide au pétrissage\", mais sans précision sur son autonomie avec les machines.", correctThomas:'Oui', highlightIds:['cv2-exp-1-petrissage','cv2-comp-petrissage'] },
+      { id:'e3', category:'Équipements & outils', label:'Diviseuse / Chambre de fermentation', correctKylian:'Non', explanationKylian:"Non mentionné.", correctThomas:'Oui', highlightIds:[] },
+      { id:'e4', category:'Équipements & outils', label:'Laminoir / Batteur', correctKylian:'Non', explanationKylian:"Non mentionné.", correctThomas:'Oui', highlightIds:[] },
+      { id:'t1', category:'Compétences transversales', label:'Normes hygiène & sécurité (HACCP)', correctKylian:'Non', explanationKylian:"Il indique \"hygiène de base\", ce n'est pas la certification ou maîtrise HACCP.", correctThomas:'Oui', highlightIds:['cv2-comp-hygiene','cv2-exp-1-nettoyage'] },
+      { id:'t2', category:'Compétences transversales', label:'Fermentation / Levains', correctKylian:'Non', explanationKylian:"Aucune mention de travail sur levain ou gestion de fermentation.", correctThomas:'Oui', highlightIds:[] },
+      { id:'t3', category:'Compétences transversales', label:'Chaîne du froid / Allergènes', correctKylian:'Non', explanationKylian:"Non mentionné.", correctThomas:'Oui', highlightIds:[] },
+      { id:'t4', category:'Compétences transversales', label:'Techniques de panification', correctKylian:'Partiellement', explanationKylian:"Il a les bases du CAP, mais pas une maîtrise avancée.", correctThomas:'Oui', highlightIds:['cv2-formation-cap','cv2-exp-1'] },
+      { id:'c1', category:'Compétences comportementales', label:'Rigueur / Ponctualité / Résistance physique', correctKylian:'Partiellement', explanationKylian:"Il se dit \"ponctuel\", mais pas de mention de rigueur ou résistance.", correctThomas:'Oui', highlightIds:['cv2-qualites','cv2-profil'] },
+      { id:'c2', category:'Compétences comportementales', label:'Créativité / Travail en équipe', correctKylian:'Partiellement', explanationKylian:"Travail en équipe mentionné, mais aucune créativité.", correctThomas:'Oui', highlightIds:['cv2-qualites','cv2-comp-equipe','cv2-profil'] },
+      { id:'c3', category:'Compétences comportementales', label:"Autonomie / Sens de l'organisation", correctKylian:'Non', explanationKylian:"Profil junior travaillant \"sous supervision\", l'autonomie n'est pas validée.", correctThomas:'Oui', highlightIds:['cv2-profil','cv2-exp-1-pates'] },
+      { id:'f1', category:'Formation requise', label:'CAP / BEP Boulangerie minimum', correctKylian:'Oui', explanationKylian:"Il a obtenu son CAP Boulanger.", correctThomas:'Oui', highlightIds:['cv2-formation-cap','cv2-profil'] },
+      { id:'f2', category:'Formation requise', label:'Mention complémentaire (Boulangerie spécialisée, Pâtisserie...)', correctKylian:'Non', explanationKylian:"Il n'a pas de mention complémentaire.", correctThomas:'Oui', highlightIds:['cv2-formation'] },
+      { id:'f3', category:'Formation requise', label:'Expérience 2 ans minimum', correctKylian:'Partiellement', explanationKylian:"Il a 2 ans d'apprentissage. Bien que formatrice, cette expérience n'équivaut pas à 2 ans en pleine autonomie. C'est un cas de jugement professionnel.", correctThomas:'Oui', highlightIds:['cv2-exp-1','cv2-profil'] },
+    ];
+
+    /* ── SHARED STYLE HELPERS ─────────────────────────────────────────────── */
+    const c = {
+      slate50:'#f8fafc', slate100:'#f1f5f9', slate200:'#e2e8f0', slate300:'#cbd5e1',
+      slate400:'#94a3b8', slate500:'#64748b', slate600:'#475569', slate700:'#334155', slate800:'#1e293b', slate900:'#0f172a',
+      indigo50:'#eef2ff', indigo100:'#e0e7ff', indigo200:'#c7d2fe', indigo300:'#a5b4fc',
+      indigo400:'#818cf8', indigo600:'#4f46e5', indigo700:'#4338ca', indigo800:'#3730a3',
+      emerald50:'#ecfdf5', emerald100:'#d1fae5', emerald200:'#a7f3d0', emerald300:'#6ee7b7',
+      emerald600:'#059669', emerald700:'#047857', emerald800:'#065f46',
+      rose50:'#fff1f2', rose100:'#ffe4e6', rose200:'#fecdd3',
+      rose600:'#e11d48', rose700:'#be123c', rose800:'#9f1239',
+      orange100:'#ffedd5', orange400:'#fb923c',
+      gray200:'#e5e7eb', gray300:'#d1d5db', gray400:'#9ca3af', gray500:'#6b7280',
+      gray600:'#4b5563', gray700:'#374151', gray800:'#1f2937', gray900:'#111827',
+    };
+    const shadow = {sm:'0 1px 2px rgba(0,0,0,.05)', md:'0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)', lg:'0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)'};
+
+    /* ── CV THOMAS ────────────────────────────────────────────────────────── */
+    function CV({ highlightIds=[], acceptedIds=[], selectedIds=[], onSelect, isSelectable=false, showCorrectHighlight=false }) {
+      useEffect(() => {
+        if (highlightIds.length > 0 && showCorrectHighlight) {
+          const el = document.getElementById(highlightIds[0]);
+          if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+        }
+      }, [highlightIds, showCorrectHighlight]);
+
+      const lineStyle = (id) => {
+        const canon = highlightIds.includes(id), acc = acceptedIds.includes(id), sel = selectedIds.includes(id);
+        const base = { transition:'all .3s ease', padding:'1px 4px', borderRadius:'4px', border:'1px solid transparent', display:'block' };
+        if (isSelectable && !showCorrectHighlight) base.cursor = 'pointer';
+        if (showCorrectHighlight) {
+          if (canon) return {...base, backgroundColor:c.emerald100, outline:`2px solid ${c.emerald600}`, outlineOffset:'-2px'};
+          if (sel && !canon && !acc) return {...base, backgroundColor:c.rose100, outline:`2px solid #fb7185`, outlineOffset:'-2px'};
+          if (sel && acc) return {...base, backgroundColor:c.emerald50, outline:`2px solid ${c.emerald300}`, outlineOffset:'-2px'};
+        } else if (sel) return {...base, backgroundColor:c.orange100, outline:`2px solid ${c.orange400}`, outlineOffset:'-2px'};
+        return base;
+      };
+      const rowStyle = (id) => ({...lineStyle(id), display:'flex', justifyContent:'space-between', alignItems:'baseline'});
+      const click = (e, id) => { e.stopPropagation(); if (isSelectable && onSelect) onSelect(id); };
+
+      const wrap = {backgroundColor:'#fff', padding:'2rem', borderRadius:'.75rem', maxWidth:'48rem', margin:'0 auto', fontSize:'.875rem', lineHeight:'1.625', border:`1px solid ${c.gray200}`, color:c.gray800};
+      const secTitle = {fontSize:'1rem', fontWeight:600, color:'#8B5A2B', borderBottom:'1px solid #8B5A2B', paddingBottom:'.25rem', marginBottom:'.5rem'};
+      const jTitle = {fontWeight:700, color:c.gray900};
+      const jSub = {fontWeight:400, color:c.gray500};
+      const date = {color:c.gray500, fontStyle:'italic', fontSize:'.75rem', whiteSpace:'nowrap', marginLeft:'.5rem'};
+      const ul = {listStyleType:'disc', listStylePosition:'inside', paddingLeft:'.5rem', marginTop:'.25rem'};
+
+      const rows1=[['cv-exp1-l1','Pétrissage et façonnage quotidien de 15 variétés de pains (tradition, campagne, spéciaux)'],['cv-exp1-l2','Gestion de la fermentation sur levain naturel et contrôle qualité produits finis'],['cv-four','Cuisson sur four à sole : maîtrise des températures et temps de cuisson'],['cv-exp1-l4','Préparation de viennoiseries (croissants, pains au chocolat, brioches)'],['cv-stocks','Gestion des stocks matières premières et commandes fournisseurs'],['cv-crea','Création de nouvelles recettes (pain aux noix bio, focaccia, pain nordique)'],['cv-encadrement',"Encadrement d'un apprenti et formation aux techniques de panification"],['cv-haccp','Respect strict des normes HACCP, chaîne du froid et traçabilité allergènes']];
+      const rows2=[['cv-exp2-l1','Fabrication de pains classiques et spéciaux conformément aux fiches techniques'],['cv-diviseuse','Utilisation quotidienne du pétrin mécanique, façonneuse, diviseuse et laminoir'],['cv-chambre','Suivi de la chambre de fermentation et gestion des températures'],['cv-exp2-l4','Réception, contrôle et stockage des matières premières'],['cv-exp2-l5',"Application rigoureuse des règles d'hygiène et de sécurité alimentaire"],['cv-exp2-l6','Inventaire mensuel et gestion des DLC']];
+      const comps=[['cv-comp-1','Pétrissage / Façonnage','●●●●●'],['cv-comp-2','Fermentation / Levains','●●●●●'],['cv-comp-3','Cuisson four à sole & ventilé','●●●●●'],['cv-comp-4','Normes HACCP / Hygiène','●●●●●'],['cv-comp-5','Pâtisserie boulangère','●●●●○'],['cv-comp-6','Gestion stocks / Inventaire','●●●●○'],['cv-comp-7','Création recettes','●●●●○'],['cv-comp-8','Chaîne du froid / Allergènes','●●●●●'],['cv-comp-9','Équipements (laminoir, diviseuse...)','●●●●●'],['cv-comp-10','Encadrement équipe','●●●○○']];
+
+      return (
+        <div style={wrap}>
+          <div style={{marginBottom:'1.5rem'}}>
+            <h1 style={{fontSize:'1.875rem', fontWeight:700, color:c.gray900, marginBottom:'.25rem'}}>Thomas Durand</h1>
+            <h2 style={{fontSize:'1.125rem', color:'#8B5A2B', marginBottom:'.5rem'}}>Boulanger qualifié</h2>
+            <p style={{fontSize:'.75rem', color:c.gray500}}>06 12 34 56 78 | t.durand@email.com | 12 rue des Boulangers, 30000 Nîmes | Permis B, véhicule</p>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Profil</h3>
+            <p id="cv-profil" style={lineStyle('cv-profil')} onClick={e=>click(e,'cv-profil')}>Boulanger passionné avec 8 ans d'expérience en boulangerie artisanale et traditionnelle. Maîtrise complète du processus de panification, de la fermentation au levain naturel à la cuisson sur sole. Créatif et rigoureux, habitué au travail en équipe et aux horaires décalés. Certifié HACCP.</p>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Expérience professionnelle</h3>
+            <div style={{marginBottom:'1rem'}}>
+              <div id="cv-chef" style={rowStyle('cv-chef')} onClick={e=>click(e,'cv-chef')}>
+                <span style={jTitle}>Boulanger – Chef de production <span style={jSub}>| La Mie Dorée, Nîmes</span></span>
+                <span style={date}>sept. 2019 – ce jour</span>
+              </div>
+              <ul style={ul}>{rows1.map(([id,t])=><li key={id} id={id} style={{...lineStyle(id), marginBottom:'.1rem'}} onClick={e=>click(e,id)}>{t}</li>)}</ul>
+            </div>
+            <div>
+              <div id="cv-exp2-title" style={rowStyle('cv-exp2-title')} onClick={e=>click(e,'cv-exp2-title')}>
+                <span style={jTitle}>Boulanger <span style={jSub}>| Fournil Saint-Pierre, Montpellier</span></span>
+                <span style={date}>sept. 2016 – août 2019</span>
+              </div>
+              <ul style={ul}>{rows2.map(([id,t])=><li key={id} id={id} style={{...lineStyle(id), marginBottom:'.1rem'}} onClick={e=>click(e,id)}>{t}</li>)}</ul>
+            </div>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Formation</h3>
+            <div id="cv-mc" style={{...lineStyle('cv-mc'), marginBottom:'.75rem'}} onClick={e=>click(e,'cv-mc')}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'.25rem'}}>
+                <span style={jTitle}>Mention complémentaire Boulangerie spécialisée <span style={jSub}>| CFA, Nîmes</span></span>
+                <span style={date}>2015 – 2016</span>
+              </div>
+              <ul style={ul}><li id="cv-mc-l1" style={lineStyle('cv-mc-l1')} onClick={e=>click(e,'cv-mc-l1')}>Spécialisation levains, pains bio et techniques artisanales avancées</li></ul>
+            </div>
+            <div id="cv-cap" style={lineStyle('cv-cap')} onClick={e=>click(e,'cv-cap')}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'.25rem'}}>
+                <span style={jTitle}>CAP Boulanger <span style={jSub}>| CFA des Métiers de Bouche, Montpellier</span></span>
+                <span style={date}>2013 – 2015</span>
+              </div>
+              <ul style={ul}><li id="cv-cap-l1" style={lineStyle('cv-cap-l1')} onClick={e=>click(e,'cv-cap-l1')}>Formation complète aux techniques de boulangerie : pétrissage, fermentation, cuisson</li></ul>
+            </div>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Compétences</h3>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', columnGap:'2rem', rowGap:'.5rem'}}>
+              {comps.map(([id,label,dots])=>(
+                <div key={id} id={id} style={{...lineStyle(id), display:'flex', justifyContent:'space-between'}} onClick={e=>click(e,id)}>
+                  <span>{label}</span><span style={{color:'#8B5A2B'}}>{dots}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Qualités</h3>
+            <p id="cv-qualites" style={lineStyle('cv-qualites')} onClick={e=>click(e,'cv-qualites')}>Rigoureux • Ponctuel • Résistant physiquement • Créatif • Autonome • Esprit d'équipe</p>
+          </div>
+          <div>
+            <h3 style={secTitle}>Centres d'intérêt</h3>
+            <p id="cv-interets" style={lineStyle('cv-interets')} onClick={e=>click(e,'cv-interets')}>Randonnée • Cuisine du monde • Course à pied</p>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── CV KYLIAN ────────────────────────────────────────────────────────── */
+    function CV2({ highlightIds=[] }) {
+      useEffect(() => {
+        if (highlightIds.length > 0) {
+          const el = document.getElementById(highlightIds[0]);
+          if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+        }
+      }, [highlightIds]);
+
+      const hl = id => highlightIds.includes(id)
+        ? {backgroundColor:c.indigo100, outline:`2px solid ${c.indigo400}`, outlineOffset:'-2px', borderRadius:'4px', padding:'1px 4px', transition:'all .5s ease', display:'block'}
+        : {transition:'all .5s ease', padding:'1px 4px', borderRadius:'4px', border:'1px solid transparent', display:'block'};
+
+      const wrap = {backgroundColor:'#fff', padding:'2rem', borderRadius:'.75rem', maxWidth:'48rem', margin:'0 auto', fontSize:'.875rem', lineHeight:'1.625', border:`1px solid ${c.gray200}`, color:c.gray800};
+      const secTitle = {fontSize:'1rem', fontWeight:600, color:'#4A6082', borderBottom:'1px solid #4A6082', paddingBottom:'.25rem', marginBottom:'.5rem'};
+      const jTitle = {fontWeight:700, color:c.gray900};
+      const jSub = {fontWeight:400, color:c.gray500};
+      const date = {color:c.gray500, fontStyle:'italic', fontSize:'.75rem', whiteSpace:'nowrap', marginLeft:'.5rem'};
+      const ul = {listStyleType:'disc', listStylePosition:'inside', paddingLeft:'.5rem', marginTop:'.25rem'};
+      const rows=[['cv2-exp-1-petrissage','Aide au pétrissage et façonnage des pains classiques (baguettes, pains blancs)'],['cv2-exp-1-cuisson','Participation à la cuisson des pains dans un four ventilé'],['cv2-exp-1-pates','Préparation des pâtes levées sous la supervision du chef boulanger'],['cv2-exp-1-nettoyage','Nettoyage quotidien du matériel et du plan de travail'],['cv2-exp-1-rayon','Mise en rayon des produits et accueil occasionnel des clients']];
+      const comps=[['cv2-comp-petrissage','Pétrissage / Façonnage','●●●○○'],['cv2-comp-cuisson','Cuisson four ventilé','●●○○○'],['cv2-comp-hygiene','Normes hygiène de base','●●●○○'],['cv2-comp-equipe','Travail en équipe','●●●●○']];
+
+      return (
+        <div style={wrap}>
+          <div style={{marginBottom:'1.5rem'}}>
+            <h1 style={{fontSize:'1.875rem', fontWeight:700, color:c.gray900, marginBottom:'.25rem'}}>Kylian Morel</h1>
+            <h2 style={{fontSize:'1.125rem', color:'#4A6082', marginBottom:'.5rem'}}>Apprenti Boulanger / Jeune diplômé</h2>
+            <p style={{fontSize:'.75rem', color:c.gray500}}>07 89 10 11 12 | k.morel@email.com | 45 avenue des Lilas, 34000 Montpellier</p>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Profil</h3>
+            <p id="cv2-profil" style={hl('cv2-profil')}>Jeune boulanger motivé, récemment diplômé du CAP. J'ai effectué mon apprentissage de 2 ans dans une boulangerie de quartier où j'ai pu découvrir les bases du métier. Je suis ponctuel, j'aime le travail en équipe et je souhaite développer mes compétences pour devenir autonome.</p>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Expérience professionnelle</h3>
+            <div id="cv2-exp-1" style={{...hl('cv2-exp-1'), marginBottom:'1rem'}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'.25rem'}}>
+                <span style={jTitle}>Apprenti Boulanger <span style={jSub}>| Boulangerie "Au Bon Pain", Lattes</span></span>
+                <span style={date}>sept. 2021 – juil. 2023</span>
+              </div>
+              <ul style={ul}>{rows.map(([id,t])=><li key={id} id={id} style={{...hl(id), marginBottom:'.1rem'}}>{t}</li>)}</ul>
+            </div>
+          </div>
+          <div id="cv2-formation" style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Formation</h3>
+            <div id="cv2-formation-cap" style={{...hl('cv2-formation-cap'), marginBottom:'.75rem'}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'.25rem'}}>
+                <span style={jTitle}>CAP Boulanger <span style={jSub}>| CFA des Métiers de Bouche, Montpellier</span></span>
+                <span style={date}>2021 – 2023</span>
+              </div>
+              <ul style={ul}><li>Apprentissage des bases de la boulangerie</li></ul>
+            </div>
+          </div>
+          <div style={{marginBottom:'1.25rem'}}>
+            <h3 style={secTitle}>Compétences</h3>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', columnGap:'2rem', rowGap:'.5rem'}}>
+              {comps.map(([id,label,dots])=>(
+                <div key={id} id={id} style={{...hl(id), display:'flex', justifyContent:'space-between'}}>
+                  <span>{label}</span><span style={{color:'#4A6082'}}>{dots}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 style={secTitle}>Qualités</h3>
+            <p id="cv2-qualites" style={hl('cv2-qualites')}>Ponctuel • Volontaire • Esprit d'équipe • Curieux</p>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── QUIZ ─────────────────────────────────────────────────────────────── */
+    function Quiz({ question, totalQuestions, currentIndex, onNext, onFeedbackChange, selectedLineIds }) {
+      const [presence, setPresence] = useState(null);
+      const [showFeedback, setShowFeedback] = useState(false);
+      useEffect(() => { setPresence(null); setShowFeedback(false); }, [question.id]);
+
+      const needsJustif = presence === 'Oui' || presence === 'Partiellement';
+      const canValidate = presence === 'Non' || (needsJustif && selectedLineIds.length > 0);
+
+      const validate = () => { setShowFeedback(true); onFeedbackChange(true); };
+      const next = () => { setPresence(null); setShowFeedback(false); onFeedbackChange(false); onNext(); };
+
+      let isCorrect=false, feedbackText='', partial=false;
+      if (showFeedback) {
+        if (presence === question.expectedPresence) {
+          if (presence === 'Non') { isCorrect=true; feedbackText=question.feedback.success; }
+          else {
+            const ok = selectedLineIds.some(id => question.highlightIds.includes(id)||(question.acceptedIds?.includes(id)));
+            const bad = selectedLineIds.some(id => !question.highlightIds.includes(id)&&!(question.acceptedIds?.includes(id)));
+            if (ok) { isCorrect=true; partial=bad; feedbackText=bad?question.feedback.success+" Attention cependant, vous avez aussi sélectionné des éléments qui ne justifient pas ce critère.":question.feedback.success; }
+            else feedbackText=question.feedback.errorJustification;
+          }
+        } else feedbackText=question.feedback.errorPresence;
+      }
+
+      const card = {backgroundColor:'#fff', borderRadius:'1rem', boxShadow:shadow.sm, border:`1px solid ${c.slate200}`, overflow:'hidden', display:'flex', flexDirection:'column'};
+      const presBtn = (p) => ({flex:1, padding:'.75rem 1rem', borderRadius:'.75rem', border:`2px solid ${presence===p?c.indigo600:c.slate200}`, fontWeight:500, fontSize:'.875rem', cursor:showFeedback?'default':'pointer', backgroundColor:presence===p?c.indigo50:'#fff', color:presence===p?c.indigo700:c.slate600, opacity:showFeedback?.75:1, transition:'all .15s ease'});
+
+      return (
+        <div style={card}>
+          <div style={{padding:'1.5rem', borderBottom:`1px solid ${c.slate200}`}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem'}}>
+              <span style={{fontSize:'.75rem', fontWeight:700, color:c.slate400, textTransform:'uppercase', letterSpacing:'.1em'}}>Critère {currentIndex+1} sur {totalQuestions}</span>
+              <span style={{padding:'.2rem .75rem', backgroundColor:c.indigo100, color:c.indigo700, fontSize:'.75rem', fontWeight:600, borderRadius:'9999px'}}>{question.category}</span>
+            </div>
+            <div style={{backgroundColor:c.indigo600, borderRadius:'.75rem', padding:'1rem', border:`1px solid ${c.indigo700}`}}>
+              <p style={{color:c.indigo300, fontSize:'.75rem', marginBottom:'.25rem', fontWeight:500}}>{question.blockTitle}</p>
+              <h2 style={{fontSize:'1.2rem', fontWeight:700, color:'#fff', lineHeight:'1.3'}}>{question.criterion}</h2>
+            </div>
+          </div>
+          <div style={{padding:'1.5rem', flex:1}}>
+            <h3 style={{fontSize:'.95rem', fontWeight:600, color:c.slate800, marginBottom:'.75rem'}}>1. Ce critère est-il présent dans le CV ?</h3>
+            <div style={{display:'flex', gap:'.75rem', marginBottom:'1.25rem'}}>
+              {['Oui','Partiellement','Non'].map(p=><button key={p} onClick={()=>!showFeedback&&setPresence(p)} disabled={showFeedback} style={presBtn(p)}>{p}</button>)}
+            </div>
+            {needsJustif && !showFeedback && (
+              <div className="fade-in" style={{marginBottom:'1.25rem'}}>
+                <h3 style={{fontSize:'.95rem', fontWeight:600, color:c.slate800, marginBottom:'.75rem'}}>2. Où exactement ?</h3>
+                <div style={{padding:'1rem', borderRadius:'.75rem', border:`2px ${selectedLineIds.length>0?'solid '+c.indigo200:'dashed '+c.slate200}`, backgroundColor:selectedLineIds.length>0?c.indigo50:c.slate50}}>
+                  <p style={{fontWeight:500, fontSize:'.875rem', color:selectedLineIds.length>0?c.indigo800:c.slate600}}>Sélectionnez la ou les lignes du CV qui le justifient.</p>
+                  {selectedLineIds.length>0
+                    ?<p style={{fontSize:'.75rem', marginTop:'.5rem', color:c.indigo600, display:'flex', alignItems:'center', gap:'.25rem'}}><CheckCircle2 size={14}/> {selectedLineIds.length} ligne{selectedLineIds.length>1?'s':''} sélectionnée{selectedLineIds.length>1?'s':''}</p>
+                    :<p style={{fontSize:'.75rem', marginTop:'.5rem', color:c.slate400, fontStyle:'italic'}}>Cliquez sur un ou plusieurs éléments dans le CV à gauche...</p>
+                  }
+                </div>
+              </div>
+            )}
+            {showFeedback && (
+              <div className="slide-up" style={{padding:'1.25rem', borderRadius:'1rem', border:`2px solid ${isCorrect?c.emerald200:c.rose200}`, backgroundColor:isCorrect?c.emerald50:c.rose50}}>
+                <div style={{display:'flex', alignItems:'flex-start', gap:'.75rem'}}>
+                  <div style={{padding:'.5rem', borderRadius:'9999px', flexShrink:0, backgroundColor:isCorrect?c.emerald100:c.rose100, color:isCorrect?c.emerald600:c.rose600}}>
+                    {isCorrect?<CheckCircle2 size={20}/>:<XCircle size={20}/>}
+                  </div>
+                  <div>
+                    <h3 style={{fontSize:'1.05rem', fontWeight:700, marginBottom:'.25rem', color:isCorrect?c.emerald800:c.rose800}}>{isCorrect?(partial?'Correct, mais attention !':'Correct !'):'Pas tout à fait...'}</h3>
+                    <p style={{fontSize:'.875rem', lineHeight:'1.625', color:isCorrect?c.emerald700:c.rose700}}>{feedbackText}</p>
+                    {question.multipleValidLocations && question.expectedPresence !== 'Non' && (
+                      <div style={{marginTop:'.75rem', padding:'.625rem', borderRadius:'.5rem', fontSize:'.75rem', fontWeight:500, display:'flex', gap:'.5rem', backgroundColor:isCorrect?'rgba(209,250,229,.5)':'rgba(255,228,230,.5)', color:isCorrect?c.emerald800:c.rose800}}>
+                        <span>💡</span><p>Plusieurs éléments du CV permettent de valider ce critère (tous encadrés en vert).</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div style={{padding:'1.25rem', borderTop:`1px solid ${c.slate200}`, backgroundColor:c.slate50}}>
+            {!showFeedback
+              ?<button onClick={validate} disabled={!canValidate} style={{width:'100%', padding:'.875rem', borderRadius:'.75rem', fontWeight:700, fontSize:'1rem', border:'none', cursor:canValidate?'pointer':'not-allowed', backgroundColor:canValidate?c.indigo600:c.slate200, color:canValidate?'#fff':c.slate400, boxShadow:canValidate?shadow.sm:'none', transition:'all .15s ease'}}>Valider ma réponse</button>
+              :<button onClick={next} style={{width:'100%', padding:'.875rem', borderRadius:'.75rem', fontWeight:700, fontSize:'1rem', border:'none', cursor:'pointer', backgroundColor:c.slate900, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', gap:'.5rem', transition:'all .15s ease'}}>
+                {currentIndex<totalQuestions-1?'Critère suivant':"Terminer l'activité"}<ArrowRight size={18}/>
+              </button>
+            }
+          </div>
+        </div>
+      );
+    }
+
+    /* ── GRID EXERCISE ────────────────────────────────────────────────────── */
+    function GridExercise({ onFinish, onHighlight }) {
+      const [answers, setAnswers] = useState({});
+      const [showResults, setShowResults] = useState(false);
+      const [compareThomas, setCompareThomas] = useState(false);
+      const [selId, setSelId] = useState(null);
+      const cats = [...new Set(gridCriteria.map(g=>g.category))];
+      const isComplete = gridCriteria.every(g=>answers[g.id]!==undefined);
+      const score = gridCriteria.filter(g=>answers[g.id]===g.correctKylian).length;
+
+      const clickRow = g => { setSelId(g.id); onHighlight(g.highlightIds||[]); };
+      const card = {backgroundColor:'#fff', borderRadius:'1rem', boxShadow:shadow.sm, border:`1px solid ${c.slate200}`, overflow:'hidden', display:'flex', flexDirection:'column'};
+      const th = {padding:'.75rem', fontSize:'.75rem', fontWeight:600, color:c.slate500, textTransform:'uppercase', letterSpacing:'.05em', borderBottom:`1px solid ${c.slate200}`};
+
+      if (showResults) return (
+        <div style={card}>
+          <div style={{backgroundColor:c.slate50, borderBottom:`1px solid ${c.slate200}`, padding:'1.25rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:10}}>
+            <div>
+              <h2 style={{fontSize:'1.25rem', fontWeight:700, color:c.slate900}}>Résultats de l'évaluation</h2>
+              <p style={{fontSize:'.875rem', color:c.slate500, marginTop:'.2rem'}}>Score : <strong style={{color:c.indigo600}}>{score} / {gridCriteria.length}</strong> critères correctement évalués</p>
+              <p style={{fontSize:'.75rem', color:c.slate400, marginTop:'.1rem', fontStyle:'italic'}}>Cliquez sur un critère pour voir la justification dans le CV.</p>
+            </div>
+            <label style={{display:'flex', alignItems:'center', gap:'.5rem', cursor:'pointer', backgroundColor:'#fff', padding:'.5rem .75rem', borderRadius:'.5rem', border:`1px solid ${c.slate200}`, boxShadow:shadow.sm}}>
+              <input type="checkbox" checked={compareThomas} onChange={e=>setCompareThomas(e.target.checked)} style={{accentColor:c.indigo600, width:'16px', height:'16px'}}/>
+              <span style={{fontSize:'.75rem', fontWeight:500, color:c.slate700}}>Comparer avec Thomas</span>
+            </label>
+          </div>
+          <div style={{overflowX:'auto', flex:1}} className="custom-scrollbar">
+            <table style={{width:'100%', borderCollapse:'collapse', textAlign:'left'}}>
+              <thead><tr style={{backgroundColor:'#fff'}}>
+                <th style={{...th, width:'35%'}}>Critère</th>
+                <th style={{...th, textAlign:'center'}}>Votre réponse</th>
+                <th style={{...th, textAlign:'center'}}>Attendu</th>
+                {compareThomas && <th style={{...th, textAlign:'center', backgroundColor:'rgba(248,250,252,.5)'}}>Thomas</th>}
+                <th style={th}>Explication</th>
+              </tr></thead>
+              <tbody>
+                {cats.map(cat=>(
+                  <React.Fragment key={cat}>
+                    <tr style={{backgroundColor:c.slate100}}><td colSpan={compareThomas?5:4} style={{padding:'.45rem .75rem', fontWeight:700, color:c.slate700, borderTop:`1px solid ${c.slate200}`, borderBottom:`1px solid ${c.slate200}`, fontSize:'.75rem', textTransform:'uppercase', letterSpacing:'.05em'}}>{cat}</td></tr>
+                    {gridCriteria.filter(g=>g.category===cat).map(g=>{
+                      const ok=answers[g.id]===g.correctKylian, isSel=selId===g.id;
+                      return(
+                        <tr key={g.id} onClick={()=>clickRow(g)} style={{borderBottom:`1px solid ${c.slate100}`, cursor:'pointer', transition:'background .15s', backgroundColor:isSel?c.indigo50:!ok?'rgba(255,241,242,.4)':'#fff'}}>
+                          <td style={{padding:'.75rem', fontSize:'.875rem', fontWeight:500, color:c.slate700}}>{g.label}</td>
+                          <td style={{padding:'.5rem', textAlign:'center'}}>
+                            <span style={{display:'inline-flex', alignItems:'center', gap:'.2rem', padding:'.2rem .6rem', borderRadius:'9999px', fontSize:'.75rem', fontWeight:700, backgroundColor:ok?c.emerald100:c.rose100, color:ok?c.emerald700:c.rose700}}>{answers[g.id]}{ok?<Check size={12}/>:<X size={12}/>}</span>
+                          </td>
+                          <td style={{padding:'.5rem', textAlign:'center'}}>
+                            <span style={{display:'inline-flex', alignItems:'center', padding:'.2rem .6rem', borderRadius:'9999px', fontSize:'.75rem', fontWeight:700, backgroundColor:c.slate100, color:c.slate700, border:`1px solid ${c.slate200}`}}>{g.correctKylian}</span>
+                          </td>
+                          {compareThomas&&<td style={{padding:'.5rem', textAlign:'center', backgroundColor:'rgba(248,250,252,.5)'}}>
+                            <span style={{display:'inline-flex', alignItems:'center', padding:'.2rem .6rem', borderRadius:'9999px', fontSize:'.75rem', fontWeight:700, backgroundColor:c.indigo50, color:c.indigo700, border:`1px solid ${c.indigo100}`}}>{g.correctThomas}</span>
+                          </td>}
+                          <td style={{padding:'.75rem', fontSize:'.75rem', color:c.slate600, lineHeight:'1.6'}}>{g.explanationKylian}</td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{padding:'1.25rem', borderTop:`1px solid ${c.slate200}`, backgroundColor:c.slate50}}>
+            <button onClick={onFinish} style={{width:'100%', padding:'.875rem', borderRadius:'.75rem', fontWeight:700, fontSize:'1rem', border:'none', cursor:'pointer', backgroundColor:c.indigo600, color:'#fff', boxShadow:shadow.sm, transition:'all .15s ease'}}>Retour à l'accueil</button>
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={card}>
+          <div style={{backgroundColor:c.slate50, borderBottom:`1px solid ${c.slate200}`, padding:'1.25rem 1.5rem'}}>
+            <h2 style={{fontSize:'1.25rem', fontWeight:700, color:c.slate900}}>Grille d'évaluation complète</h2>
+            <p style={{fontSize:'.875rem', color:c.slate500, marginTop:'.25rem'}}>Évaluez chaque critère pour Kylian Morel. Aucun feedback intermédiaire ne vous sera donné.</p>
+          </div>
+          <div style={{overflowX:'auto', flex:1}} className="custom-scrollbar">
+            <table style={{width:'100%', borderCollapse:'collapse', textAlign:'left'}}>
+              <thead><tr style={{backgroundColor:'#fff'}}>
+                <th style={{...th, width:'52%'}}>Critères d'évaluation</th>
+                {['Oui','Partiel.','Non'].map(h=><th key={h} style={{...th, textAlign:'center', width:'16%'}}>{h}</th>)}
+              </tr></thead>
+              <tbody>
+                {cats.map(cat=>(
+                  <React.Fragment key={cat}>
+                    <tr style={{backgroundColor:c.slate100}}><td colSpan={4} style={{padding:'.45rem 1rem', fontWeight:700, color:c.slate700, borderTop:`1px solid ${c.slate200}`, borderBottom:`1px solid ${c.slate200}`, fontSize:'.75rem', textTransform:'uppercase', letterSpacing:'.05em'}}>{cat}</td></tr>
+                    {gridCriteria.filter(g=>g.category===cat).map(g=>(
+                      <tr key={g.id} style={{borderBottom:`1px solid ${c.slate100}`}}>
+                        <td style={{padding:'1rem', fontSize:'.875rem', fontWeight:500, color:c.slate700}}>{g.label}</td>
+                        {['Oui','Partiellement','Non'].map(opt=>{
+                          const isSel=answers[g.id]===opt;
+                          return(
+                            <td key={opt} onClick={()=>setAnswers(p=>({...p,[g.id]:opt}))} style={{padding:0, textAlign:'center', cursor:'pointer', backgroundColor:isSel?`rgba(238,242,255,.5)`:'transparent', borderLeft:`1px solid ${c.slate100}`, transition:'background .15s ease'}}>
+                              <div style={{display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem'}}>
+                                <div style={{width:'20px', height:'20px', borderRadius:'9999px', border:`2px solid ${isSel?c.indigo600:c.slate300}`, backgroundColor:isSel?c.indigo600:'#fff', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .15s ease'}}>
+                                  {isSel&&<div style={{width:'8px', height:'8px', backgroundColor:'#fff', borderRadius:'9999px'}}/>}
+                                </div>
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{padding:'1.25rem', borderTop:`1px solid ${c.slate200}`, backgroundColor:c.slate50}}>
+            <button onClick={()=>setShowResults(true)} disabled={!isComplete} style={{width:'100%', padding:'.875rem', borderRadius:'.75rem', fontWeight:700, fontSize:'1rem', border:'none', cursor:isComplete?'pointer':'not-allowed', backgroundColor:isComplete?c.indigo600:c.slate200, color:isComplete?'#fff':c.slate400, boxShadow:isComplete?shadow.sm:'none', transition:'all .15s ease', display:'flex', alignItems:'center', justifyContent:'center', gap:'.5rem'}}>
+              {isComplete?'Valider mon évaluation':'Remplissez tous les critères pour valider'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── APP ──────────────────────────────────────────────────────────────── */
+    function App() {
+      const [view, setView] = useState('home');
+      const [qIndex, setQIndex] = useState(0);
+      const [finished, setFinished] = useState(false);
+      const [ex1Done, setEx1Done] = useState(false);
+      const [feedbackShown, setFeedbackShown] = useState(false);
+      const [hlCV2, setHlCV2] = useState([]);
+      const [selLines, setSelLines] = useState([]);
+
+      const goNext = () => { setSelLines([]); if(qIndex<questions.length-1)setQIndex(qIndex+1); else{setFinished(true);setEx1Done(true);} };
+
+      const header = (title, sub, onBack, right=null) => (
+        <header style={{backgroundColor:'#fff', boxShadow:shadow.sm, borderBottom:`1px solid ${c.slate200}`, padding:'.75rem 1.5rem', position:'sticky', top:0, zIndex:20}}>
+          <div style={{maxWidth:'1600px', margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <div style={{display:'flex', alignItems:'center', gap:'.75rem'}}>
+              <button onClick={onBack} style={{padding:'.5rem', borderRadius:'.5rem', color:c.slate500, border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'background .15s ease'}}><ArrowLeft size={22}/></button>
+              <div><h1 style={{fontSize:'1.1rem', fontWeight:700, color:c.slate900}}>{title}</h1><p style={{fontSize:'.75rem', color:c.slate500}}>{sub}</p></div>
+            </div>
+            {right}
+          </div>
+        </header>
+      );
+
+      const cvPanel = (label, children) => (
+        <div style={{position:'sticky', top:'5rem', overflowY:'auto', borderRadius:'1rem', border:`1px solid ${c.slate200}`, backgroundColor:'#fff', maxHeight:'calc(100vh - 6rem)'}} className="custom-scrollbar">
+          <div style={{padding:'.75rem 1rem', backgroundColor:c.slate50, borderBottom:`1px solid ${c.slate200}`, position:'sticky', top:0, zIndex:5}}>
+            <h2 style={{fontSize:'.7rem', fontWeight:700, color:c.slate600, textTransform:'uppercase', letterSpacing:'.1em'}}>{label}</h2>
+          </div>
+          <div style={{padding:'1rem'}}>{children}</div>
+        </div>
+      );
+
+      const twoCol = {maxWidth:'1600px', margin:'0 auto', display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1.5rem'};
+
+      /* HOME */
+      if (view === 'home') return (
+        <div style={{minHeight:'100vh', background:'linear-gradient(135deg,#f1f5f9,#eef2ff)', padding:'2rem', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', position:'relative'}}>
+          <div style={{position:'absolute', top:'2rem', left:'2rem'}}>
+            <a href="https://1001parcours.cci.fr/experience/mod/url/view.php?id=2080" target="_self" style={{display:'inline-flex', alignItems:'center', gap:'.5rem', padding:'.5rem 1rem', backgroundColor:'#fff', border:`1px solid ${c.slate200}`, borderRadius:'.5rem', color:c.slate600, fontSize:'.875rem', fontWeight:500, boxShadow:shadow.sm, transition:'all .15s ease'}}>
+              <ArrowLeft size={16}/> Revenir sur 1001 Parcours
+            </a>
+          </div>
+          <div style={{maxWidth:'64rem', width:'100%', marginTop:'4rem'}}>
+            <div style={{textAlign:'center', marginBottom:'3.5rem'}}>
+              <h1 style={{fontSize:'clamp(2rem,5vw,3rem)', fontWeight:700, color:c.slate900, marginBottom:'1rem', fontFamily:"'DM Serif Display',serif", letterSpacing:'-.025em'}}>Formation au Recrutement</h1>
+              <p style={{fontSize:'1.1rem', color:c.slate600, maxWidth:'42rem', margin:'0 auto', lineHeight:'1.625'}}>Bienvenue dans votre espace d'entraînement. Sélectionnez un module pour commencer à pratiquer la méthode d'évaluation.</p>
+            </div>
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))', gap:'2rem'}}>
+              {/* Card 1 */}
+              <button onClick={()=>setView('exercise1')} className="card-hover" style={{backgroundColor:'#fff', padding:'2.5rem', borderRadius:'1.5rem', border:`2px solid ${c.slate200}`, textAlign:'left', cursor:'pointer', display:'flex', flexDirection:'column', position:'relative', overflow:'hidden', boxShadow:shadow.sm}}>
+                {ex1Done&&<div style={{position:'absolute', top:'1.5rem', right:'1.5rem', backgroundColor:c.emerald100, color:c.emerald700, fontSize:'.75rem', fontWeight:700, padding:'.3rem .875rem', borderRadius:'9999px', display:'flex', alignItems:'center', gap:'.375rem'}}><CheckCircle2 size={14}/> Terminé</div>}
+                <div style={{width:'3.5rem', height:'3.5rem', backgroundColor:c.indigo100, color:c.indigo600, borderRadius:'.75rem', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'1.75rem'}}><Search size={28}/></div>
+                <h2 style={{fontSize:'1.4rem', fontWeight:700, color:c.slate900, marginBottom:'.75rem'}}>Partie 1 : Analyse de CV guidée</h2>
+                <p style={{color:c.slate500, lineHeight:'1.625', flex:1, fontSize:'.875rem', marginBottom:'2rem'}}>Apprenez la méthode d'analyse de CV par la pratique. Repérez les critères évidents, déduisez les compétences techniques et inférez les qualités comportementales.</p>
+                <div style={{color:c.indigo600, fontWeight:700, fontSize:'.875rem', display:'flex', alignItems:'center', gap:'.5rem'}}>{ex1Done?"Recommencer l'exercice":"Commencer l'exercice"} <ArrowRight size={18}/></div>
+              </button>
+              {/* Card 2 */}
+              <button onClick={()=>ex1Done&&setView('exercise2')} disabled={!ex1Done} className={ex1Done?'card-hover':''} style={{backgroundColor:'#fff', padding:'2.5rem', borderRadius:'1.5rem', border:`2px solid ${c.slate200}`, textAlign:'left', cursor:ex1Done?'pointer':'not-allowed', display:'flex', flexDirection:'column', position:'relative', overflow:'hidden', opacity:ex1Done?1:.8, boxShadow:shadow.sm}}>
+                {!ex1Done&&<div style={{position:'absolute', inset:0, backgroundColor:'rgba(248,250,252,.6)', backdropFilter:'blur(2px)', zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', borderRadius:'1.4rem'}}>
+                  <div style={{backgroundColor:'#fff', padding:'1rem', borderRadius:'9999px', boxShadow:shadow.md, marginBottom:'.75rem', color:c.slate400}}><Lock size={28}/></div>
+                  <p style={{color:c.slate500, fontWeight:500, padding:'0 1.5rem', textAlign:'center', fontSize:'.875rem'}}>Terminez la Partie 1 pour débloquer cet exercice.</p>
+                </div>}
+                <div style={{width:'3.5rem', height:'3.5rem', backgroundColor:ex1Done?c.indigo100:c.slate100, color:ex1Done?c.indigo600:c.slate400, borderRadius:'.75rem', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'1.75rem'}}><ClipboardList size={28}/></div>
+                <h2 style={{fontSize:'1.4rem', fontWeight:700, color:c.slate900, marginBottom:'.75rem'}}>Partie 2 : Évaluation en autonomie</h2>
+                <p style={{color:c.slate500, lineHeight:'1.625', flex:1, fontSize:'.875rem', marginBottom:'2rem'}}>L'évaluation finale, comme dans la vraie vie. Face à un profil junior et piégeux, remplissez la grille complète sans aide intermédiaire.</p>
+                <div style={{color:ex1Done?c.indigo600:c.slate400, fontWeight:700, fontSize:'.875rem', display:'flex', alignItems:'center', gap:'.5rem'}}>Commencer l'exercice <ArrowRight size={18}/></div>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      /* EXERCISE 1 */
+      if (view === 'exercise1') {
+        const q = questions[qIndex];
+        const dispHL = feedbackShown ? q.highlightIds : [];
+        const dispAcc = feedbackShown ? (q.acceptedIds||[]) : [];
+        return (
+          <div style={{minHeight:'100vh', backgroundColor:c.slate100, display:'flex', flexDirection:'column'}}>
+            {header('Partie 1 : Analyse de CV guidée','Repérez les critères dans le CV sans aide préalable.',()=>{setView('home');setQIndex(0);setFinished(false);},
+              <div style={{fontSize:'.75rem', fontWeight:500, color:c.slate500, backgroundColor:c.slate100, padding:'.5rem 1rem', borderRadius:'9999px'}}>Progression : {Math.min(qIndex+1,questions.length)} / {questions.length}</div>)}
+            <main style={{flex:1, padding:'1.5rem'}}>
+              <div style={twoCol}>
+                <div>{cvPanel('Document de référence — Thomas Durand',
+                  <CV highlightIds={dispHL} acceptedIds={dispAcc} selectedIds={selLines}
+                    onSelect={id=>setSelLines(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])}
+                    isSelectable={!feedbackShown} showCorrectHighlight={feedbackShown}/>
+                )}</div>
+                <div>
+                  {!finished
+                    ?<Quiz question={q} totalQuestions={questions.length} currentIndex={qIndex} onNext={goNext} onFeedbackChange={v=>{setFeedbackShown(v);if(!v)setSelLines([]);}} selectedLineIds={selLines}/>
+                    :<div className="fade-in" style={{backgroundColor:'#fff', borderRadius:'1rem', border:`1px solid ${c.slate200}`, padding:'3rem', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', boxShadow:shadow.sm}}>
+                      <div style={{width:'5rem', height:'5rem', backgroundColor:c.emerald100, color:c.emerald600, borderRadius:'9999px', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'1.25rem'}}><CheckCircle2 size={40}/></div>
+                      <h2 style={{fontSize:'1.5rem', fontWeight:700, color:c.slate900, marginBottom:'.75rem'}}>Activité terminée !</h2>
+                      <p style={{color:c.slate600, marginBottom:'1.75rem', maxWidth:'28rem', fontSize:'.875rem', lineHeight:'1.625'}}>Vous avez analysé avec succès le CV de Thomas Durand en repérant les critères évidents, ceux à déduire et ceux à inférer.</p>
+                      <div style={{display:'flex', gap:'.75rem'}}>
+                        <button onClick={()=>{setQIndex(0);setFinished(false);}} style={{padding:'.625rem 1.25rem', backgroundColor:c.indigo50, color:c.indigo700, borderRadius:'.75rem', fontWeight:700, border:'none', cursor:'pointer', fontSize:'.875rem'}}>Recommencer</button>
+                        <button onClick={()=>{setView('home');setQIndex(0);setFinished(false);}} style={{padding:'.625rem 1.25rem', backgroundColor:c.indigo600, color:'#fff', borderRadius:'.75rem', fontWeight:700, border:'none', cursor:'pointer', fontSize:'.875rem', boxShadow:shadow.sm}}>Retour à l'accueil</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </main>
+          </div>
+        );
+      }
+
+      /* EXERCISE 2 */
+      return (
+        <div style={{minHeight:'100vh', backgroundColor:c.slate100, display:'flex', flexDirection:'column'}}>
+          {header("Partie 2 : Évaluation en autonomie","Remplissez la grille complète pour ce profil junior.",()=>setView('home'))}
+          <main style={{flex:1, padding:'1.5rem'}}>
+            <div style={twoCol}>
+              <div>{cvPanel('Document de référence — Kylian Morel', <CV2 highlightIds={hlCV2}/>)}</div>
+              <div><GridExercise onFinish={()=>setView('home')} onHighlight={setHlCV2}/></div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

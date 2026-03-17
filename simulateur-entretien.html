@@ -733,6 +733,8 @@
 
     // ── getLucasImage helper ────────────────────────────────────────────────────
     function getLucasImage(history, confidence) {
+      // Avant toute réponse : Lucas debout
+      if (history.length === 0) return { src: 'lucas-debout.png', alt: 'Lucas debout, en attente' };
       // Count consecutive negative deltas at the end of history
       let consecutiveNegative = 0;
       for (let i = history.length - 1; i >= 0; i--) {

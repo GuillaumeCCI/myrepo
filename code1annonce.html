@@ -375,22 +375,28 @@ Le besoin est **immédiat mais stratégique** : renforcer l'équipe rapidement t
     '}',
     '#fs-btn:hover { background: rgba(79,70,229,0.95); transform: scale(1.08); }',
     '#fs-btn svg { width:20px; height:20px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }',
-    /* LMS banner */
-    '#fs-banner {',
-    '  position: fixed; top: 0; left: 0; right: 0; z-index: 99998;',
-    '  background: linear-gradient(90deg, #4f46e5, #7c3aed);',
+    /* Spotlight tooltip */
+    '#fs-tip {',
+    '  position: fixed; top: 64px; right: 16px; z-index: 99998;',
+    '  background: rgba(30,41,59,0.95); backdrop-filter: blur(8px);',
     '  color: #fff; font-family: system-ui, sans-serif; font-size: 13px;',
-    '  padding: 8px 16px; display: flex; align-items: center; gap: 10px;',
-    '  box-shadow: 0 2px 8px rgba(0,0,0,0.25);',
+    '  padding: 10px 14px; border-radius: 10px; max-width: 200px;',
+    '  box-shadow: 0 4px 16px rgba(0,0,0,0.3); line-height: 1.4;',
+    '  border: 1px solid rgba(255,255,255,0.1);',
+    '  animation: fs-tip-in 0.3s ease;',
     '}',
-    '#fs-banner button {',
-    '  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);',
-    '  color: #fff; border-radius: 6px; padding: 4px 12px; font-size: 12px;',
-    '  cursor: pointer; font-weight: 600; white-space: nowrap;',
+    '#fs-tip::before {',
+    '  content: \'\';',
+    '  position: absolute; top: -6px; right: 14px;',
+    '  width: 0; height: 0;',
+    '  border-left: 6px solid transparent;',
+    '  border-right: 6px solid transparent;',
+    '  border-bottom: 6px solid rgba(30,41,59,0.95);',
     '}',
-    '#fs-banner button:hover { background: rgba(255,255,255,0.35); }',
-    '#fs-banner .fs-close { margin-left: auto; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 16px; cursor: pointer; padding: 0 4px; }',
-    '.fs-active body { margin: 0; overflow: hidden; }'
+    '@keyframes fs-tip-in {',
+    '  from { opacity: 0; transform: translateY(-6px); }',
+    '  to   { opacity: 1; transform: translateY(0); }',
+    '}'
   ].join('');
   document.head.appendChild(style);
 
@@ -438,32 +444,18 @@ Le besoin est **immédiat mais stratégique** : renforcer l'équipe rapidement t
     }
   }
 
-  if (isInIframe()) {
-    var banner = document.createElement('div');
-    banner.id = 'fs-banner';
-    banner.innerHTML = [
-      '',
-      '<button id="fs-expand-btn">⛶ Ouvrir en plein écran</button>',
-      '<button class="fs-close" title="Fermer">✕</button>'
-    ].join('');
-
-    banner.querySelector('#fs-expand-btn').addEventListener('click', function() {
-      var p = requestFS(document.documentElement);
-      if (p && p.catch) {
-        p.catch(function() { openNewWindow(); });
-      } else if (!p) {
-        openNewWindow();
-      }
-      banner.style.display = 'none';
-    });
-    banner.querySelector('.fs-close').addEventListener('click', function() {
-      banner.style.display = 'none';
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      document.body.appendChild(banner);
-    });
-  }
+  /* Spotlight tooltip shown once on load */
+  document.addEventListener('DOMContentLoaded', function() {
+    var tip = document.createElement('div');
+    tip.id = 'fs-tip';
+    tip.innerHTML = '⛶ Cliquez ici pour passer en plein écran';
+    document.body.appendChild(tip);
+    setTimeout(function() {
+      tip.style.transition = 'opacity 0.5s';
+      tip.style.opacity = '0';
+      setTimeout(function() { tip.remove(); }, 500);
+    }, 4000);
+  });
 
   /* ── Always append button ── */
   document.addEventListener('DOMContentLoaded', function() {

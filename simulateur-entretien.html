@@ -58,6 +58,14 @@
     .lucas-illustration {
       transition: opacity 0.4s ease;
     }
+
+    /* Spotlight fullscreen */
+    @keyframes spotlightPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(28,25,23,0.4), 0 8px 32px rgba(0,0,0,0.25); transform: scale(1); } 50% { box-shadow: 0 0 0 8px rgba(28,25,23,0.1), 0 8px 32px rgba(0,0,0,0.25); transform: scale(1.05); } }
+    @keyframes spotlightArrow { 0%, 100% { opacity: 1; transform: translateY(0); } 50% { opacity: 0.7; transform: translateY(-3px); } }
+    @keyframes spotlightFadeIn { from { opacity: 0; transform: translateY(6px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .spotlight-btn { animation: spotlightPulse 2s ease-in-out infinite !important; }
+    .spotlight-tooltip { animation: spotlightFadeIn 0.4s 0.5s ease both; }
+    .spotlight-arrow { animation: spotlightArrow 1.2s ease-in-out infinite; }
   </style>
 </head>
 <body>
@@ -763,7 +771,13 @@
       const [isPlanOpen, setIsPlanOpen] = useState(true);
       const [pendingFollowUp, setPendingFollowUp] = useState(null);
       const [isFullscreen, setIsFullscreen] = useState(false);
+      const [showSpotlight, setShowSpotlight] = useState(true);
       const chatEndRef = useRef(null);
+
+      useEffect(() => {
+        const t = setTimeout(() => setShowSpotlight(false), 6000);
+        return () => clearTimeout(t);
+      }, []);
 
       useEffect(() => {
         if (chatEndRef.current) {
@@ -972,6 +986,18 @@
       // ── Concept Screen ────────────────────────────────────────────────────
       if (showConcept) return (
         <div className="app-wrapper min-h-screen bg-stone-100 flex items-center justify-center p-6">
+
+          {/* ── Bouton plein écran flottant ── */}
+          <div className="fixed top-4 right-4 z-50">
+            <button
+              onClick={toggleFullscreen}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border bg-white text-stone-600 border-stone-200 hover:bg-stone-50 transition-all"
+              title={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
+            >
+              {isFullscreen ? <Minimize size={16}/> : <Maximize size={16}/>}
+              {isFullscreen ? "Quitter" : "Plein écran"}
+            </button>
+          </div>
           <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-200 anim-fadeInUp">
             <div className="bg-stone-900 px-12 pt-12 pb-10 text-white">
               <h1 className="text-3xl font-serif italic mb-3">Comment fonctionne cette activité ?</h1>
@@ -993,6 +1019,24 @@
       // ── Intro Screen ─────────────────────────────────────────────────────
       if (showIntro) return (
         <div className="app-wrapper min-h-screen bg-stone-100 flex items-center justify-center p-6">
+
+          {/* ── Bouton plein écran flottant avec spotlight ── */}
+          <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">
+            {showSpotlight && (
+              <div className="spotlight-tooltip flex items-center gap-2 bg-stone-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl whitespace-nowrap">
+                <span className="spotlight-arrow">↑</span>
+                Meilleure expérience en plein écran
+              </div>
+            )}
+            <button
+              onClick={() => { toggleFullscreen(); setShowSpotlight(false); }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border transition-all ${showSpotlight ? 'bg-stone-900 text-white border-stone-900 spotlight-btn' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}
+              title={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
+            >
+              {isFullscreen ? <Minimize size={16}/> : <Maximize size={16}/>}
+              {showSpotlight ? "Plein écran" : (isFullscreen ? "Quitter" : "Plein écran")}
+            </button>
+          </div>
           <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-200 anim-fadeInUp">
             <div className="bg-stone-900 p-12 text-white">
               <p className="text-stone-400 text-xs uppercase tracking-widest font-medium mb-4">Simulation</p>
@@ -1040,6 +1084,18 @@
 
         return (
           <div className="app-wrapper min-h-screen bg-stone-100 flex items-center justify-center p-4">
+
+          {/* ── Bouton plein écran flottant ── */}
+          <div className="fixed top-4 right-4 z-50">
+            <button
+              onClick={toggleFullscreen}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border bg-white text-stone-600 border-stone-200 hover:bg-stone-50 transition-all"
+              title={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
+            >
+              {isFullscreen ? <Minimize size={16}/> : <Maximize size={16}/>}
+              {isFullscreen ? "Quitter" : "Plein écran"}
+            </button>
+          </div>
             <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200 anim-scaleIn">
               {/* Header */}
               <div className="bg-stone-900 p-10 text-white text-center">

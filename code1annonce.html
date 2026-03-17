@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <title>Simulateur Recrutement Inclusif</title>
     <script type="module">(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const o of document.querySelectorAll('link[rel="modulepreload"]'))r(o);new MutationObserver(o=>{for(const c of o)if(c.type==="childList")for(const u of c.addedNodes)u.tagName==="LINK"&&u.rel==="modulepreload"&&r(u)}).observe(document,{childList:!0,subtree:!0});function l(o){const c={};return o.integrity&&(c.integrity=o.integrity),o.referrerPolicy&&(c.referrerPolicy=o.referrerPolicy),o.crossOrigin==="use-credentials"?c.credentials="include":o.crossOrigin==="anonymous"?c.credentials="omit":c.credentials="same-origin",c}function r(o){if(o.ep)return;o.ep=!0;const c=l(o);fetch(o.href,c)}})();function Ad(t){return t&&t.__esModule&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t}var tf={exports:{}},cr={};/**
  * @license React
  * react-jsx-runtime.production.js
@@ -337,5 +337,139 @@ Le besoin est **immédiat mais stratégique** : renforcer l'équipe rapidement t
   </head>
   <body>
     <div id="root"></div>
-  </body>
+  
+<script>
+(function() {
+  /* ── Fullscreen helpers ── */
+  function requestFS(el) {
+    if (el.requestFullscreen)            return el.requestFullscreen();
+    if (el.webkitRequestFullscreen)      return el.webkitRequestFullscreen();
+    if (el.mozRequestFullScreen)         return el.mozRequestFullScreen();
+    if (el.msRequestFullscreen)          return el.msRequestFullscreen();
+  }
+  function exitFS() {
+    if (document.exitFullscreen)         return document.exitFullscreen();
+    if (document.webkitExitFullscreen)   return document.webkitExitFullscreen();
+    if (document.mozCancelFullScreen)    return document.mozCancelFullScreen();
+    if (document.msExitFullscreen)       return document.msExitFullscreen();
+  }
+  function isFS() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement ||
+              document.mozFullScreenElement || document.msFullscreenElement);
+  }
+  function isInIframe() {
+    try { return window.self !== window.top; } catch(e) { return true; }
+  }
+
+  /* ── Inject CSS ── */
+  var style = document.createElement('style');
+  style.textContent = [
+    '#fs-btn {',
+    '  position: fixed; bottom: 72px; right: 6px; z-index: 99999;',
+    '  width: 40px; height: 40px; border-radius: 10px;',
+    '  background: rgba(30,41,59,0.85); backdrop-filter: blur(6px);',
+    '  border: 1px solid rgba(255,255,255,0.12); color: #fff;',
+    '  display: flex; align-items: center; justify-content: center;',
+    '  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);',
+    '  transition: background 0.15s, transform 0.15s;',
+    '}',
+    '#fs-btn:hover { background: rgba(79,70,229,0.9); transform: scale(1.08); }',
+    '#fs-btn svg { width:18px; height:18px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }',
+    /* LMS banner */
+    '#fs-banner {',
+    '  position: fixed; top: 0; left: 0; right: 0; z-index: 99998;',
+    '  background: linear-gradient(90deg, #4f46e5, #7c3aed);',
+    '  color: #fff; font-family: system-ui, sans-serif; font-size: 13px;',
+    '  padding: 8px 16px; display: flex; align-items: center; gap: 10px;',
+    '  box-shadow: 0 2px 8px rgba(0,0,0,0.25);',
+    '}',
+    '#fs-banner button {',
+    '  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);',
+    '  color: #fff; border-radius: 6px; padding: 4px 12px; font-size: 12px;',
+    '  cursor: pointer; font-weight: 600; white-space: nowrap;',
+    '}',
+    '#fs-banner button:hover { background: rgba(255,255,255,0.35); }',
+    '#fs-banner .fs-close { margin-left: auto; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 16px; cursor: pointer; padding: 0 4px; }',
+    '.fs-active body { margin: 0; overflow: hidden; }'
+  ].join('');
+  document.head.appendChild(style);
+
+  /* ── SVG icons ── */
+  var iconExpand = '<svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  var iconCompress = '<svg viewBox="0 0 24 24"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>';
+
+  /* ── Build button ── */
+  var btn = document.createElement('button');
+  btn.id = 'fs-btn';
+  btn.title = 'Plein écran';
+  btn.innerHTML = iconExpand;
+
+  function updateBtn() {
+    btn.innerHTML = isFS() ? iconCompress : iconExpand;
+    btn.title = isFS() ? 'Quitter le plein écran' : 'Plein écran';
+  }
+
+  btn.addEventListener('click', function() {
+    if (isFS()) { exitFS(); }
+    else {
+      var p = requestFS(document.documentElement);
+      if (p && p.catch) {
+        p.catch(function() {
+          /* Fallback if blocked (iframe without allow="fullscreen") */
+          openNewWindow();
+        });
+      }
+    }
+  });
+
+  document.addEventListener('fullscreenchange', updateBtn);
+  document.addEventListener('webkitfullscreenchange', updateBtn);
+  document.addEventListener('mozfullscreenchange', updateBtn);
+
+  /* ── LMS iframe banner ── */
+  function openNewWindow() {
+    var url = window.location.href;
+    if (url === 'about:blank' || url.indexOf('blob:') === 0) {
+      /* Opened as local file inside iframe — clone content */
+      var w = window.open('', '_blank');
+      if (w) { w.document.write(document.documentElement.outerHTML); w.document.close(); }
+    } else {
+      window.open(url, '_blank', 'noopener');
+    }
+  }
+
+  if (isInIframe()) {
+    var banner = document.createElement('div');
+    banner.id = 'fs-banner';
+    banner.innerHTML = [
+      '',
+      '<button id="fs-expand-btn">⛶ Ouvrir en plein écran</button>',
+      '<button class="fs-close" title="Fermer">✕</button>'
+    ].join('');
+
+    banner.querySelector('#fs-expand-btn').addEventListener('click', function() {
+      var p = requestFS(document.documentElement);
+      if (p && p.catch) {
+        p.catch(function() { openNewWindow(); });
+      } else if (!p) {
+        openNewWindow();
+      }
+      banner.style.display = 'none';
+    });
+    banner.querySelector('.fs-close').addEventListener('click', function() {
+      banner.style.display = 'none';
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.appendChild(banner);
+    });
+  }
+
+  /* ── Always append button ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.appendChild(btn);
+  });
+})();
+</script>
+</body>
 </html>

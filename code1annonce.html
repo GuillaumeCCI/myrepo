@@ -848,7 +848,7 @@ function TourSpotlight({ step, onNext, isLast }) {
 
   if (!rect) return null;
 
-  const tooltipWidth = 550; // Nouvelle largeur BEAUCOUP plus grande
+  const tooltipWidth = 360; // Taille réduite et adaptée
 
   // Placement intelligent pour garder l'infobulle dans l'écran et ne pas cacher la cible
   let top = rect.bottom + 24;
@@ -869,7 +869,7 @@ function TourSpotlight({ step, onNext, isLast }) {
   if (left < 24) left = 24;
   if (left + tooltipWidth > window.innerWidth - 24) left = window.innerWidth - tooltipWidth - 24;
   if (top < 24) top = 24;
-  if (top + 260 > window.innerHeight) top = Math.max(24, window.innerHeight - 260);
+  if (top + 200 > window.innerHeight) top = Math.max(24, window.innerHeight - 200);
 
   return (
     <div className="fixed inset-0 z-[9990]">
@@ -889,12 +889,12 @@ function TourSpotlight({ step, onNext, isLast }) {
 
       {/* Infobulle */}
       <div style={{ position: 'absolute', top, left, width: `${tooltipWidth}px` }} 
-           className="bg-white p-10 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] border-2 border-indigo-500 fade-in transition-all duration-300 z-[9999]">
-        <h4 className="text-2xl font-bold text-indigo-600 mb-4 flex items-center gap-4"><Lightbulb size={28}/> {step.title}</h4>
-        <p className="text-lg text-slate-700 mb-8 leading-relaxed">{step.content}</p>
+           className="bg-white p-6 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] border-2 border-indigo-500 fade-in transition-all duration-300 z-[9999]">
+        <h4 className="text-lg font-bold text-indigo-600 mb-3 flex items-center gap-3"><Lightbulb size={20}/> {step.title}</h4>
+        <p className="text-sm text-slate-700 mb-6 leading-relaxed">{step.content}</p>
         <div className="flex justify-end">
           <button onClick={(e) => { e.stopPropagation(); onNext(); }} 
-                  className="px-8 py-4 bg-indigo-600 text-white rounded-xl text-lg font-bold hover:bg-indigo-700 transition-colors shadow-xl">
+                  className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors shadow-md">
             {step.nextLabel || (isLast ? "C'est compris !" : "Suivant")}
           </button>
         </div>

@@ -676,7 +676,7 @@ const SCENARIOS = [
             annotation:"Le CAP est un diplôme de niveau 3, accessible dès la fin de 3ème.",
             analysis:"❌ Disproportionné : cette exigence exclut la majorité des candidats visés." },
           { id:"r5", label:"5 ans d'expérience en restauration", content:"Justifier d'au moins 5 ans d'expérience en restauration ou en boulangerie.", isOptimal:false,
-            annotation:"L'apprentissage est fait pour les débutants.",
+            annotation:"L'apprentissage s'adresse à des débutants.",
             analysis:"❌ Absurde : si le candidat a 5 ans d'expérience, il n'a pas besoin d'un CAP." },
           { id:"r6", label:"Maîtrise de l'anglais et de l'espagnol", content:"Maîtrise courante de l'anglais et de l'espagnol.", isOptimal:false,
             annotation:"Les langues étrangères n'ont aucun rapport avec le métier de boulanger artisanal.",
@@ -1462,7 +1462,7 @@ function ContextModal({ scenario, step, onClose }) {
 
 /* ─────────────────────────── APP ─────────────────────────── */
 function App() {
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(1.2);
   const [view, setView] = useState("welcome"); // welcome | dashboard | templates | context | editor | audit
   const [scenario, setScenario] = useState(null);
   const [stepIdx, setStepIdx] = useState(0);
@@ -1706,7 +1706,7 @@ function App() {
 
                   {/* Preview toggle + Right panel */}
                   {showPreview && (
-                    <div id="editor-right-panel" className="w-[420px] bg-white overflow-hidden border-l border-slate-100 shrink-0 z-0 flex flex-col">
+                    <div id="editor-right-panel" className="flex-1 min-w-0 bg-white overflow-hidden border-l border-slate-100 shrink-0 z-0 flex flex-col">
                       <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50 shrink-0">
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                           <FileText size={12}/> Aperçu

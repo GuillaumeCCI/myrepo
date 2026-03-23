@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Activité - Logique de la Grille CCE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<!-- Fix 1 : Font Awesome manquant -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { font-family: 'Figtree', sans-serif; background: #f8fafc; overflow: hidden; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes numIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.7); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-num-in { animation: numIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@keyframes titleIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-title-in { animation: titleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+
+/* Fix 2 : Animation badge manquante */
+@keyframes badgeFlash {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.18); }
+  60%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+.animate-badge-flash { animation: badgeFlash 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* Pulse sur la ligne active */
+@keyframes rowPulse {
+  0%, 100% { box-shadow: inset 4px 0 0 0 rgba(31, 73, 125, 0.35); }
+  50%       { box-shadow: inset 4px 0 0 0 rgba(31, 73, 125, 0.85); }
+}
+.row-active-pulse { animation: rowPulse 2s ease-in-out infinite; }
+
+/* Fix 3 : Pulse sur la case attendue */
+@keyframes checkboxPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+  50%       { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15); }
+}
+.expected-pulse { animation: checkboxPulse 1.6s ease-in-out infinite; }
+
+/* Simulation de frappe */
+@keyframes caretBlink {
+  0%, 100% { border-right-color: transparent; }
+  50%       { border-right-color: #1F497D; }
+}
+.typing-cursor { border-right: 2px solid #1F497D; animation: caretBlink 0.7s ease-in-out infinite; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+</style>
+</head>
+<body class="h-screen flex flex-col">
+<div id="root" class="h-full flex flex-col"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Icônes ────────────────────────────────────────────────────────────────
+const Ick = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+const Ix = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+const Iinfo = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+  </svg>
+);
+const IArrow = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+  </svg>
+);
+const IBack = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+);
+const IPencil = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+  </svg>
+);
+const IGrid = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
+  </svg>
+);
+const IPointer = ({ className="w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/>
+  </svg>
+);
+const ILightning = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+const IQuiz = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+// ── Data ──────────────────────────────────────────────────────────────────
+const COMPS = [
+  {
+    id: 'C1', label: 'C1 - Analyser une demande ou un besoin de formation',
+    criteria: [
+      "Identification des attentes opérationnelles et des enjeux.",
+      "Définition de la problématique de la formation.",
+      "Formulation d'objectifs pédagogiques précis et mesurables.",
+    ]
+  },
+  {
+    id: 'C2', label: 'C2 - Concevoir une séquence ou un module de formation',
+    criteria: [
+      "Structuration claire et cohérente de la séquence.",
+      "Progression pédagogique réaliste et adaptée.",
+      "Mobilisation de méthodes pédagogiques actives.",
+    ]
+  }
+];
+
+const STEP_META = [
+  { type: 'Q' }, { type: 'A' }, { type: 'Q' }, { type: 'A' },
+  { type: 'A' }, { type: 'A' }, { type: 'A' }, { type: 'Q' },
+  { type: 'A' }, { type: 'A' }, { type: 'Q' },
+];
+const TOTAL = 10;
+
+const AUTO_COMMENT = "Ni à l'écrit ni à l'oral, le candidat n'a su formuler d'objectifs pédagogiques. La compétence n'est pas démontrée.";
+
+// ── Composants Grille ────────────────────────────────────────────────────
+
+// Fix 3 : isExpected restauré avec highlight visuel sur la case attendue
+const PdfCheckbox = ({ label, checked, onClick, disabled, isExpected }) => (
+  <div
+    className={`flex items-start gap-1.5 text-[11px] select-none
+      ${disabled && !isExpected ? 'cursor-default opacity-60' : 'cursor-pointer'}
+      ${isExpected ? 'cursor-pointer' : ''}
+    `}
+    onClick={(!disabled || isExpected) ? onClick : undefined}
+  >
+    <div className={`mt-0.5 w-3.5 h-3.5 border-[1.5px] bg-white flex items-center justify-center shrink-0 transition-all duration-200
+      ${checked         ? 'border-[#1F497D] bg-[#D9E1F2]' : 'border-black'}
+      ${isExpected && !checked ? 'expected-pulse border-blue-600 bg-blue-50' : ''}
+    `}>
+      {checked && <span className="text-[#1F497D] font-black text-[10px] leading-none">✓</span>}
+    </div>
+    <span className={`font-medium leading-tight
+      ${isExpected && !checked ? 'text-blue-700 font-bold' : 'text-black'}
+      ${checked ? 'text-[#1F497D] font-bold' : ''}
+    `}>{label}</span>
+  </div>
+);
+
+function LvlPick({ value, onChange, expectedCode, isActiveStep }) {
+  const levels = [
+    { code: 'D',  label: 'Dépassé' },
+    { code: 'A',  label: 'Atteint' },
+    { code: 'PA', label: 'Partiellement atteint' },
+    { code: 'NA', label: 'Non atteint' },
+    { code: 'NE', label: 'Non évaluable' }
+  ];
+  return (
+    <div className="flex flex-col h-full bg-white p-2 justify-center gap-2">
+      {levels.map(l => (
+        <PdfCheckbox
+          key={l.code}
+          label={l.label}
+          checked={value === l.code}
+          disabled={!isActiveStep}
+          isExpected={isActiveStep && expectedCode === l.code && value !== l.code}
+          onClick={() => { if (isActiveStep) onChange(l.code); }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ConsolidationBadge({ value, onChange, expectedCode, isActiveStep }) {
+  return (
+    <div className="flex flex-col h-full bg-white p-2 justify-center gap-3">
+      <PdfCheckbox
+        label="Validée"
+        checked={value === 'ok'}
+        disabled={!isActiveStep}
+        isExpected={isActiveStep && expectedCode === 'ok' && value !== 'ok'}
+        onClick={() => { if (isActiveStep) onChange('ok'); }}
+      />
+      <PdfCheckbox
+        label="Non validée"
+        checked={value === 'ko'}
+        disabled={!isActiveStep}
+        isExpected={isActiveStep && expectedCode === 'ko' && value !== 'ko'}
+        onClick={() => { if (isActiveStep) onChange('ko'); }}
+      />
+    </div>
+  );
+}
+
+// ── StepHeader ────────────────────────────────────────────────────────────
+function StepHeader({ step, onBack, title, body, instruction }) {
+  const isAction   = STEP_META[step]?.type === 'A';
+  const displayNum = Math.min(step, TOTAL);
+  const progress   = displayNum / TOTAL;
+
+  const theme = isAction
+    ? { bg: 'bg-amber-50', border: 'border-amber-400', bar: 'bg-amber-500',
+        badge: 'bg-amber-400 text-amber-900', badgeLabel: <><ILightning /> Action</>,
+        numColor: 'text-amber-700' }
+    : { bg: 'bg-indigo-50', border: 'border-indigo-400', bar: 'bg-indigo-500',
+        badge: 'bg-indigo-500 text-white', badgeLabel: <><IQuiz /> Quiz</>,
+        numColor: 'text-indigo-700' };
+
+  return (
+    <div className={`relative border-l-[5px] transition-colors duration-300 shrink-0 flex flex-col ${theme.bg} ${theme.border}`}>
+      <div className="relative h-1.5 bg-slate-200 overflow-hidden shrink-0">
+        <div className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out ${theme.bar}`}
+          style={{ width: `${progress * 100}%` }} />
+      </div>
+      <div className="px-8 pt-6 pb-7">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            {step > 0 && step < TOTAL && (
+              <button onClick={onBack}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-slate-300 rounded-full text-slate-600 hover:border-slate-500 hover:text-slate-900 transition-all shadow-sm active:scale-95">
+                <IBack />
+                <span className="text-[11px] font-black uppercase tracking-widest">Retour</span>
+              </button>
+            )}
+            <div key={`num-${step}`} className="flex items-baseline gap-1 animate-num-in">
+              <span className={`text-4xl font-black leading-none ${theme.numColor}`}>{displayNum}</span>
+              <span className="text-sm font-bold text-slate-400 leading-none">/ {TOTAL}</span>
+            </div>
+          </div>
+          {/* Fix 2 : animate-badge-flash maintenant défini dans le CSS */}
+          <span key={`badge-${step}`}
+            className={`animate-badge-flash flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${theme.badge}`}>
+            {theme.badgeLabel}
+          </span>
+        </div>
+        <div key={`text-${step}`}>
+          <h2 className="text-xl font-black text-slate-900 leading-tight tracking-tight mb-3 animate-title-in">{title}</h2>
+          <p className="text-[13px] text-slate-600 leading-relaxed whitespace-pre-line animate-slide-up" style={{ animationDelay: '0.08s' }}>{body}</p>
+          {instruction && (
+            <div className="mt-4 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+              <p className="text-slate-800 font-bold text-[13px] flex items-start gap-2">
+                <IPointer className="w-4 h-4 shrink-0 mt-0.5 text-indigo-600" />
+                <span className="leading-relaxed">{instruction}</span>
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────
+function App() {
+  const [step, setStep]                 = useState(0);
+  const [isActionDone, setIsActionDone] = useState(false);
+  const [gridError, setGridError]       = useState(null);
+  const [evalData, setEvalData]         = useState({
+    C1: { e: null, o: null, cons: null, com: '' },
+    C2: { e: null, o: null, cons: null, com: '' }
+  });
+
+  const [q1Answer, setQ1Answer] = useState(null);
+  const [q1Error,  setQ1Error]  = useState(false);
+  const [q3Answer, setQ3Answer] = useState(null);
+  const [q3Error,  setQ3Error]  = useState(false);
+
+  // Auto-scroll
+  useEffect(() => {
+    let targetComp = null;
+    if (step >= 1 && step <= 4) targetComp = 'C1';
+    if (step >= 5 && step <= 9) targetComp = 'C2';
+    if (targetComp) {
+      setTimeout(() => {
+        const el = document.getElementById(`row-${targetComp}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
+  }, [step]);
+
+  // Auto-frappe commentaire
+  const typingRef = useRef(null);
+  useEffect(() => {
+    if (step === 9 && !isActionDone) {
+      let i = 0;
+      setEvalData(p => ({ ...p, C2: { ...p.C2, com: '' } }));
+      const startDelay = setTimeout(() => {
+        typingRef.current = setInterval(() => {
+          i++;
+          setEvalData(p => ({ ...p, C2: { ...p.C2, com: AUTO_COMMENT.slice(0, i) } }));
+          if (i >= AUTO_COMMENT.length) {
+            clearInterval(typingRef.current);
+            setTimeout(() => setIsActionDone(true), 800);
+          }
+        }, 30);
+      }, 600);
+      return () => {
+        clearTimeout(startDelay);
+        if (typingRef.current) clearInterval(typingRef.current);
+      };
+    }
+  }, [step]);
+
+  const updateEval = (comp, field, val) =>
+    setEvalData(p => ({ ...p, [comp]: { ...p[comp], [field]: val } }));
+
+  const advance = () => { setStep(p => p + 1); setIsActionDone(false); setGridError(null); };
+  const goBack  = () => { if (step > 0) { setStep(p => p - 1); setIsActionDone(true); setGridError(null); } };
+
+  const resetActivity = () => {
+    setStep(0); setIsActionDone(false); setGridError(null);
+    setEvalData({ C1: { e: null, o: null, cons: null, com: '' }, C2: { e: null, o: null, cons: null, com: '' } });
+    setQ1Answer(null); setQ1Error(false); setQ3Answer(null); setQ3Error(false);
+    if (typingRef.current) clearInterval(typingRef.current);
+  };
+
+  const isAction   = STEP_META[step]?.type === 'A';
+  const activeComp = (step >= 1 && step <= 4) ? 'C1' : (step >= 5 && step <= 9) ? 'C2' : null;
+
+  const BtnContinue = ({ onClick }) => (
+    <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-200" onClick={onClick}>
+      Continuer <IArrow />
+    </button>
+  );
+  const ErrBox = ({ text }) => (
+    <div className="mt-4 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 animate-slide-up shadow-sm">
+      <div className="bg-red-100 text-red-600 rounded-full p-1 shrink-0 mt-0.5"><Ix /></div>
+      <p className="text-red-800 text-[13px] font-bold leading-snug">{text}</p>
+    </div>
+  );
+  const OkBox = ({ title, body, onNext }) => (
+    <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl animate-slide-up shadow-sm">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="bg-emerald-100 text-emerald-600 rounded-full p-1 shrink-0"><Ick className="w-3.5 h-3.5" /></div>
+        <strong className="text-emerald-900 text-[14px] font-black">{title}</strong>
+      </div>
+      <p className="text-emerald-800 text-[13px] font-medium leading-relaxed mb-4">{body}</p>
+      <BtnContinue onClick={onNext} />
+    </div>
+  );
+
+  let tutTitle = '', tutBody = '', tutInstruction = null, tutAction = null;
+
+  switch (step) {
+    case 0:
+      tutTitle = "Bienvenue dans l'activité !";
+      tutBody  = "Vous allez découvrir la logique de la grille CCE en l'utilisant directement, exactement comme le ferait un évaluateur.\n\nLa grille à droite est fidèle au vrai document.";
+      tutAction = (
+        <button className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 text-base rounded-xl transition-colors shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+          onClick={advance}>Commencer la découverte <IArrow /></button>
+      );
+      break;
+
+    case 1:
+      tutTitle = "1. Évaluation Écrite (C1)";
+      tutBody  = "Le candidat a parfaitement répondu aux attentes dans son dossier écrit.";
+      tutInstruction = "Cochez « Atteint » dans la colonne Évaluation Écrite pour C1.";
+      if (isActionDone) tutAction = <OkBox title="Excellente déduction" body="La production écrite démontre la maîtrise des critères attendus." onNext={advance} />;
+      break;
+
+    case 2:
+      tutTitle = "2. Le timing de l'Oral";
+      tutBody  = "Petite question de logique :";
+      tutAction = (
+        <div className="mt-8 animate-slide-up">
+          <p className="font-black text-slate-800 text-base mb-4">L'épreuve orale a lieu...</p>
+          <div className="space-y-2.5">
+            {[['avant', "Avant l'évaluation écrite"], ['apres', "Après l'évaluation écrite"]].map(([val, lbl]) => (
+              <button key={val}
+                className={`w-full text-left p-3.5 rounded-xl border-2 text-[13px] font-bold transition-all
+                  ${q1Answer === val ? (val === 'avant' ? 'bg-red-50 border-red-300 text-red-700 shadow-sm' : 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm') : 'bg-white hover:bg-slate-50 border-slate-200 shadow-sm hover:shadow'}`}
+                onClick={() => { if (!isActionDone) { setQ1Answer(val); if (val === 'avant') setQ1Error(true); else { setQ1Error(false); setIsActionDone(true); } } }}
+              >{lbl}</button>
+            ))}
+          </div>
+          {q1Error && !isActionDone && <ErrBox text="Faux ! L'oral s'appuie sur les éléments vus (ou non) à l'écrit." />}
+          {isActionDone && <OkBox title="Bonne déduction !" body="L'oral peut compléter, approfondir ou compenser l'écrit." onNext={advance} />}
+        </div>
+      );
+      break;
+
+    case 3:
+      tutTitle = "3. Évaluation Orale (C1)";
+      tutBody  = "Le candidat confirme sa maîtrise lors de l'entretien oral.";
+      tutInstruction = "Sélectionnez « Atteint » dans la colonne Évaluation Orale pour C1.";
+      if (isActionDone) tutAction = <OkBox title="L'oral confirme l'écrit." body="Le candidat a fait un sans-faute sur cette compétence." onNext={advance} />;
+      break;
+
+    case 4:
+      tutTitle = "4. Bilan / Consolidation (C1)";
+      tutBody  = "Deux réussites consécutives. Le jury clôture cette ligne.";
+      tutInstruction = "Cochez « Validée » dans la colonne Consolidation pour C1.";
+      if (isActionDone) tutAction = <OkBox title="Logique de base" body="Deux réussites aboutissent logiquement à la validation. Passons au cas plus complexe : C2." onNext={advance} />;
+      break;
+
+    case 5:
+      tutTitle = "5. Nouveau cas (C2) : L'Écrit";
+      tutBody  = "Cette fois, le candidat échoue dès l'écrit pour C2. Sa copie est lacunaire et hors sujet.";
+      tutInstruction = "Cochez « Non atteint » dans la colonne Évaluation Écrite pour C2.";
+      if (isActionDone) tutAction = <OkBox title="Échec acté à l'écrit." body="Premier signal d'alerte sur C2. Voyons ce qui se passe à l'oral." onNext={advance} />;
+      break;
+
+    case 6:
+      tutTitle = "6. Évaluation Orale (C2)";
+      tutBody  = "À l'oral, le candidat ne parvient pas davantage à démontrer sa compétence sur C2.";
+      tutInstruction = "Cochez « Non atteint » dans la colonne Évaluation Orale pour C2.";
+      if (isActionDone) tutAction = <OkBox title="Échec confirmé à l'oral." body="Le candidat a échoué sur les deux modalités pour C2." onNext={advance} />;
+      break;
+
+    case 7:
+      tutTitle = "7. Que cocher pour la Consolidation ?";
+      tutBody  = "Le candidat a obtenu « Non atteint » à l'écrit ET à l'oral pour C2.";
+      tutAction = (
+        <div className="mt-8 animate-slide-up">
+          <p className="font-black text-slate-800 text-base mb-4">Que faut-il cocher dans la colonne Consolidation ?</p>
+          <div className="flex gap-3">
+            {[['validee', 'Validée'], ['nonvalidee', 'Non validée']].map(([val, lbl]) => (
+              <button key={val}
+                className={`flex-1 py-3.5 rounded-xl border-2 text-[13px] font-bold transition-all
+                  ${q3Answer === val
+                    ? val === 'nonvalidee' ? 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm' : 'bg-red-50 border-red-300 text-red-700 shadow-sm'
+                    : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm hover:shadow'}`}
+                onClick={() => {
+                  if (!isActionDone) {
+                    setQ3Answer(val);
+                    if (val === 'nonvalidee') { setQ3Error(false); setIsActionDone(true); }
+                    else setQ3Error(true);
+                  }
+                }}
+              >{lbl}</button>
+            ))}
+          </div>
+          {q3Error && !isActionDone && (
+            <div className="mt-4 p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 animate-slide-up shadow-sm">
+              <div className="text-amber-600 shrink-0 mt-0.5"><Iinfo /></div>
+              <p className="text-amber-900 text-[13px] font-bold leading-snug">Les deux modalités sont en échec. La compétence n'est validée dans aucune des deux.</p>
+            </div>
+          )}
+          {isActionDone && <OkBox title="C'est exact !" body="Sans aucun « Atteint » ni à l'écrit ni à l'oral, la compétence est obligatoirement « Non validée »." onNext={advance} />}
+        </div>
+      );
+      break;
+
+    case 8:
+      tutTitle = "8. Acter la Consolidation (C2)";
+      tutBody  = "Appliquez la règle que vous venez d'identifier.";
+      tutInstruction = "Cochez « Non validée » dans la colonne Consolidation pour C2.";
+      if (isActionDone) tutAction = <OkBox title="Non validée actée." body="Toute compétence non validée doit obligatoirement être justifiée par un commentaire." onNext={advance} />;
+      break;
+
+    case 9:
+      tutTitle = "9. Commentaire obligatoire";
+      tutBody  = "Puisque la compétence est « Non validée », le jury doit obligatoirement rédiger un commentaire explicatif pour le jury de certification.";
+      tutInstruction = "Observez la rédaction automatique dans la zone de commentaire de C2 →";
+      if (isActionDone) {
+        tutAction = <OkBox title="Commentaire rédigé." body="La grille est complète et conforme. Le jury peut la transmettre au jury de certification." onNext={advance} />;
+      } else {
+        tutAction = (
+          <div className="mt-8 p-5 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm">
+            <div className="flex items-center gap-2.5 mb-2">
+              <IPencil />
+              <span className="text-blue-900 text-base font-black">Rédaction en cours...</span>
+            </div>
+            <p className="text-blue-800 text-[15px] font-medium leading-relaxed">Le commentaire est en train d'être saisi dans la grille. Observez la colonne de droite.</p>
+          </div>
+        );
+      }
+      break;
+
+    case 10:
+      tutTitle = "Activité terminée !";
+      tutBody  = "Vous maîtrisez désormais la logique de la grille CCE.";
+      tutAction = (
+        <div className="mt-6">
+          <div className="space-y-4 mb-8">
+            {[
+              { comp: 'C1', e: 'A',  o: 'A',  cons: 'Validée',     consBg: 'bg-emerald-100 border-emerald-400 text-emerald-800' },
+              { comp: 'C2', e: 'NA', o: 'NA', cons: 'Non validée', consBg: 'bg-red-100 border-red-400 text-red-800' },
+            ].map(r => (
+              <div key={r.comp} className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                <div className="font-black text-slate-800 text-[15px] mb-3">{r.comp}</div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`${r.e === 'A' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'} border px-2.5 py-1 rounded text-[11px] font-bold`}>Écrit ({r.e})</span>
+                  <span className="text-slate-400 font-black text-sm">+</span>
+                  <span className={`${r.o === 'A' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'} border px-2.5 py-1 rounded text-[11px] font-bold`}>Oral ({r.o})</span>
+                  <IArrow />
+                  <span className={`border px-3 py-1.5 rounded text-xs font-black uppercase tracking-wide ${r.consBg}`}>{r.cons}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-5 bg-slate-100 rounded-xl mb-6 text-[15px] text-slate-700 leading-relaxed border border-slate-200 shadow-sm">
+            <strong className="block mb-2 text-slate-900 font-black text-base">Règle à retenir :</strong>
+            La compétence est validée si elle est « Atteinte » dans au moins l'une des deux modalités. Si aucune n'est atteinte, elle est Non validée et requiert un commentaire obligatoire.
+          </div>
+          <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 text-base rounded-xl transition-colors shadow-lg"
+            onClick={resetActivity}>Recommencer l'activité</button>
+        </div>
+      );
+      break;
+  }
+
+  return (
+    <div className="flex flex-1 h-screen overflow-hidden bg-[#f1f0ec]">
+
+      {/* ── Panneau gauche ──────────────────────────────── */}
+      <div className="w-[440px] bg-white border-r border-slate-200 shadow-2xl z-20 flex flex-col shrink-0">
+        <StepHeader step={step} onBack={goBack} title={tutTitle} body={tutBody} instruction={tutInstruction} />
+        <div className="flex-1 overflow-y-auto px-8 py-2 bg-white min-h-0">
+          <div key={`action-${step}`} className="animate-slide-up pb-8">
+            {tutAction}
+            {gridError && !isActionDone && <ErrBox text={gridError} />}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Grille droite ────────────────────────────────── */}
+      <div className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden relative p-6 bg-[#f1f5f9]">
+
+        {/* Fix voile : position fixed ancré après le panneau gauche pour couvrir toute la largeur même en overflow */}
+        <div className={`fixed top-0 bottom-0 z-20 bg-slate-900/40 backdrop-blur-[2px] transition-all duration-500 ${!isAction && step > 0 && step < 10 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          style={{ left: '440px', right: 0 }} />
+
+        {step === 0 && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center" style={{ background: 'rgba(200,210,220,0.5)', backdropFilter: 'blur(4px)' }}>
+            <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-xs text-center border border-slate-200 animate-slide-up">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-blue-400 border border-blue-100" style={{ background: '#D6E4F0' }}>
+                <IGrid />
+              </div>
+              <h3 className="text-lg font-black text-slate-900">La grille d'évaluation</h3>
+              <p className="text-slate-500 text-sm mt-2 leading-relaxed">Elle s'animera dès que vous commencerez l'activité, fidèle au vrai document.</p>
+            </div>
+          </div>
+        )}
+
+        <div className={`rounded-sm overflow-hidden flex flex-col w-full min-w-[750px] max-w-[1100px] mx-auto transition-all duration-500 relative z-10 bg-white border-[1.5px] border-[#1F497D]
+          ${step === 0 ? 'opacity-20 grayscale pointer-events-none' : ''}
+          ${!isAction && step > 0 && step < 10 ? 'scale-[0.98] shadow-none' : 'shadow-2xl'}
+        `}>
+
+          {/* En-tête CCI */}
+          <div className="flex border-b-[1.5px] border-[#1F497D] bg-[#D9E1F2] text-black text-center text-[11px] leading-tight">
+            <div className="w-[28%] p-2 border-r-[1.5px] border-[#1F497D] flex flex-col justify-center min-w-0">
+              <div className="font-bold text-[11px] mb-1">CCE FORMATEUR : 8 COMPÉTENCES EVALUEES</div>
+              <div className="italic font-normal text-[10px]">CRITERES D'EVALUATION</div>
+            </div>
+            <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
+              <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
+                <div className="font-bold text-[10px]">EVALUATION ECRITE</div>
+                <div className="italic font-normal mt-1 text-[9px]">Étude de cas ou PdP</div>
+              </div>
+              <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px]">Niveau de maîtrise</div>
+            </div>
+            <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
+              <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
+                <div className="font-bold text-[10px]">EVALUATION ORALE</div>
+              </div>
+              <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px]">Niveau de maîtrise</div>
+            </div>
+            <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
+              <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
+                <div className="font-bold text-[9.5px] leading-tight">CONSOLIDATION DE L'EVALUATION GLOBALE</div>
+              </div>
+              <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px] leading-tight">Maîtrise de la compétence</div>
+            </div>
+            <div className="w-[24%] p-1.5 flex flex-col justify-center items-center min-w-0">
+              <div className="font-bold text-[10px] mb-1">COMMENTAIRES</div>
+              <div className="italic font-normal text-[9px] leading-tight text-center">Si vous indiquez que la compétence n'est pas validée, <strong>expliquer obligatoirement pourquoi</strong></div>
+            </div>
+          </div>
+
+          {/* Lignes compétences */}
+          <div className="flex-1 overflow-y-auto">
+            {COMPS.map((comp, ci) => {
+              const ev = evalData[comp.id];
+              const isC1 = comp.id === 'C1', isC2 = comp.id === 'C2';
+              const isRowActive = activeComp === comp.id;
+              const isCommentActive = isC2 && step === 9;
+
+              const rowStyle = isRowActive
+                ? { borderLeft: '4px solid #1F497D', background: '#F0F4FA' }
+                : { borderLeft: '4px solid transparent', background: 'white' };
+
+              return (
+                <div
+                  key={comp.id}
+                  id={`row-${comp.id}`}
+                  className={`flex items-stretch transition-all duration-300 ${isRowActive ? 'row-active-pulse' : ''}`}
+                  style={{ ...rowStyle, borderBottom: ci < COMPS.length - 1 ? '1.5px solid #1F497D' : 'none' }}
+                >
+                  {/* Critères */}
+                  <div className="w-[28%] p-3 border-r-[1.5px] border-[#1F497D] min-w-0">
+                    {isRowActive && (
+                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider"
+                        style={{ background: '#1F497D', color: 'white' }}>
+                        ● En cours d'évaluation
+                      </div>
+                    )}
+                    <div className="font-bold text-black text-[12px] mb-2">{comp.label}</div>
+                    <ul className="text-[11px] text-black space-y-1.5 list-disc pl-4 pr-2">
+                      {comp.criteria.map((cr, i) => <li key={i}>{cr}</li>)}
+                    </ul>
+                  </div>
+
+                  {/* Écrit */}
+                  <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
+                    {((isC1 && step !== 1) || (isC2 && step !== 5)) && <div className="absolute inset-0 z-10" />}
+                    <LvlPick
+                      value={ev.e}
+                      expectedCode={isC1 ? 'A' : 'NA'}
+                      onChange={v => {
+                        const expected = isC1 ? 'A' : 'NA';
+                        updateEval(comp.id, 'e', v);
+                        if (v === expected) { setIsActionDone(true); setGridError(null); }
+                        else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
+                      }}
+                      isActiveStep={((isC1 && step === 1) || (isC2 && step === 5)) && !isActionDone}
+                    />
+                  </div>
+
+                  {/* Oral */}
+                  <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
+                    {((isC1 && step !== 3) || (isC2 && step !== 6)) && <div className="absolute inset-0 z-10" />}
+                    <LvlPick
+                      value={ev.o}
+                      expectedCode={isC1 ? 'A' : 'NA'}
+                      onChange={v => {
+                        const expected = isC1 ? 'A' : 'NA';
+                        updateEval(comp.id, 'o', v);
+                        if (v === expected) { setIsActionDone(true); setGridError(null); }
+                        else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
+                      }}
+                      isActiveStep={((isC1 && step === 3) || (isC2 && step === 6)) && !isActionDone}
+                    />
+                  </div>
+
+                  {/* Consolidation */}
+                  <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
+                    {((isC1 && step !== 4) || (isC2 && step !== 8)) && <div className="absolute inset-0 z-10" />}
+                    <ConsolidationBadge
+                      value={ev.cons}
+                      expectedCode={isC1 ? 'ok' : 'ko'}
+                      onChange={v => {
+                        const expected = isC1 ? 'ok' : 'ko';
+                        updateEval(comp.id, 'cons', v);
+                        if (v === expected) { setIsActionDone(true); setGridError(null); }
+                        else { setIsActionDone(false); setGridError("Erreur : relisez la consigne et la règle de consolidation."); }
+                      }}
+                      isActiveStep={((isC1 && step === 4) || (isC2 && step === 8)) && !isActionDone}
+                    />
+                  </div>
+
+                  {/* Commentaire */}
+                  <div className={`w-[24%] p-1.5 relative min-w-0 transition-all duration-300 ${isCommentActive ? 'bg-blue-50' : ''}`}>
+                    {!isCommentActive && <div className="absolute inset-0 z-10" />}
+                    <textarea
+                      className={`w-full h-full resize-none text-[11px] text-black focus:outline-none p-1.5 transition-all duration-300
+                        ${isCommentActive ? 'bg-transparent ring-2 ring-blue-500 rounded' : 'bg-transparent'}
+                      `}
+                      style={{ minHeight: '80px' }}
+                      value={ev.com}
+                      readOnly
+                    />
+                    {isCommentActive && !isActionDone && evalData.C2.com.length < AUTO_COMMENT.length && (
+                      <span className="absolute bottom-3 text-[11px] text-[#1F497D] pointer-events-none typing-cursor">&nbsp;</span>
+                    )}
+                    {isCommentActive && !isActionDone && (
+                      <div className="absolute right-2 bottom-2 flex items-center gap-1 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider pointer-events-none bg-[#1F497D] text-white">
+                        <IPencil /><span>Obligatoire</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<!-- Fix 4 : Boutons zoom avec icônes SVG inline (plus de dépendance Font Awesome) -->
+<!-- Fix 5 : Zoom par défaut à 100% au lieu de 110% -->
+<div class="fixed bottom-6 right-6 bg-white rounded-full shadow-lg border border-gray-200 flex items-center overflow-hidden" style="z-index:9999;">
+  <button onclick="adjustZoom(-0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Dézoomer">−</button>
+  <span id="zoom-display" class="text-xs font-bold text-gray-700 w-12 text-center">100%</span>
+  <button onclick="adjustZoom(0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Zoomer">+</button>
+</div>
+
+<script>
+// Fix 5 : Zoom initial 1.0 (100%)
+let currentZoom = 1.0;
+document.body.style.zoom = currentZoom;
+
+function adjustZoom(delta) {
+  currentZoom = Math.min(2.0, Math.max(0.5, Math.round((currentZoom + delta) * 10) / 10));
+  document.body.style.zoom = currentZoom;
+  const disp = document.getElementById('zoom-display');
+  if (disp) disp.innerText = Math.round(currentZoom * 100) + '%';
+}
+</script>
+
+</body>
+</html>

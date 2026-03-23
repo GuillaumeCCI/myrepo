@@ -6,7 +6,6 @@
 <title>Activité - Logique de la Grille CCE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-<!-- Fix 1 : Font Awesome manquant -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -33,7 +32,6 @@ body { font-family: 'Figtree', sans-serif; background: #f8fafc; overflow: hidden
 }
 .animate-title-in { animation: titleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
 
-/* Fix 2 : Animation badge manquante */
 @keyframes badgeFlash {
   0%   { transform: scale(1); }
   30%  { transform: scale(1.18); }
@@ -49,7 +47,7 @@ body { font-family: 'Figtree', sans-serif; background: #f8fafc; overflow: hidden
 }
 .row-active-pulse { animation: rowPulse 2s ease-in-out infinite; }
 
-/* Fix 3 : Pulse sur la case attendue */
+/* Pulse sur la case attendue */
 @keyframes checkboxPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
   50%       { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15); }
@@ -156,8 +154,6 @@ const TOTAL = 10;
 const AUTO_COMMENT = "Ni à l'écrit ni à l'oral, le candidat n'a su formuler d'objectifs pédagogiques. La compétence n'est pas démontrée.";
 
 // ── Composants Grille ────────────────────────────────────────────────────
-
-// Fix 3 : isExpected restauré avec highlight visuel sur la case attendue
 const PdfCheckbox = ({ label, checked, onClick, disabled, isExpected }) => (
   <div
     className={`flex items-start gap-1.5 text-[11px] select-none
@@ -259,7 +255,6 @@ function StepHeader({ step, onBack, title, body, instruction }) {
               <span className="text-sm font-bold text-slate-400 leading-none">/ {TOTAL}</span>
             </div>
           </div>
-          {/* Fix 2 : animate-badge-flash maintenant défini dans le CSS */}
           <span key={`badge-${step}`}
             className={`animate-badge-flash flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${theme.badge}`}>
             {theme.badgeLabel}
@@ -269,9 +264,9 @@ function StepHeader({ step, onBack, title, body, instruction }) {
           <h2 className="text-xl font-black text-slate-900 leading-tight tracking-tight mb-3 animate-title-in">{title}</h2>
           <p className="text-[13px] text-slate-600 leading-relaxed whitespace-pre-line animate-slide-up" style={{ animationDelay: '0.08s' }}>{body}</p>
           {instruction && (
-            <div className="mt-4 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-              <p className="text-slate-800 font-bold text-[13px] flex items-start gap-2">
-                <IPointer className="w-4 h-4 shrink-0 mt-0.5 text-indigo-600" />
+            <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+              <p className="text-slate-800 font-bold text-[15px] flex items-start gap-2">
+                <IPointer className="w-5 h-5 shrink-0 mt-0.5 text-indigo-600" />
                 <span className="leading-relaxed">{instruction}</span>
               </p>
             </div>
@@ -483,7 +478,7 @@ function App() {
     case 9:
       tutTitle = "9. Commentaire obligatoire";
       tutBody  = "Puisque la compétence est « Non validée », le jury doit obligatoirement rédiger un commentaire explicatif pour le jury de certification.";
-      tutInstruction = "Observez la rédaction automatique dans la zone de commentaire de C2 →";
+      tutInstruction = "Observez la rédaction automatique dans la zone de commentaire de C2 :";
       if (isActionDone) {
         tutAction = <OkBox title="Commentaire rédigé." body="La grille est complète et conforme. Le jury peut la transmettre au jury de certification." onNext={advance} />;
       } else {
@@ -533,178 +528,222 @@ function App() {
   }
 
   return (
-    <div className="flex flex-1 h-screen overflow-hidden bg-[#f1f0ec]">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#f1f0ec]">
+      
+      {/* ── Top Header ────────────────────────────────────────── */}
+      <header className="bg-[#1e2330] text-white flex items-center justify-between px-4 py-3 text-sm shrink-0 z-50">
+        <div className="flex items-center space-x-4">
+            <button className="text-gray-300 hover:text-white"><i className="fas fa-bars text-xl"></i></button>
+            <div className="border-r border-gray-600 pr-4">
+                <img src="Sans titre-1.png" alt="1001 Parcours" className="h-8 object-contain bg-white/10 rounded px-2 py-1" />
+            </div>
+            <h1 className="text-lg font-medium pl-2">Mon espace</h1>
+        </div>
+        
+        <div className="flex items-center space-x-6">
+            <div className="relative">
+                <input type="text" placeholder="Rechercher" className="py-1 px-3 rounded text-gray-800 text-sm w-64 focus:outline-none" />
+            </div>
+            <a href="#" className="hover:text-blue-300">Notifications</a>
+            <a href="#" className="hover:text-blue-300">Messages</a>
+            <a href="#" className="hover:text-blue-300">Mon compte</a>
+            <div className="border-l border-gray-600 pl-6">
+                <button id="btn-fullscreen" onClick={() => window.toggleFullScreen()} className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors" title="Plein écran">
+                    <i className="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+      </header>
 
-      {/* ── Panneau gauche ──────────────────────────────── */}
-      <div className="w-[440px] bg-white border-r border-slate-200 shadow-2xl z-20 flex flex-col shrink-0">
-        <StepHeader step={step} onBack={goBack} title={tutTitle} body={tutBody} instruction={tutInstruction} />
-        <div className="flex-1 overflow-y-auto px-8 py-2 bg-white min-h-0">
-          <div key={`action-${step}`} className="animate-slide-up pb-8">
-            {tutAction}
-            {gridError && !isActionDone && <ErrBox text={gridError} />}
+      {/* ── Menu Secondaire ────────────────────────────────────── */}
+      <nav className="bg-white border-b border-gray-200 px-12 py-3 flex justify-between items-center text-sm text-gray-600 shrink-0 z-40">
+        <div className="flex space-x-8">
+            <a href="#" className="hover:text-blue-600">Accueil</a>
+            <a href="#" className="text-blue-600 font-bold border-b-2 border-blue-600 pb-3 -mb-3">Me former</a>
+            <a href="#" className="hover:text-blue-600">Ma bibliothèque</a>
+            <a href="#" className="hover:text-blue-600">Mes communautés</a>
+            <a href="#" className="hover:text-blue-600">Mes évaluations</a>
+        </div>
+        <div className="flex items-center gap-4">
+            <button className="text-gray-500 hover:text-gray-800" onClick={() => window.startTutorial()}><i className="fas fa-magic text-emerald-600 mr-2"></i> Lancer le tutoriel complet</button>
+            <button className="text-gray-500 hover:text-gray-800"><i className="fas fa-cog text-lg"></i></button>
+        </div>
+      </nav>
+
+      {/* ── Contenu Principal (Activité) ────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden relative">
+
+        {/* ── Panneau gauche ──────────────────────────────── */}
+        <div className="w-[440px] bg-white border-r border-slate-200 shadow-2xl z-20 flex flex-col shrink-0">
+          <StepHeader step={step} onBack={goBack} title={tutTitle} body={tutBody} instruction={tutInstruction} />
+          <div className="flex-1 overflow-y-auto px-8 py-2 bg-white min-h-0">
+            <div key={`action-${step}`} className="animate-slide-up pb-8">
+              {tutAction}
+              {gridError && !isActionDone && <ErrBox text={gridError} />}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Grille droite ────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden relative p-6 bg-[#f1f5f9]">
+        {/* ── Grille droite ────────────────────────────────── */}
+        <div className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden relative p-6 bg-[#f1f5f9]">
 
-        {/* Fix voile : position fixed ancré après le panneau gauche pour couvrir toute la largeur même en overflow */}
-        <div className={`fixed top-0 bottom-0 z-20 bg-slate-900/40 backdrop-blur-[2px] transition-all duration-500 ${!isAction && step > 0 && step < 10 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-          style={{ left: '440px', right: 0 }} />
+          {/* Fix voile : position fixed ancré après le panneau gauche pour couvrir toute la largeur même en overflow */}
+          <div className={`fixed top-0 bottom-0 z-20 bg-slate-900/40 backdrop-blur-[2px] transition-all duration-500 ${!isAction && step > 0 && step < 10 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+            style={{ left: '440px', right: 0 }} />
 
-        {step === 0 && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center" style={{ background: 'rgba(200,210,220,0.5)', backdropFilter: 'blur(4px)' }}>
-            <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-xs text-center border border-slate-200 animate-slide-up">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-blue-400 border border-blue-100" style={{ background: '#D6E4F0' }}>
-                <IGrid />
-              </div>
-              <h3 className="text-lg font-black text-slate-900">La grille d'évaluation</h3>
-              <p className="text-slate-500 text-sm mt-2 leading-relaxed">Elle s'animera dès que vous commencerez l'activité, fidèle au vrai document.</p>
-            </div>
-          </div>
-        )}
-
-        <div className={`rounded-sm overflow-hidden flex flex-col w-full min-w-[750px] max-w-[1100px] mx-auto transition-all duration-500 relative z-10 bg-white border-[1.5px] border-[#1F497D]
-          ${step === 0 ? 'opacity-20 grayscale pointer-events-none' : ''}
-          ${!isAction && step > 0 && step < 10 ? 'scale-[0.98] shadow-none' : 'shadow-2xl'}
-        `}>
-
-          {/* En-tête CCI */}
-          <div className="flex border-b-[1.5px] border-[#1F497D] bg-[#D9E1F2] text-black text-center text-[11px] leading-tight">
-            <div className="w-[28%] p-2 border-r-[1.5px] border-[#1F497D] flex flex-col justify-center min-w-0">
-              <div className="font-bold text-[11px] mb-1">CCE FORMATEUR : 8 COMPÉTENCES EVALUEES</div>
-              <div className="italic font-normal text-[10px]">CRITERES D'EVALUATION</div>
-            </div>
-            <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
-              <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
-                <div className="font-bold text-[10px]">EVALUATION ECRITE</div>
-                <div className="italic font-normal mt-1 text-[9px]">Étude de cas ou PdP</div>
-              </div>
-              <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px]">Niveau de maîtrise</div>
-            </div>
-            <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
-              <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
-                <div className="font-bold text-[10px]">EVALUATION ORALE</div>
-              </div>
-              <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px]">Niveau de maîtrise</div>
-            </div>
-            <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
-              <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
-                <div className="font-bold text-[9.5px] leading-tight">CONSOLIDATION DE L'EVALUATION GLOBALE</div>
-              </div>
-              <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px] leading-tight">Maîtrise de la compétence</div>
-            </div>
-            <div className="w-[24%] p-1.5 flex flex-col justify-center items-center min-w-0">
-              <div className="font-bold text-[10px] mb-1">COMMENTAIRES</div>
-              <div className="italic font-normal text-[9px] leading-tight text-center">Si vous indiquez que la compétence n'est pas validée, <strong>expliquer obligatoirement pourquoi</strong></div>
-            </div>
-          </div>
-
-          {/* Lignes compétences */}
-          <div className="flex-1 overflow-y-auto">
-            {COMPS.map((comp, ci) => {
-              const ev = evalData[comp.id];
-              const isC1 = comp.id === 'C1', isC2 = comp.id === 'C2';
-              const isRowActive = activeComp === comp.id;
-              const isCommentActive = isC2 && step === 9;
-
-              const rowStyle = isRowActive
-                ? { borderLeft: '4px solid #1F497D', background: '#F0F4FA' }
-                : { borderLeft: '4px solid transparent', background: 'white' };
-
-              return (
-                <div
-                  key={comp.id}
-                  id={`row-${comp.id}`}
-                  className={`flex items-stretch transition-all duration-300 ${isRowActive ? 'row-active-pulse' : ''}`}
-                  style={{ ...rowStyle, borderBottom: ci < COMPS.length - 1 ? '1.5px solid #1F497D' : 'none' }}
-                >
-                  {/* Critères */}
-                  <div className="w-[28%] p-3 border-r-[1.5px] border-[#1F497D] min-w-0">
-                    {isRowActive && (
-                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider"
-                        style={{ background: '#1F497D', color: 'white' }}>
-                        ● En cours d'évaluation
-                      </div>
-                    )}
-                    <div className="font-bold text-black text-[12px] mb-2">{comp.label}</div>
-                    <ul className="text-[11px] text-black space-y-1.5 list-disc pl-4 pr-2">
-                      {comp.criteria.map((cr, i) => <li key={i}>{cr}</li>)}
-                    </ul>
-                  </div>
-
-                  {/* Écrit */}
-                  <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
-                    {((isC1 && step !== 1) || (isC2 && step !== 5)) && <div className="absolute inset-0 z-10" />}
-                    <LvlPick
-                      value={ev.e}
-                      expectedCode={isC1 ? 'A' : 'NA'}
-                      onChange={v => {
-                        const expected = isC1 ? 'A' : 'NA';
-                        updateEval(comp.id, 'e', v);
-                        if (v === expected) { setIsActionDone(true); setGridError(null); }
-                        else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
-                      }}
-                      isActiveStep={((isC1 && step === 1) || (isC2 && step === 5)) && !isActionDone}
-                    />
-                  </div>
-
-                  {/* Oral */}
-                  <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
-                    {((isC1 && step !== 3) || (isC2 && step !== 6)) && <div className="absolute inset-0 z-10" />}
-                    <LvlPick
-                      value={ev.o}
-                      expectedCode={isC1 ? 'A' : 'NA'}
-                      onChange={v => {
-                        const expected = isC1 ? 'A' : 'NA';
-                        updateEval(comp.id, 'o', v);
-                        if (v === expected) { setIsActionDone(true); setGridError(null); }
-                        else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
-                      }}
-                      isActiveStep={((isC1 && step === 3) || (isC2 && step === 6)) && !isActionDone}
-                    />
-                  </div>
-
-                  {/* Consolidation */}
-                  <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
-                    {((isC1 && step !== 4) || (isC2 && step !== 8)) && <div className="absolute inset-0 z-10" />}
-                    <ConsolidationBadge
-                      value={ev.cons}
-                      expectedCode={isC1 ? 'ok' : 'ko'}
-                      onChange={v => {
-                        const expected = isC1 ? 'ok' : 'ko';
-                        updateEval(comp.id, 'cons', v);
-                        if (v === expected) { setIsActionDone(true); setGridError(null); }
-                        else { setIsActionDone(false); setGridError("Erreur : relisez la consigne et la règle de consolidation."); }
-                      }}
-                      isActiveStep={((isC1 && step === 4) || (isC2 && step === 8)) && !isActionDone}
-                    />
-                  </div>
-
-                  {/* Commentaire */}
-                  <div className={`w-[24%] p-1.5 relative min-w-0 transition-all duration-300 ${isCommentActive ? 'bg-blue-50' : ''}`}>
-                    {!isCommentActive && <div className="absolute inset-0 z-10" />}
-                    <textarea
-                      className={`w-full h-full resize-none text-[11px] text-black focus:outline-none p-1.5 transition-all duration-300
-                        ${isCommentActive ? 'bg-transparent ring-2 ring-blue-500 rounded' : 'bg-transparent'}
-                      `}
-                      style={{ minHeight: '80px' }}
-                      value={ev.com}
-                      readOnly
-                    />
-                    {isCommentActive && !isActionDone && evalData.C2.com.length < AUTO_COMMENT.length && (
-                      <span className="absolute bottom-3 text-[11px] text-[#1F497D] pointer-events-none typing-cursor">&nbsp;</span>
-                    )}
-                    {isCommentActive && !isActionDone && (
-                      <div className="absolute right-2 bottom-2 flex items-center gap-1 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider pointer-events-none bg-[#1F497D] text-white">
-                        <IPencil /><span>Obligatoire</span>
-                      </div>
-                    )}
-                  </div>
+          {step === 0 && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center" style={{ background: 'rgba(200,210,220,0.5)', backdropFilter: 'blur(4px)' }}>
+              <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-xs text-center border border-slate-200 animate-slide-up">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-blue-400 border border-blue-100" style={{ background: '#D6E4F0' }}>
+                  <IGrid />
                 </div>
-              );
-            })}
+                <h3 className="text-lg font-black text-slate-900">La grille d'évaluation</h3>
+                <p className="text-slate-500 text-sm mt-2 leading-relaxed">Elle s'animera dès que vous commencerez l'activité, fidèle au vrai document.</p>
+              </div>
+            </div>
+          )}
+
+          <div className={`rounded-sm overflow-hidden flex flex-col w-full min-w-[750px] max-w-[1100px] mx-auto transition-all duration-500 relative z-10 bg-white border-[1.5px] border-[#1F497D]
+            ${step === 0 ? 'opacity-20 grayscale pointer-events-none' : ''}
+            ${!isAction && step > 0 && step < 10 ? 'scale-[0.98] shadow-none' : 'shadow-2xl'}
+          `}>
+
+            {/* En-tête CCI */}
+            <div className="flex border-b-[1.5px] border-[#1F497D] bg-[#D9E1F2] text-black text-center text-[11px] leading-tight shrink-0">
+              <div className="w-[28%] p-2 border-r-[1.5px] border-[#1F497D] flex flex-col justify-center min-w-0">
+                <div className="font-bold text-[11px] mb-1">CCE FORMATEUR : 8 COMPÉTENCES EVALUEES</div>
+                <div className="italic font-normal text-[10px]">CRITERES D'EVALUATION</div>
+              </div>
+              <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
+                <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
+                  <div className="font-bold text-[10px]">EVALUATION ECRITE</div>
+                  <div className="italic font-normal mt-1 text-[9px]">Étude de cas ou PdP</div>
+                </div>
+                <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px]">Niveau de maîtrise</div>
+              </div>
+              <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
+                <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
+                  <div className="font-bold text-[10px]">EVALUATION ORALE</div>
+                </div>
+                <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px]">Niveau de maîtrise</div>
+              </div>
+              <div className="w-[16%] flex flex-col border-r-[1.5px] border-[#1F497D] min-w-0">
+                <div className="p-1.5 flex-1 flex flex-col justify-center items-center">
+                  <div className="font-bold text-[9.5px] leading-tight">CONSOLIDATION DE L'EVALUATION GLOBALE</div>
+                </div>
+                <div className="border-t-[1.5px] border-[#1F497D] p-1 font-normal bg-[#D9E1F2] text-[9.5px] leading-tight">Maîtrise de la compétence</div>
+              </div>
+              <div className="w-[24%] p-1.5 flex flex-col justify-center items-center min-w-0">
+                <div className="font-bold text-[10px] mb-1">COMMENTAIRES</div>
+                <div className="italic font-normal text-[9px] leading-tight text-center">Si vous indiquez que la compétence n'est pas validée, <strong>expliquer obligatoirement pourquoi</strong></div>
+              </div>
+            </div>
+
+            {/* Lignes compétences */}
+            <div className="flex-1 overflow-y-auto">
+              {COMPS.map((comp, ci) => {
+                const ev = evalData[comp.id];
+                const isC1 = comp.id === 'C1', isC2 = comp.id === 'C2';
+                const isRowActive = activeComp === comp.id;
+                const isCommentActive = isC2 && step === 9;
+
+                const rowStyle = isRowActive
+                  ? { borderLeft: '4px solid #1F497D', background: '#F0F4FA' }
+                  : { borderLeft: '4px solid transparent', background: 'white' };
+
+                return (
+                  <div
+                    key={comp.id}
+                    id={`row-${comp.id}`}
+                    className={`flex items-stretch transition-all duration-300 ${isRowActive ? 'row-active-pulse' : ''}`}
+                    style={{ ...rowStyle, borderBottom: ci < COMPS.length - 1 ? '1.5px solid #1F497D' : 'none' }}
+                  >
+                    {/* Critères */}
+                    <div className="w-[28%] p-3 border-r-[1.5px] border-[#1F497D] min-w-0">
+                      {isRowActive && (
+                        <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider"
+                          style={{ background: '#1F497D', color: 'white' }}>
+                          ● En cours d'évaluation
+                        </div>
+                      )}
+                      <div className="font-bold text-black text-[12px] mb-2">{comp.label}</div>
+                      <ul className="text-[11px] text-black space-y-1.5 list-disc pl-4 pr-2">
+                        {comp.criteria.map((cr, i) => <li key={i}>{cr}</li>)}
+                      </ul>
+                    </div>
+
+                    {/* Écrit */}
+                    <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
+                      {((isC1 && step !== 1) || (isC2 && step !== 5)) && <div className="absolute inset-0 z-10" />}
+                      <LvlPick
+                        value={ev.e}
+                        expectedCode={isC1 ? 'A' : 'NA'}
+                        onChange={v => {
+                          const expected = isC1 ? 'A' : 'NA';
+                          updateEval(comp.id, 'e', v);
+                          if (v === expected) { setIsActionDone(true); setGridError(null); }
+                          else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
+                        }}
+                        isActiveStep={((isC1 && step === 1) || (isC2 && step === 5)) && !isActionDone}
+                      />
+                    </div>
+
+                    {/* Oral */}
+                    <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
+                      {((isC1 && step !== 3) || (isC2 && step !== 6)) && <div className="absolute inset-0 z-10" />}
+                      <LvlPick
+                        value={ev.o}
+                        expectedCode={isC1 ? 'A' : 'NA'}
+                        onChange={v => {
+                          const expected = isC1 ? 'A' : 'NA';
+                          updateEval(comp.id, 'o', v);
+                          if (v === expected) { setIsActionDone(true); setGridError(null); }
+                          else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
+                        }}
+                        isActiveStep={((isC1 && step === 3) || (isC2 && step === 6)) && !isActionDone}
+                      />
+                    </div>
+
+                    {/* Consolidation */}
+                    <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
+                      {((isC1 && step !== 4) || (isC2 && step !== 8)) && <div className="absolute inset-0 z-10" />}
+                      <ConsolidationBadge
+                        value={ev.cons}
+                        expectedCode={isC1 ? 'ok' : 'ko'}
+                        onChange={v => {
+                          const expected = isC1 ? 'ok' : 'ko';
+                          updateEval(comp.id, 'cons', v);
+                          if (v === expected) { setIsActionDone(true); setGridError(null); }
+                          else { setIsActionDone(false); setGridError("Erreur : relisez la consigne et la règle de consolidation."); }
+                        }}
+                        isActiveStep={((isC1 && step === 4) || (isC2 && step === 8)) && !isActionDone}
+                      />
+                    </div>
+
+                    {/* Commentaire */}
+                    <div className={`w-[24%] p-1.5 relative min-w-0 transition-all duration-300 ${isCommentActive ? 'bg-blue-50' : ''}`}>
+                      {!isCommentActive && <div className="absolute inset-0 z-10" />}
+                      <textarea
+                        className={`w-full h-full resize-none text-[11px] text-black focus:outline-none p-1.5 transition-all duration-300
+                          ${isCommentActive ? 'bg-transparent ring-2 ring-blue-500 rounded' : 'bg-transparent'}
+                        `}
+                        style={{ minHeight: '80px' }}
+                        value={ev.com}
+                        readOnly
+                      />
+                      {isCommentActive && !isActionDone && evalData.C2.com.length < AUTO_COMMENT.length && (
+                        <span className="absolute bottom-3 text-[11px] text-[#1F497D] pointer-events-none typing-cursor">&nbsp;</span>
+                      )}
+                      {isCommentActive && !isActionDone && (
+                        <div className="absolute right-2 bottom-2 flex items-center gap-1 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider pointer-events-none bg-[#1F497D] text-white">
+                          <IPencil /><span>Obligatoire</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -715,25 +754,206 @@ function App() {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 
-<!-- Fix 4 : Boutons zoom avec icônes SVG inline (plus de dépendance Font Awesome) -->
-<!-- Fix 5 : Zoom par défaut à 100% au lieu de 110% -->
+<!-- Contrôles de Zoom -->
 <div class="fixed bottom-6 right-6 bg-white rounded-full shadow-lg border border-gray-200 flex items-center overflow-hidden" style="z-index:9999;">
-  <button onclick="adjustZoom(-0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Dézoomer">−</button>
+  <button onclick="window.adjustZoom(-0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Dézoomer">−</button>
   <span id="zoom-display" class="text-xs font-bold text-gray-700 w-12 text-center">100%</span>
-  <button onclick="adjustZoom(0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Zoomer">+</button>
+  <button onclick="window.adjustZoom(0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Zoomer">+</button>
+</div>
+
+<!-- ===== SYSTEME DE TUTORIEL GLOBAL ===== -->
+<div id="tutorial-container" style="display: none; position: fixed; inset: 0; z-index: 99999;">
+  <!-- Couche de fond invisible -->
+  <div style="position: absolute; inset: 0;" onclick="endTutorial()"></div>
+
+  <!-- Le "trou" qui met en valeur -->
+  <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; outline: 9999px solid rgba(0,0,0,0.65); border: 3px solid #719A86; border-radius: 6px; transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease, border-width 0.2s ease;"></div>
+
+  <!-- L'infobulle -->
+  <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-80 flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
+    <div class="p-5 flex-1">
+      <div class="flex justify-between items-start mb-2">
+        <span id="tutorial-title" class="text-xs font-bold text-[#598378] uppercase tracking-wider bg-green-50 px-2 py-1 rounded">ÉTAPE 1</span>
+        <button onclick="endTutorial()" class="text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times"></i></button>
+      </div>
+      <p id="tutorial-text" class="text-gray-800 text-sm mt-3 font-medium leading-relaxed"></p>
+    </div>
+    <div class="bg-gray-50 p-3 rounded-b-xl border-t border-gray-100 flex justify-between items-center">
+      <span id="tutorial-counter" class="text-xs font-bold text-gray-400">1 / 5</span>
+      <div class="space-x-1 flex items-center">
+        <button id="tutorial-prev" onclick="prevStep()" class="text-gray-500 hover:text-gray-800 w-7 h-7 flex items-center justify-center rounded disabled:opacity-30 transition-colors" title="Étape précédente"><i class="fas fa-arrow-left"></i></button>
+        <button id="tutorial-next" onclick="nextStep()" class="ml-2 bg-[#598378] text-white text-xs px-3 py-1.5 rounded hover:bg-[#466a60] transition-colors shadow-sm font-bold">Suivant <i class="fas fa-arrow-right ml-1"></i></button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-// Fix 5 : Zoom initial 1.0 (100%)
+// --- Zoom Logic ---
 let currentZoom = 1.0;
 document.body.style.zoom = currentZoom;
 
-function adjustZoom(delta) {
+window.adjustZoom = function(delta) {
   currentZoom = Math.min(2.0, Math.max(0.5, Math.round((currentZoom + delta) * 10) / 10));
   document.body.style.zoom = currentZoom;
   const disp = document.getElementById('zoom-display');
   if (disp) disp.innerText = Math.round(currentZoom * 100) + '%';
+  if (isTutorialActive) setTimeout(renderStep, 150);
 }
+
+// --- Fullscreen Logic ---
+window.toggleFullScreen = function() {
+  if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Erreur plein écran: ${err.message}`);
+      });
+  } else {
+      if (document.exitFullscreen) {
+          document.exitFullscreen();
+      }
+  }
+};
+
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('btn-fullscreen');
+  if (btn) {
+      if (document.fullscreenElement) {
+          btn.innerHTML = '<i class="fas fa-compress"></i>';
+          btn.title = "Quitter le plein écran";
+      } else {
+          btn.innerHTML = '<i class="fas fa-expand"></i>';
+          btn.title = "Plein écran";
+      }
+  }
+});
+
+// --- Tutorial Logic ---
+let currentStepIndex = 0;
+let isTutorialActive = false;
+
+const tutorialSteps = [
+    {
+        target: '#btn-fullscreen',
+        title: 'ASTUCE CONFORT',
+        content: 'Avant de commencer, sachez que vous pouvez mettre l\'interface en plein écran à tout moment en cliquant ici pour un meilleur confort de lecture.',
+        noBorder: false
+    }
+];
+
+window.startTutorial = function() {
+    if (isTutorialActive) return;
+    isTutorialActive = true;
+    currentStepIndex = 0;
+    
+    document.getElementById('tutorial-container').style.display = 'block';
+    
+    const hole = document.getElementById('tutorial-hole');
+    hole.style.transition = 'none';
+    hole.style.top = '-9999px';
+    hole.style.left = '-9999px';
+    hole.style.width = '0px';
+    hole.style.height = '0px';
+    
+    setTimeout(() => {
+        hole.style.transition = 'top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease, border-width 0.2s ease';
+        renderStep();
+    }, 50);
+}
+
+window.endTutorial = function() {
+    isTutorialActive = false;
+    document.getElementById('tutorial-container').style.display = 'none';
+}
+
+window.nextStep = function() {
+    if (currentStepIndex < tutorialSteps.length - 1) {
+        currentStepIndex++;
+        renderStep();
+    } else {
+        window.endTutorial();
+    }
+}
+
+window.prevStep = function() {
+    if (currentStepIndex > 0) {
+        currentStepIndex--;
+        renderStep();
+    }
+}
+
+function renderStep() {
+    const step = tutorialSteps[currentStepIndex];
+
+    setTimeout(() => {
+        const targetEl = document.querySelector(step.target);
+        if (!targetEl) return;
+
+        setTimeout(() => {
+            const rawRect = targetEl.getBoundingClientRect();
+            
+            const rect = {
+                top: rawRect.top / currentZoom,
+                left: rawRect.left / currentZoom,
+                width: rawRect.width / currentZoom,
+                height: rawRect.height / currentZoom,
+                bottom: rawRect.bottom / currentZoom
+            };
+            
+            const absoluteTop = rect.top; // Puisque position fixed
+            const absoluteLeft = rect.left;
+            const padding = 8;
+            
+            const hole = document.getElementById('tutorial-hole');
+            hole.style.top = `${absoluteTop - padding}px`;
+            hole.style.left = `${absoluteLeft - padding}px`;
+            hole.style.width = `${rect.width + padding * 2}px`;
+            hole.style.height = `${rect.height + padding * 2}px`;
+            
+            if (step.noBorder) {
+                hole.style.borderWidth = '0px';
+            } else {
+                hole.style.borderWidth = '3px';
+            }
+
+            const tt = document.getElementById('tutorial-tooltip');
+            document.getElementById('tutorial-title').innerText = step.title;
+            document.getElementById('tutorial-text').innerText = step.content;
+            document.getElementById('tutorial-counter').innerText = `${currentStepIndex + 1} / ${tutorialSteps.length}`;
+            
+            document.getElementById('tutorial-prev').disabled = currentStepIndex === 0;
+            
+            const nextBtn = document.getElementById('tutorial-next');
+            if (currentStepIndex === tutorialSteps.length - 1) {
+                nextBtn.innerHTML = 'Terminer <i class="fas fa-check ml-1"></i>';
+                nextBtn.className = 'ml-2 bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition-colors shadow-sm font-bold';
+            } else {
+                nextBtn.innerHTML = 'Suivant <i class="fas fa-arrow-right ml-1"></i>';
+                nextBtn.className = 'ml-2 bg-[#598378] text-white text-xs px-3 py-1.5 rounded hover:bg-[#466a60] transition-colors shadow-sm font-bold';
+            }
+
+            let ttTop = absoluteTop + rect.height + padding + 15;
+            let ttLeft = absoluteLeft + (rect.width / 2) - 160; 
+
+            const viewportHeight = window.innerHeight / currentZoom;
+            const viewportWidth = document.documentElement.clientWidth / currentZoom;
+
+            if (rect.bottom + padding + 15 + 200 > viewportHeight) { 
+                ttTop = absoluteTop - padding - 210; 
+            }
+            
+            if (ttLeft < 20) ttLeft = 20;
+            if (ttLeft + 320 > viewportWidth) ttLeft = viewportWidth - 340;
+
+            tt.style.top = `${ttTop}px`;
+            tt.style.left = `${ttLeft}px`;
+
+        }, 100); 
+    }, 50); 
+}
+
+window.addEventListener('resize', () => {
+    if(isTutorialActive) renderStep();
+});
 </script>
 
 </body>

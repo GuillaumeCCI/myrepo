@@ -15,7 +15,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: ui-sans-serif, system-ui, sans-serif; overflow: hidden; }
+    body { font-family: ui-sans-serif, system-ui, sans-serif; }
     .fade-in { animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:none;} }
     .preview-section { transition: all 0.3s; }
@@ -50,13 +50,13 @@ const SCENARIOS = [
             analysis:"✅ Correct : l'intitulé est clair et respecte l'égalité homme-femme." },
           { id:"t2", label:"Boulanger (H/F)", content:"Boulanger (H/F)", isOptimal:true,
             annotation:"La mention « H/F » est une autre façon courante et acceptée.",
-            analysis:"✅ Également correct : la mention (H/F) remplit la même obligation légale." },
+            analysis:"✅ Également correct : la mention (H/F) remplit la même obligation légale (Art. L. 1142-1)." },
           { id:"t3", label:"Boulanger", content:"Boulanger", isOptimal:false,
-            annotation:"Un intitulé uniquement au masculin peut être considéré comme discriminatoire.",
-            analysis:"⚠️ Risqué : sans mention féminine, l'annonce peut être considérée discriminatoire." },
+            annotation:"Un intitulé uniquement au masculin peut être considéré comme discriminatoire s'il n'est pas assorti de la mention H/F.",
+            analysis:"🚫 Discriminatoire : sans mention féminine, l'annonce enfreint l'Art. L. 1132-1 du Code du travail." },
           { id:"t4", label:"Artisan passionné pour notre boutique", content:"Artisan passionné pour notre boutique", isOptimal:false,
-            annotation:"Un intitulé trop vague rend l'offre difficile à trouver.",
-            analysis:"❌ Inadapté : ne mentionne ni le métier ni le genre." },
+            annotation:"Un intitulé trop vague rend l'offre difficile à trouver dans les moteurs de recherche.",
+            analysis:"❌ Inadapté : ne mentionne ni le métier précis ni le genre." },
         ]
       },
       {
@@ -69,17 +69,17 @@ const SCENARIOS = [
             annotation:"Présenter la nature de l'entreprise permet au candidat de se projeter concrètement.",
             analysis:"✅ Pertinent : décrit fidèlement l'identité de l'établissement." },
           { id:"c2", label:"Fabrication 100 % maison", content:"Tous nos pains, viennoiseries et pâtisseries sont fabriqués sur place, dans notre propre fournil.", isOptimal:true,
-            annotation:"Mettre en avant le savoir-faire artisanal est un argument d'attractivité.",
-            analysis:"✅ Valorisant : souligne le positionnement artisanal." },
-          { id:"c3", label:"Franchise nationale", content:"Franchise nationale présente dans plus de 200 points de vente en France.", isOptimal:false,
-            annotation:"Louise Martin est une boutique indépendante, pas une franchise.",
-            analysis:"❌ Inexact : donner une fausse information est trompeur." },
-          { id:"c4", label:"CFA spécialisé", content:"CFA spécialisé dans les métiers de bouche, formant plus de 500 apprentis par an.", isOptimal:false,
-            annotation:"Un CFA est un organisme de formation, très différent d'une boulangerie.",
-            analysis:"❌ Erreur : Louise Martin est une boulangerie, pas un CFA." },
-          { id:"c5", label:"Groupe de restauration rapide", content:"Groupe de restauration rapide en pleine expansion sur le marché français.", isOptimal:false,
-            annotation:"La restauration rapide et la boulangerie artisanale sont deux secteurs très différents.",
-            analysis:"❌ Faux : Louise Martin n'est pas un groupe de restauration rapide." },
+            annotation:"Mettre en avant le savoir-faire artisanal est un argument d'attractivité majeur.",
+            analysis:"✅ Valorisant : souligne le positionnement artisanal de l'entreprise." },
+          { id:"c3", label:"Terminal de cuisson de centre-ville", content:"Terminal de cuisson dynamique situé en plein cœur de ville.", isOptimal:false,
+            annotation:"Cette appellation dévalue l'entreprise et est factuellement inexacte.",
+            analysis:"❌ Mensonger : Un terminal de cuisson ne fabrique pas sur place, contrairement à Louise Martin." },
+          { id:"c4", label:"Boulangerie-pâtisserie de 50 salariés", content:"Boulangerie-pâtisserie de 50 salariés en forte croissance.", isOptimal:false,
+            annotation:"L'entreprise ne compte que 5 salariés.",
+            analysis:"❌ Faux : Exagérer la taille de l'entreprise créera une dissonance à l'entretien." },
+          { id:"c5", label:"Boulangerie 100% bio et sans gluten", content:"Boulangerie spécialisée exclusivement dans les produits 100% bio et sans gluten.", isOptimal:false,
+            annotation:"Rien dans le contexte ne justifie cette hyper-spécialisation.",
+            analysis:"⚠️ Déconseillé : Spécialisation non mentionnée, cela réduira le vivier de candidats à tort." },
         ]
       },
       {
@@ -89,20 +89,20 @@ const SCENARIOS = [
         spotlight: "La boulangerie perd un salarié qui part à la retraite. Le besoin est permanent.",
         options: [
           { id:"ct1", label:"CDI", content:"Poste à pourvoir en CDI (contrat à durée indéterminée).", isOptimal:true,
-            annotation:"Le CDI est adapté lorsque le besoin de l'entreprise est durable et permanent.",
-            analysis:"✅ Adapté : le départ à la retraite crée un besoin permanent." },
+            annotation:"Le CDI est le cadre légal adapté lorsque le besoin de l'entreprise est durable.",
+            analysis:"✅ Adapté : le départ à la retraite crée un emploi lié à l'activité normale (Art. L. 1221-2)." },
           { id:"ct2", label:"Temps plein (35h)", content:"Temps plein, 35 heures par semaine.", isOptimal:true,
             annotation:"Préciser le volume horaire permet au candidat de savoir s'il s'agit d'un temps plein.",
             analysis:"✅ Important : le candidat sait exactement à quoi s'attendre." },
-          { id:"ct3", label:"CDD de 3 mois", content:"CDD de 3 mois renouvelable.", isOptimal:false,
-            annotation:"Un CDD ne peut être utilisé que pour un motif précis. Un besoin permanent ne le justifie pas.",
-            analysis:"❌ Inadapté : un CDD n'est pas justifié légalement dans ce cas." },
-          { id:"ct4", label:"Contrat d'apprentissage", content:"Contrat d'apprentissage de 24 mois.", isOptimal:false,
-            annotation:"L'apprentissage est destiné à un jeune en cours de diplôme.",
-            analysis:"❌ Inadapté : on cherche un professionnel autonome, pas un apprenti en formation." },
-          { id:"ct5", label:"Mission d'intérim", content:"Mission d'intérim de longue durée.", isOptimal:false,
-            annotation:"L'intérim est conçu pour des besoins temporaires et ponctuels.",
-            analysis:"❌ Inapproprié : l'intérim ne permet pas de construire une relation durable." },
+          { id:"ct3", label:"CDD de remplacement de 6 mois", content:"CDD de remplacement de 6 mois renouvelable.", isOptimal:false,
+            annotation:"Le motif 'remplacement' est invalide car le salarié remplacé quitte définitivement l'entreprise.",
+            analysis:"❌ Illégal : Un départ en retraite crée un poste permanent. Un CDD est interdit ici (Art. L. 1242-1)." },
+          { id:"ct4", label:"CDI à temps partiel (24h)", content:"Contrat CDI à temps partiel (24h/semaine).", isOptimal:false,
+            annotation:"Le salarié partant était à temps plein, la production requiert un 35h.",
+            analysis:"❌ Inadapté : La charge de travail nécessite un temps plein complet." },
+          { id:"ct5", label:"Contrat de professionnalisation", content:"Contrat de professionnalisation de 12 mois.", isOptimal:false,
+            annotation:"L'entreprise cherche un profil déjà formé pour compenser un départ clé.",
+            analysis:"❌ Inadapté : L'entreprise cherche un profil autonome et expérimenté, pas un contrat d'alternance." },
         ]
       },
       {
@@ -117,15 +117,15 @@ const SCENARIOS = [
           { id:"p2", label:"Assurer la production quotidienne", content:"Vous assurez la production quotidienne de pains, viennoiseries et pâtisseries pour notre clientèle de quartier.", isOptimal:true,
             annotation:"Décrire la finalité opérationnelle permet au candidat de comprendre son rôle concret.",
             analysis:"✅ Concret : le candidat sait exactement ce qu'on attend de lui." },
-          { id:"p3", label:"Ouverture d'un deuxième point de vente", content:"Dans le cadre de l'ouverture d'un deuxième point de vente, nous recrutons.", isOptimal:false,
-            annotation:"Il n'y a pas de projet d'ouverture d'un second magasin ici.",
-            analysis:"❌ Faux : il n'y a pas de projet d'ouverture d'un second point de vente." },
-          { id:"p4", label:"Renforcement saisonnier", content:"Pour faire face à l'affluence estivale, nous cherchons un renfort saisonnier.", isOptimal:false,
-            annotation:"Un besoin saisonnier est temporaire. Ce n'est pas la situation ici.",
-            analysis:"❌ Inexact : le besoin est permanent, pas saisonnier." },
-          { id:"p5", label:"Constitution d'un vivier", content:"Nous constituons un vivier de candidatures pour nos futurs besoins.", isOptimal:false,
-            annotation:"Un vivier est pour des recrutements futurs, sans poste réel immédiat.",
-            analysis:"❌ Trompeur : le poste est réel et immédiat." },
+          { id:"p3", label:"Accroissement temporaire d'activité", content:"Pour faire face à un accroissement d'activité, nous renforçons l'équipe.", isOptimal:false,
+            annotation:"C'est un motif légal de recours au CDD, ce qui est faux ici.",
+            analysis:"❌ Inexact : C'est un motif légal de CDD, mais ici le besoin est permanent." },
+          { id:"p4", label:"Création de poste suite au développement", content:"Dans le cadre du développement de notre chiffre d'affaires, nous créons un nouveau poste.", isOptimal:false,
+            annotation:"Il s'agit du remplacement numérique strict d'un partant.",
+            analysis:"❌ Faux : Il s'agit d'un remplacement suite à un départ, pas d'une création de poste." },
+          { id:"p5", label:"Constitution d'un vivier", content:"Nous constituons un vivier de candidatures pour nos futurs besoins de production.", isOptimal:false,
+            annotation:"Un vivier est pour des recrutements hypothétiques futurs.",
+            analysis:"⚠️ Déconseillé : Poster une fausse offre pour un vivier dégrade la marque employeur." },
         ]
       },
       {
@@ -139,25 +139,25 @@ const SCENARIOS = [
             analysis:"✅ Essentiel : c'est la mission principale du poste." },
           { id:"m2", label:"Gestion des matières premières", content:"Gérer les approvisionnements en matières premières et contrôler les stocks.", isOptimal:true,
             annotation:"Dans une petite structure, le boulanger participe souvent à la gestion des commandes.",
-            analysis:"✅ Réaliste : dans une boulangerie de 5 salariés, c'est courant." },
+            analysis:"✅ Réaliste : dans une boulangerie de 5 salariés, c'est très courant." },
           { id:"m3", label:"Respect des normes d'hygiène (HACCP)", content:"Appliquer et faire respecter les règles d'hygiène et de sécurité alimentaire (normes HACCP).", isOptimal:true,
             annotation:"L'hygiène alimentaire est une obligation légale.",
             analysis:"✅ Obligatoire : le respect des normes HACCP est non négociable." },
           { id:"m4", label:"Accompagnement de l'apprenti", content:"Accompagner et transmettre le savoir-faire à l'apprenti présent dans l'équipe.", isOptimal:true,
             annotation:"Un apprenti est déjà en poste dans la boulangerie.",
             analysis:"✅ Pertinent : la transmission du savoir-faire fait partie du métier." },
-          { id:"m5", label:"Management de 15 personnes", content:"Manager une équipe de 15 collaborateurs répartis sur deux sites.", isOptimal:false,
-            annotation:"La boulangerie Louise Martin compte seulement 5 salariés.",
-            analysis:"❌ Disproportionné : l'équipe complète ne compte que 5 personnes." },
-          { id:"m6", label:"Création d'une gamme traiteur", content:"Développer et lancer une nouvelle gamme traiteur.", isOptimal:false,
-            annotation:"Le traiteur n'est pas prévu dans ce poste.",
-            analysis:"❌ Hors périmètre : ce n'est pas une mission prévue." },
-          { id:"m7", label:"Gestion des réseaux sociaux", content:"Animer les réseaux sociaux de la boulangerie.", isOptimal:false,
-            annotation:"La communication digitale est un métier à part entière.",
-            analysis:"❌ Hors sujet : ce n'est pas une compétence de boulanger." },
-          { id:"m8", label:"Livraison des commandes clients", content:"Assurer les livraisons en véhicule utilitaire chez les clients professionnels.", isOptimal:false,
-            annotation:"La boulangerie Louise Martin est une boutique de vente directe.",
-            analysis:"❌ Inadapté : la boulangerie vend en boutique, pas en livraison." },
+          { id:"m5", label:"Vente au comptoir et encaissement", content:"Participer activement à la vente au comptoir et à l'encaissement client.", isOptimal:false,
+            annotation:"L'équipe comporte déjà une vendeuse dédiée.",
+            analysis:"❌ Hors périmètre : Une vendeuse est déjà dédiée à cette tâche. Le boulanger doit rester au fournil." },
+          { id:"m6", label:"Élaboration des plannings de l'équipe", content:"Gérer et élaborer les plannings hebdomadaires de l'équipe de vente et de production.", isOptimal:false,
+            annotation:"C'est une tâche managériale qui incombe à la gérante.",
+            analysis:"❌ Inadapté : C'est le rôle de la direction, pas du boulanger de production." },
+          { id:"m7", label:"Création d'une gamme de pâtisseries fines", content:"Développer et lancer une nouvelle gamme complète de pâtisseries fines et entremets complexes.", isOptimal:false,
+            annotation:"La pâtisserie fine requiert un CAP Pâtissier spécifique.",
+            analysis:"⚠️ Risqué : L'offre mentionne 'pâtisseries boulangères'. La pâtisserie fine demande un autre diplôme." },
+          { id:"m8", label:"Entretien complet de la boutique et vitrine", content:"Assurer le nettoyage complet de la surface de vente et l'entretien des vitrines extérieures.", isOptimal:false,
+            annotation:"L'entretien de la boutique revient aux équipes de vente.",
+            analysis:"❌ Inadapté : L'entretien de l'espace de vente n'incombe pas à l'équipe de production." },
         ]
       },
       {
@@ -175,15 +175,15 @@ const SCENARIOS = [
           { id:"wc3", label:"Fournil équipé et climatisé", content:"Fournil entièrement équipé (pétrin, diviseuse, four à sole) et climatisé.", isOptimal:true,
             annotation:"Mentionner l'équipement rassure le candidat sur ses conditions de travail.",
             analysis:"✅ Attractif : un fournil bien équipé est un argument de poids." },
-          { id:"wc4", label:"Horaires de bureau (9h – 17h)", content:"Horaires classiques de bureau, du lundi au vendredi de 9h à 17h.", isOptimal:false,
-            annotation:"Un boulanger ne travaille pas en horaires de bureau.",
-            analysis:"❌ Trompeur : horaires de bureau impossibles en boulangerie." },
-          { id:"wc5", label:"Télétravail 2 jours par semaine", content:"Possibilité de télétravail 2 jours par semaine.", isOptimal:false,
-            annotation:"Le métier de boulanger est un métier manuel exercé exclusivement dans un fournil.",
-            analysis:"❌ Impossible : on ne peut pas pétrir du pain depuis chez soi." },
-          { id:"wc6", label:"Travail uniquement le week-end", content:"Poste exclusivement le week-end.", isOptimal:false,
-            annotation:"Le poste est un temps plein du mardi au samedi.",
-            analysis:"❌ Faux : le besoin est un temps plein sur 5 jours." },
+          { id:"wc4", label:"Horaires tournants (matin/après-midi)", content:"Travail en horaires 2x8 tournants : une semaine le matin, une semaine l'après-midi.", isOptimal:false,
+            annotation:"En boulangerie artisanale classique, la production primaire se fait la nuit/très tôt le matin.",
+            analysis:"❌ Trompeur : La production de pain artisanal se fait à horaires fixes le matin." },
+          { id:"wc5", label:"Horaires flexibles à la carte", content:"Possibilité d'aménager vos horaires de travail à la carte selon vos préférences.", isOptimal:false,
+            annotation:"La production impose des contraintes pour garantir la fourniture de pain à l'ouverture.",
+            analysis:"❌ Impossible : La production exige des horaires fixes pour garantir l'ouverture du magasin." },
+          { id:"wc6", label:"Travail un week-end sur deux", content:"Vous travaillerez en roulement : un week-end sur deux de libre garanti.", isOptimal:false,
+            annotation:"Dans une micro-équipe de 2 boulangers, le samedi est souvent travaillé obligatoirement.",
+            analysis:"❌ Inexact : Dans cette petite équipe, le samedi est obligatoirement travaillé chaque semaine." },
         ]
       },
       {
@@ -198,15 +198,15 @@ const SCENARIOS = [
           { id:"s2", label:"Heures supplémentaires majorées", content:"Heures supplémentaires rémunérées et majorées selon la convention collective.", isOptimal:true,
             annotation:"Mentionner les heures supplémentaires majorées informe que le salaire réel peut être supérieur.",
             analysis:"✅ Transparent : le candidat comprend que sa rémunération totale peut dépasser le salaire de base." },
-          { id:"s3", label:"Salaire selon profil", content:"Salaire selon profil et expérience.", isOptimal:false,
-            annotation:"La mention « selon profil » est souvent perçue comme un manque de transparence.",
-            analysis:"⚠️ Déconseillé : cette formulation vague décourage de nombreux candidats." },
+          { id:"s3", label:"Salaire à négocier selon profil", content:"Salaire à négocier en entretien selon votre profil et expérience.", isOptimal:false,
+            annotation:"La mention « à négocier » sans base chiffrée est perçue comme un manque de transparence.",
+            analysis:"⚠️ Déconseillé : Une annonce sans indication claire de salaire perd drastiquement en attractivité." },
           { id:"s4", label:"Rémunération variable selon l'âge", content:"Rémunération variable en fonction de l'âge du candidat.", isOptimal:false,
             annotation:"Fixer le salaire en fonction de l'âge est une discrimination interdite par le Code du travail.",
-            analysis:"❌ Illégal : conditionner le salaire à l'âge est une discrimination prohibée." },
-          { id:"s5", label:"Salaire non communiqué", content:"Salaire : non communiqué.", isOptimal:false,
-            annotation:"Ne pas indiquer de salaire réduit fortement l'attractivité d'une annonce.",
-            analysis:"❌ Contre-productif : une annonce sans salaire perd en attractivité et en crédibilité." },
+            analysis:"🚫 Discriminatoire : Fixer le salaire d'un adulte selon son âge est interdit (Art. L. 1132-1)." },
+          { id:"s5", label:"SMIC horaire strict", content:"Rémunération de base au SMIC horaire strict.", isOptimal:false,
+            annotation:"L'entreprise cherche une personne autonome avec de l'expérience (remplacement de 15 ans d'ancienneté).",
+            analysis:"⚠️ Déconseillé : Difficile d'attirer un professionnel qualifié avec le salaire minimum légal." },
         ]
       },
       {
@@ -224,15 +224,15 @@ const SCENARIOS = [
           { id:"r3", label:"2 ans d'expérience ou diplôme", content:"Expérience de 2 ans en boulangerie ou diplôme en boulangerie (CAP, BP ou équivalent).", isOptimal:true,
             annotation:"Proposer une alternative diplôme OU expérience élargit le vivier de candidats.",
             analysis:"✅ Équilibré : le « ou » ouvre le poste à des profils variés sans sacrifier la compétence." },
-          { id:"r4", label:"BAC+3 en gestion obligatoire", content:"Diplôme BAC+3 minimum en gestion d'entreprise ou management.", isOptimal:false,
-            annotation:"Un diplôme en gestion n'a pas de lien avec le métier de boulanger.",
-            analysis:"❌ Disproportionné : cette exigence n'a aucun rapport avec le poste." },
-          { id:"r5", label:"Permis B obligatoire", content:"Permis de conduire (catégorie B) obligatoire.", isOptimal:false,
-            annotation:"Le permis n'est utile que si le poste implique des déplacements.",
-            analysis:"❌ Inutile : le poste est sédentaire dans le fournil." },
-          { id:"r6", label:"Anglais courant exigé", content:"Maîtrise courante de l'anglais à l'oral et à l'écrit.", isOptimal:false,
-            annotation:"L'anglais n'est pas nécessaire pour fabriquer du pain dans une boulangerie de quartier.",
-            analysis:"❌ Sans rapport : exiger l'anglais pour un poste de boulanger est injustifié." },
+          { id:"r4", label:"Brevet de Maîtrise (BM) exigé", content:"Être obligatoirement titulaire du Brevet de Maîtrise (BM) Boulanger.", isOptimal:false,
+            annotation:"Le BM est le plus haut diplôme de la branche, excessif pour un simple poste de production.",
+            analysis:"⚠️ Trop restrictif : Exiger le diplôme le plus élevé bloquera d'excellents candidats avec un CAP." },
+          { id:"r5", label:"Résider à moins de 10 km", content:"Résider obligatoirement à moins de 10 km de la boulangerie.", isOptimal:false,
+            annotation:"Bien que la proximité soit pratique pour les horaires, c'est illégal de l'exiger.",
+            analysis:"🚫 Discriminatoire : Le lieu de résidence ne peut être un critère de sélection (Art. L. 1132-1)." },
+          { id:"r6", label:"10 ans d'expérience minimum", content:"Justifier impérativement d'au moins 10 années d'expérience à un poste similaire.", isOptimal:false,
+            annotation:"Une telle durée d'expérience n'est pas strictement nécessaire pour être opérationnel.",
+            analysis:"⚠️ Trop restrictif : Exiger 10 ans réduit le vivier sans réelle justification opérationnelle." },
         ]
       },
       {
@@ -250,15 +250,15 @@ const SCENARIOS = [
           { id:"b3", label:"Prime de fin d'année", content:"Prime de fin d'année versée en décembre.", isOptimal:true,
             annotation:"Les primes sont appréciées. Il faut les mentionner si elles sont réellement versées.",
             analysis:"✅ Valorisant : une prime annuelle est un argument de fidélisation." },
-          { id:"b4", label:"Véhicule de fonction", content:"Véhicule de fonction mis à disposition.", isOptimal:false,
-            annotation:"Un véhicule de fonction est habituellement réservé aux postes commerciaux ou de direction.",
-            analysis:"❌ Irréaliste : une boulangerie de 5 salariés ne fournit pas de véhicule de fonction." },
-          { id:"b5", label:"Logement de fonction", content:"Logement de fonction à proximité de la boutique.", isOptimal:false,
-            annotation:"Le logement de fonction est quasi inexistant dans les petites boulangeries urbaines.",
-            analysis:"❌ Irréaliste : cet avantage n'est pas proposé par cette boulangerie." },
-          { id:"b6", label:"Intéressement au chiffre d'affaires", content:"Intéressement sur le chiffre d'affaires de la boulangerie.", isOptimal:false,
-            annotation:"L'intéressement est rare dans les très petites entreprises.",
-            analysis:"❌ Non prévu : cet avantage n'est pas en place dans la boulangerie." },
+          { id:"b4", label:"Remboursement des transports à 50 %", content:"Remboursement de votre abonnement de transports en commun à hauteur de 50 %.", isOptimal:false,
+            annotation:"L'employeur est légalement obligé de prendre en charge 50% du titre de transport.",
+            analysis:"❌ Trompeur : C'est une obligation légale, le présenter comme un avantage est très mal perçu." },
+          { id:"b5", label:"6 semaines de congés payés", content:"Profitez de 6 semaines de congés payés par an garantis.", isOptimal:false,
+            annotation:"La convention collective de la boulangerie garantit la norme légale des 5 semaines.",
+            analysis:"❌ Faux : La base légale est de 5 semaines, toute promesse excédentaire non contractuelle est un risque." },
+          { id:"b6", label:"Prime de présentéisme", content:"Une prime mensuelle vous sera versée pour toute absence de retard ou d'arrêt maladie.", isOptimal:false,
+            annotation:"Légalement possible mais très mal vue car elle pénalise les personnes malades.",
+            analysis:"⚠️ Déconseillé : Bien que légale, elle est souvent très mal perçue par les candidats." },
         ]
       },
     ]
@@ -282,11 +282,11 @@ const SCENARIOS = [
             annotation:"L'intitulé mentionne le statut (apprenti), le diplôme (CAP) et le format (alternance).",
             analysis:"✅ Parfait : le candidat comprend immédiatement qu'il s'agit d'une formation." },
           { id:"t2", label:"Boulanger Junior @FormAvenir", content:"Boulanger Junior @FormAvenir", isOptimal:false,
-            annotation:"« Junior » n'indique pas qu'il s'agit d'un contrat d'apprentissage.",
-            analysis:"⚠️ Imprécis : « junior » ne définit pas le statut juridique d'apprenti." },
+            annotation:"« Junior » n'indique pas qu'il s'agit d'un contrat d'apprentissage encadré.",
+            analysis:"⚠️ Imprécis : « junior » ne définit pas le statut juridique de l'apprenti." },
           { id:"t3", label:"Boulanger CDD Formation", content:"Boulanger CDD Formation", isOptimal:false,
             annotation:"Un contrat d'apprentissage n'est pas un CDD classique.",
-            analysis:"❌ Juridiquement incorrect : l'apprentissage a un cadre légal distinct du CDD." },
+            analysis:"❌ Illégal : L'apprentissage a un cadre légal distinct du CDD selon le Code du travail." },
         ]
       },
       {
@@ -301,15 +301,15 @@ const SCENARIOS = [
           { id:"c2", label:"300 apprentis formés par an", content:"Plus de 300 apprentis formés chaque année en Île-de-France, avec un réseau de boulangeries partenaires.", isOptimal:true,
             annotation:"Donner des chiffres concrets rassure sur le sérieux de l'organisme.",
             analysis:"✅ Crédible : les chiffres montrent l'envergure et l'expertise du CFA." },
-          { id:"c3", label:"Boulangerie artisanale de Levallois", content:"Boulangerie artisanale de Levallois, établie depuis 15 ans dans le quartier.", isOptimal:false,
-            annotation:"La boulangerie partenaire n'est pas l'employeur qui publie l'offre.",
-            analysis:"❌ Erreur : c'est le CFA qui publie l'offre, pas la boulangerie d'accueil." },
-          { id:"c4", label:"Agence d'intérim spécialisée", content:"Agence d'intérim spécialisée dans le recrutement des métiers de bouche.", isOptimal:false,
-            annotation:"Un CFA n'est pas une agence d'intérim.",
-            analysis:"❌ Faux : le CFA forme des apprentis sur le long terme." },
-          { id:"c5", label:"Cabinet de recrutement RH", content:"Cabinet de recrutement RH spécialisé dans les métiers de l'artisanat.", isOptimal:false,
-            annotation:"Un CFA forme des personnes pour obtenir un diplôme, ce n'est pas un cabinet de recrutement.",
-            analysis:"❌ Inexact : le CFA n'est pas un cabinet de recrutement." },
+          { id:"c3", label:"Lycée professionnel public", content:"Lycée professionnel public intégré à l'Académie de Paris.", isOptimal:false,
+            annotation:"FormAvenir est un Centre de Formation d'Apprentis, ce n'est pas un lycée de l'Éducation Nationale.",
+            analysis:"❌ Faux : FormAvenir est un CFA (droit privé), pas un lycée public." },
+          { id:"c4", label:"Organisme de formation continue pour adultes", content:"Organisme de formation continue spécialisé dans la reconversion des professionnels.", isOptimal:false,
+            annotation:"L'apprentissage (formation initiale) diffère de la formation continue (CPF/Transition pro).",
+            analysis:"❌ Inexact : Le CFA est spécialisé dans la formation initiale en apprentissage." },
+          { id:"c5", label:"Boulangerie artisanale de Levallois", content:"Boulangerie artisanale de Levallois, établie depuis 15 ans dans le quartier.", isOptimal:false,
+            annotation:"L'offre est gérée par le CFA. Se concentrer sur la boulangerie occulte le rôle du centre de formation.",
+            analysis:"❌ Erreur de ciblage : L'offre est publiée par le CFA, il faut présenter le CFA d'abord." },
         ]
       },
       {
@@ -320,19 +320,19 @@ const SCENARIOS = [
         options: [
           { id:"ct1", label:"Contrat d'apprentissage", content:"Contrat d'apprentissage d'une durée de 12 à 24 mois.", isOptimal:true,
             annotation:"C'est le cadre juridique pour former un jeune en alternance tout en le rémunérant.",
-            analysis:"✅ Correct : c'est le contrat adapté pour préparer un CAP en alternance." },
+            analysis:"✅ Correct : c'est le contrat adapté pour préparer un CAP en alternance (Art. L. 6221-1)." },
           { id:"ct2", label:"Alternance (CFA + entreprise)", content:"Formation en alternance : cours au CFA et pratique en boulangerie partenaire.", isOptimal:true,
             annotation:"Préciser le fonctionnement aide le candidat à comprendre l'organisation.",
             analysis:"✅ Pédagogique : le candidat comprend concrètement comment sa formation sera organisée." },
-          { id:"ct3", label:"CDI temps plein", content:"CDI à temps plein, prise de poste immédiate.", isOptimal:false,
-            annotation:"Un CDI est un contrat de salarié classique, sans volet formation.",
-            analysis:"❌ Inadapté : on cherche un apprenti en formation, pas un salarié en CDI." },
-          { id:"ct4", label:"Stage non rémunéré de 6 mois", content:"Stage conventionné non rémunéré de 6 mois.", isOptimal:false,
-            annotation:"L'apprentissage est obligatoirement rémunéré.",
-            analysis:"❌ Illégal : l'apprentissage implique une rémunération obligatoire." },
-          { id:"ct5", label:"CDD saisonnier de 3 mois", content:"CDD saisonnier de 3 mois.", isOptimal:false,
-            annotation:"La préparation d'un CAP prend au minimum 12 mois.",
-            analysis:"❌ Incompatible : un CAP ne se prépare pas en 3 mois." },
+          { id:"ct3", label:"Contrat de professionnalisation", content:"Contrat de professionnalisation réservé aux demandeurs d'emploi.", isOptimal:false,
+            annotation:"Le contrat de professionnalisation est possible, mais l'apprentissage est la norme pour un CAP initial.",
+            analysis:"⚠️ Moins adapté : Pour un CAP initial, le contrat d'apprentissage est beaucoup plus avantageux et standard." },
+          { id:"ct4", label:"Convention de stage alterné", content:"Convention de stage longue durée en rythme alterné.", isOptimal:false,
+            annotation:"Le statut de stagiaire ne s'applique pas pour la préparation d'un diplôme d'État artisanal comme le CAP.",
+            analysis:"❌ Illégal : Le stage alterné ne peut se substituer à un véritable contrat de travail en apprentissage." },
+          { id:"ct5", label:"CDD saisonnier de 3 mois", content:"CDD saisonnier de 3 mois pendant la période hivernale.", isOptimal:false,
+            annotation:"La préparation d'un CAP implique un cycle de formation d'un an minimum.",
+            analysis:"❌ Incompatible : La préparation d'un CAP prend au minimum 12 mois." },
         ]
       },
       {
@@ -347,15 +347,15 @@ const SCENARIOS = [
           { id:"p2", label:"Apprendre le métier en conditions réelles", content:"Apprendre le métier de boulanger en conditions réelles, au sein d'une boulangerie partenaire.", isOptimal:true,
             annotation:"L'apprentissage en entreprise est le complément essentiel de la formation théorique.",
             analysis:"✅ Concret : le candidat comprend qu'il apprendra le métier sur le terrain." },
-          { id:"p3", label:"Occuper un poste de boulanger confirmé", content:"Occuper immédiatement un poste de boulanger confirmé avec responsabilités complètes.", isOptimal:false,
-            annotation:"Un apprenti est en formation. Il n'a pas le statut d'un professionnel confirmé.",
-            analysis:"❌ Trompeur : l'apprenti est là pour apprendre, pas pour assumer toutes les responsabilités." },
-          { id:"p4", label:"Stage de découverte du métier", content:"Effectuer un stage de découverte pour voir si le métier vous plaît.", isOptimal:false,
-            annotation:"Un stage de découverte dure quelques jours. L'apprentissage est un engagement de 1 à 2 ans.",
-            analysis:"❌ Minimisant : un apprentissage est bien plus qu'un stage de découverte." },
-          { id:"p5", label:"Remplacer un salarié absent", content:"Remplacer temporairement un salarié absent.", isOptimal:false,
-            annotation:"Le remplacement temporaire est un motif de CDD, pas d'apprentissage.",
-            analysis:"❌ Erreur de motif : l'apprentissage n'est pas un outil de remplacement." },
+          { id:"p3", label:"Soutien à la production pendant les fêtes", content:"Venir en soutien direct de l'équipe pendant la forte activité des fêtes de fin d'année.", isOptimal:false,
+            annotation:"L'apprentissage doit former un collaborateur, pas servir de main-d'œuvre à bas coût pour les pics d'activité.",
+            analysis:"❌ Erreur de motif : L'apprentissage n'est pas un outil de flexibilité temporaire." },
+          { id:"p4", label:"Observation et découverte du milieu", content:"Stage d'observation pour découvrir le milieu de l'artisanat sans pression.", isOptimal:false,
+            annotation:"L'apprentissage exige de la pratique et de la production réelle.",
+            analysis:"⚠️ Minimisant : C'est un vrai contrat de travail productif, pas une simple immersion d'observation." },
+          { id:"p5", label:"Remplacer un salarié qualifié absent", content:"Remplacer un boulanger qualifié actuellement en arrêt maladie prolongé.", isOptimal:false,
+            annotation:"Un apprenti ne peut en aucun cas remplacer numériquement un salarié de l'entreprise.",
+            analysis:"❌ Illégal : Un apprenti ne peut pas être embauché pour remplacer un salarié (Art. L. 1242-2)." },
         ]
       },
       {
@@ -376,15 +376,15 @@ const SCENARIOS = [
           { id:"m4", label:"Entretenir le matériel et le poste", content:"Assurer l'entretien quotidien du matériel et le nettoyage du poste de travail.", isOptimal:true,
             annotation:"Le nettoyage et l'entretien font partie intégrante du métier.",
             analysis:"✅ Réaliste : la propreté du fournil est une responsabilité partagée." },
-          { id:"m5", label:"Gérer seul la production de nuit", content:"Assurer seul la production complète de nuit (22h – 6h).", isOptimal:false,
-            annotation:"Un apprenti doit être supervisé. Le travail de nuit est interdit pour les apprentis mineurs.",
-            analysis:"❌ Interdit ou dangereux : un apprenti ne doit pas travailler seul, encore moins de nuit." },
-          { id:"m6", label:"Développer la stratégie marketing", content:"Développer et mettre en œuvre la stratégie marketing de la boulangerie.", isOptimal:false,
-            annotation:"Le marketing n'a aucun rapport avec la formation CAP Boulanger.",
-            analysis:"❌ Hors sujet : cette mission ne fait pas partie du référentiel CAP Boulanger." },
-          { id:"m7", label:"Encadrer les autres apprentis", content:"Encadrer et former les autres apprentis de l'équipe.", isOptimal:false,
-            annotation:"Un apprenti est lui-même en formation. Il ne peut pas encadrer d'autres personnes.",
-            analysis:"❌ Illogique : un apprenti n'a ni l'expérience ni le statut pour encadrer." },
+          { id:"m5", label:"Responsabilité totale des cuissons au four", content:"Assurer la responsabilité exclusive du poste de cuisson au four sans supervision.", isOptimal:false,
+            annotation:"Le poste de cuisson requiert une grande maîtrise et peut être dangereux pour un apprenti seul.",
+            analysis:"❌ Dangereux : La gestion autonome des cuissons est trop lourde pour un apprenti débutant." },
+          { id:"m6", label:"Vente exclusive au comptoir", content:"Passer 100% du temps en boutique à assurer la vente au comptoir et le conseil client.", isOptimal:false,
+            annotation:"Le diplôme visé est le CAP Boulanger (fabrication), pas le CAP Vente en alimentation.",
+            analysis:"❌ Hors sujet : Le CAP Boulanger prépare exclusivement à la production en fournil." },
+          { id:"m7", label:"Développer la stratégie marketing", content:"Gérer la communication sur les réseaux sociaux et la stratégie marketing locale.", isOptimal:false,
+            annotation:"Le marketing digital n'a aucun lien avec les compétences attendues par le diplôme d'État visé.",
+            analysis:"❌ Hors sujet : Cette mission ne fait pas partie du référentiel du CAP Boulanger." },
         ]
       },
       {
@@ -402,15 +402,15 @@ const SCENARIOS = [
           { id:"wc3", label:"Début de contrat en février 2026", content:"Début de contrat prévu en février 2026.", isOptimal:true,
             annotation:"Donner une date de début permet au candidat de se projeter dans le temps.",
             analysis:"✅ Concret : le candidat sait quand il commencera." },
-          { id:"wc4", label:"Cours en présentiel 5 jours par semaine", content:"Cours en présentiel obligatoire 5 jours par semaine dans les locaux du CFA.", isOptimal:false,
-            annotation:"FormAvenir est un CFA 100 % en ligne. Il n'a pas de locaux pour des cours en présentiel.",
-            analysis:"❌ Faux : FormAvenir est un CFA en ligne. Annoncer du présentiel est mensonger." },
-          { id:"wc5", label:"Télétravail intégral", content:"Poste en télétravail intégral, sans présence en entreprise requise.", isOptimal:false,
-            annotation:"L'alternance implique obligatoirement une présence en entreprise.",
-            analysis:"❌ Impossible : l'apprenti doit être physiquement présent en boulangerie." },
-          { id:"wc6", label:"Mobilité internationale obligatoire", content:"Mobilité internationale obligatoire avec un séjour de 3 mois à l'étranger.", isOptimal:false,
-            annotation:"Un séjour à l'étranger n'est pas prévu dans ce CAP Boulanger.",
-            analysis:"❌ Inexact : ce n'est pas prévu et cela pourrait décourager des candidats." },
+          { id:"wc4", label:"Horaires de nuit stricts (2h-9h)", content:"Le travail en entreprise s'effectue exclusivement de nuit, de 2h à 9h du matin.", isOptimal:false,
+            annotation:"Les apprentis mineurs ont interdiction de travailler la nuit dans la boulangerie sans dérogation stricte.",
+            analysis:"❌ Illégal : Le travail de nuit des apprentis mineurs est strictement interdit (Art. L. 3163-1)." },
+          { id:"wc5", label:"Télétravail pour la partie pratique", content:"Possibilité de réaliser la partie pratique du CAP depuis chez vous en télétravail.", isOptimal:false,
+            annotation:"Il est impossible d'apprendre un métier artisanal manuel sans être présent physiquement dans le laboratoire.",
+            analysis:"❌ Impossible : L'apprenti doit être physiquement présent au fournil pour apprendre les gestes." },
+          { id:"wc6", label:"Travail tous les dimanches obligatoirement", content:"Disponibilité impérative tous les dimanches de l'année sans exception.", isOptimal:false,
+            annotation:"L'apprenti doit bénéficier d'un rythme compatible avec ses temps de formation théorique.",
+            analysis:"⚠️ Risqué : Le CFA impose souvent des jours de repos pour les cours, ce cadre doit être souple." },
         ]
       },
       {
@@ -421,19 +421,19 @@ const SCENARIOS = [
         options: [
           { id:"s1", label:"Barème légal (% du SMIC)", content:"Rémunération selon le barème légal de l'apprentissage (pourcentage du SMIC selon l'âge et l'année de formation).", isOptimal:true,
             annotation:"C'est le cadre légal. Indiquer que le salaire suit le barème officiel montre le respect des obligations.",
-            analysis:"✅ Conforme : c'est la réalité juridique de la rémunération en apprentissage." },
+            analysis:"✅ Conforme : c'est la réalité juridique de la rémunération en apprentissage (Art. D. 6222-26)." },
           { id:"s2", label:"Fourchette indicative (492 € à 1 823 €)", content:"Rémunération comprise entre 492 € et 1 823 € brut par mois, selon l'âge et le niveau de formation.", isOptimal:true,
             annotation:"Donner une fourchette concrète aide le candidat à se projeter financièrement.",
             analysis:"✅ Transparent : le candidat peut estimer sa rémunération selon sa situation." },
-          { id:"s3", label:"Salaire fixe de 2 500 € net", content:"Salaire fixe de 2 500 € net par mois.", isOptimal:false,
-            annotation:"Ce montant est très largement supérieur aux barèmes légaux de l'apprentissage.",
-            analysis:"❌ Trompeur : ce montant est irréaliste pour un apprenti." },
-          { id:"s4", label:"Formation non rémunérée", content:"Formation non rémunérée (gratuite pour l'apprenti).", isOptimal:false,
-            annotation:"L'apprentissage est un contrat de travail qui implique obligatoirement une rémunération.",
-            analysis:"❌ Illégal : un apprenti a le statut de salarié. Ne pas le rémunérer est contraire au Code du travail." },
-          { id:"s5", label:"Rémunération au pourboire", content:"Rémunération uniquement sous forme de pourboires.", isOptimal:false,
-            annotation:"Les pourboires ne peuvent pas remplacer un salaire.",
-            analysis:"❌ Illégal : la rémunération doit être fixe et respecter le barème légal." },
+          { id:"s3", label:"Rémunération forfaitaire de 500 € net", content:"Rémunération fixe et forfaitaire de 500 € net par mois quel que soit le profil.", isOptimal:false,
+            annotation:"Le salaire de l'apprenti ne peut être un forfait arbitraire, il dépend de son âge et de l'année d'étude.",
+            analysis:"❌ Illégal : La rémunération doit être un pourcentage strict du SMIC légal, pas un forfait." },
+          { id:"s4", label:"Salaire fixe au SMIC complet", content:"Rémunération d'entrée garantie à hauteur de 100 % du SMIC dès la première année.", isOptimal:false,
+            annotation:"Payer un apprenti débutant à 100% du SMIC est légalement possible, mais n'arrive presque jamais financièrement.",
+            analysis:"⚠️ Trompeur : Extrêmement rare pour un apprenti débutant, cela crée de fausses attentes salariales." },
+          { id:"s5", label:"Formation non rémunérée", content:"Formation entièrement bénévole et non rémunérée en échange de l'apprentissage du métier.", isOptimal:false,
+            annotation:"L'apprentissage est un contrat de travail. Le travail gratuit est prohibé.",
+            analysis:"❌ Illégal : Un apprenti a le statut de salarié et doit obligatoirement être rémunéré." },
         ]
       },
       {
@@ -444,22 +444,22 @@ const SCENARIOS = [
         options: [
           { id:"r1", label:"Être éligible au contrat d'apprentissage", content:"Être éligible au contrat d'apprentissage (16 à 29 ans, ou sans limite d'âge pour les personnes en situation de handicap).", isOptimal:true,
             annotation:"C'est une condition légale incontournable.",
-            analysis:"✅ Obligatoire : sans éligibilité, le contrat ne peut pas être signé." },
+            analysis:"✅ Obligatoire : sans éligibilité, le contrat ne peut pas être signé (Art. L. 6222-1)." },
           { id:"r2", label:"Être motivé et avoir un projet en boulangerie", content:"Être motivé par le métier de boulanger et avoir un projet professionnel dans ce domaine.", isOptimal:true,
             annotation:"La motivation est le critère le plus important pour un apprenti.",
             analysis:"✅ Essentiel : la motivation est le meilleur prédicteur de réussite en apprentissage." },
           { id:"r3", label:"Être autorisé à travailler en France", content:"Être autorisé à travailler en France.", isOptimal:true,
             annotation:"Cette condition est obligatoire pour tout contrat de travail.",
-            analysis:"✅ Indispensable : c'est une obligation légale." },
-          { id:"r4", label:"CAP Boulanger déjà obtenu", content:"Être déjà titulaire d'un CAP Boulanger.", isOptimal:false,
-            annotation:"Si le candidat a déjà le CAP, il n'a pas besoin de le préparer à nouveau.",
-            analysis:"❌ Illogique : on ne prépare pas un CAP qu'on possède déjà." },
-          { id:"r5", label:"3 ans d'expérience en boulangerie", content:"Justifier d'au moins 3 ans d'expérience en boulangerie.", isOptimal:false,
-            annotation:"L'apprentissage s'adresse à des débutants.",
-            analysis:"❌ Contradictoire : l'apprentissage est fait pour apprendre un métier." },
-          { id:"r6", label:"Permis B obligatoire", content:"Permis de conduire catégorie B obligatoire.", isOptimal:false,
-            annotation:"Le permis n'est pas nécessaire pour apprendre la boulangerie.",
-            analysis:"❌ Discriminant : beaucoup de jeunes n'ont pas le permis." },
+            analysis:"✅ Indispensable : c'est une obligation légale commune." },
+          { id:"r4", label:"Extrait de casier judiciaire vierge", content:"Justifier obligatoirement d'un extrait de casier judiciaire (bulletin n°3) vierge.", isOptimal:false,
+            annotation:"La demande du casier judiciaire n'est justifiée que pour certaines professions (banque, sécurité, enfance).",
+            analysis:"❌ Illégal : Exiger cet extrait sans lien avec la sécurité est une atteinte à la vie privée." },
+          { id:"r5", label:"Avoir moins de 20 ans", content:"Candidatures réservées aux jeunes de moins de 20 ans uniquement.", isOptimal:false,
+            annotation:"Le contrat d'apprentissage est ouvert jusqu'à 29 ans révolus. Restreindre cette fourchette est discriminatoire.",
+            analysis:"🚫 Discriminatoire : L'apprentissage est ouvert jusqu'à 29 ans. Restreindre l'âge est illégal (Art. L. 1132-1)." },
+          { id:"r6", label:"Excellente condition physique exigée", content:"Excellente condition physique exigée, avec un certificat médical validé avant l'entretien.", isOptimal:false,
+            annotation:"Bien que le métier soit physique, seul le médecin du travail peut statuer sur l'aptitude.",
+            analysis:"🚫 Discriminatoire : Ce critère est lié à l'état de santé et constitue une discrimination directe (Art. L. 1132-1)." },
         ]
       },
       {
@@ -480,12 +480,12 @@ const SCENARIOS = [
           { id:"b4", label:"Aide au permis (500 €)", content:"Aide au financement du permis de conduire à hauteur de 500 € (dispositif légal pour les apprentis majeurs).", isOptimal:true,
             annotation:"Cette aide est un droit ouvert à tous les apprentis de 18 ans et plus.",
             analysis:"✅ Concret : un avantage financier réel que beaucoup ne connaissent pas." },
-          { id:"b5", label:"Logement étudiant fourni", content:"Logement étudiant fourni par le CFA pendant toute la durée de la formation.", isOptimal:false,
-            annotation:"FormAvenir est un CFA en ligne. Il ne dispose pas de logements étudiants.",
-            analysis:"❌ Faux : le CFA ne fournit pas de logement." },
-          { id:"b6", label:"Voyage d'études à l'étranger", content:"Voyage d'études de 2 semaines à l'étranger offert en fin de formation.", isOptimal:false,
-            annotation:"Aucun voyage à l'étranger n'est prévu dans le cadre de cette formation.",
-            analysis:"❌ Inventé : cet avantage n'existe pas." },
+          { id:"b5", label:"Prime de précarité de 10 % à la fin", content:"Indemnité de fin de contrat (prime de précarité) de 10 % versée à l'issue de l'apprentissage.", isOptimal:false,
+            annotation:"Le contrat d'apprentissage fait l'objet d'une exception stricte sur cette indemnité.",
+            analysis:"❌ Faux : L'indemnité de fin de contrat n'est légalement pas due pour l'apprentissage (Art. L. 1243-10)." },
+          { id:"b6", label:"Mutuelle prise en charge à 100 %", content:"Mutuelle santé d'entreprise haut de gamme prise en charge à 100 % par l'employeur.", isOptimal:false,
+            annotation:"Dans les petites structures accueillant des apprentis, la prise en charge à 100% est extrêmement rare.",
+            analysis:"❌ Mensonger : Très rare en boulangerie artisanale. Promettre des avantages fictifs est un risque juridique." },
         ]
       },
     ]
@@ -510,10 +510,10 @@ const SCENARIOS = [
             analysis:"✅ Complet et inclusif : toutes les informations essentielles sont présentes." },
           { id:"t2", label:"Boulanger débutant @Passerelle", content:"Boulanger débutant @Passerelle", isOptimal:false,
             annotation:"Le mot « débutant » n'a pas de statut juridique.",
-            analysis:"⚠️ Trop vague : « débutant » ne dit pas au candidat qu'il prépare un diplôme." },
+            analysis:"⚠️ Trop vague : « débutant » ne dit pas au candidat qu'il prépare un diplôme d'État." },
           { id:"t3", label:"Aide boulanger – Poste à pourvoir immédiatement", content:"Aide boulanger – Poste à pourvoir immédiatement", isOptimal:false,
             annotation:"« Aide boulanger » est un poste d'exécution sans formation diplômante.",
-            analysis:"❌ Trompeur : cet intitulé fait penser à un emploi non qualifié." },
+            analysis:"❌ Trompeur : cet intitulé fait penser à un emploi non qualifié et cache la réalité de l'alternance." },
         ]
       },
       {
@@ -530,13 +530,13 @@ const SCENARIOS = [
             analysis:"✅ Crédible : cela rassure le candidat sur le sérieux de l'organisme." },
           { id:"c3", label:"Boulangerie de quartier", content:"Boulangerie de quartier indépendante, ambiance familiale.", isOptimal:false,
             annotation:"Passerelle est le CFA, pas la boulangerie.",
-            analysis:"❌ Confusion : l'offre est publiée par le CFA, pas par la boulangerie." },
-          { id:"c4", label:"Agence de placement temporaire", content:"Agence de placement temporaire dans les métiers de la restauration.", isOptimal:false,
+            analysis:"❌ Confusion : l'offre est publiée par le CFA, pas par la boulangerie finale." },
+          { id:"c4", label:"Agence de placement temporaire (Intérim)", content:"Agence de recrutement intérimaire spécialisée dans les métiers de la restauration.", isOptimal:false,
             annotation:"Passerelle n'est pas une agence d'intérim. C'est un organisme de formation.",
-            analysis:"❌ Faux : le CFA forme et diplôme, il ne « place » pas des intérimaires." },
-          { id:"c5", label:"Cabinet de conseil RH", content:"Cabinet de conseil en ressources humaines et en recrutement.", isOptimal:false,
+            analysis:"❌ Faux : Passerelle CFA forme et diplôme, ce n'est pas une agence de travail temporaire." },
+          { id:"c5", label:"Cabinet de conseil RH", content:"Cabinet de conseil en ressources humaines et en recrutement stratégique.", isOptimal:false,
             annotation:"Passerelle n'est pas un cabinet de conseil.",
-            analysis:"❌ Inexact : cette description ne correspond pas à l'activité de Passerelle." },
+            analysis:"❌ Inexact : Passerelle est un organisme de formation (école en ligne), pas un cabinet de conseil." },
         ]
       },
       {
@@ -551,15 +551,15 @@ const SCENARIOS = [
           { id:"ct2", label:"Alternance cours en ligne + pratique", content:"Formation en alternance : cours en ligne avec Passerelle CFA et pratique en boulangerie partenaire.", isOptimal:true,
             annotation:"Expliquer le fonctionnement concret aide le candidat à se projeter.",
             analysis:"✅ Explicite : le candidat comprend comment s'articulent formation et pratique." },
-          { id:"ct3", label:"CDI", content:"CDI à temps plein avec prise de poste immédiate.", isOptimal:false,
-            annotation:"L'objectif est de former un apprenti, pas de recruter un salarié expérimenté.",
-            analysis:"❌ Inadapté : le CDI ne correspond pas au choix stratégique de la boulangerie." },
-          { id:"ct4", label:"Mission d'intérim de 2 semaines", content:"Mission d'intérim de 2 semaines renouvelable.", isOptimal:false,
-            annotation:"L'intérim ne permet pas de suivre une formation diplômante.",
-            analysis:"❌ Incompatible : c'est l'option que la boulangerie a justement écartée." },
+          { id:"ct3", label:"Contrat de travail temporaire (Intérim)", content:"Mission de travail temporaire avec de la formation intégrée.", isOptimal:false,
+            annotation:"L'intérim ne permet pas de suivre un cursus diplômant long comme le CAP.",
+            analysis:"❌ Incompatible : La boulangerie veut former sur le long terme, l'intérim ne le permet pas." },
+          { id:"ct4", label:"CDD d'usage", content:"Contrat à durée déterminée d'usage (CDDU) renouvelable selon les besoins.", isOptimal:false,
+            annotation:"Le secteur de la boulangerie artisanale ne fait pas partie des secteurs autorisés pour les CDDU.",
+            analysis:"❌ Illégal : La boulangerie artisanale n'est pas autorisée à recourir aux CDD d'usage (Art. L. 1242-2)." },
           { id:"ct5", label:"Stage de découverte de 2 semaines", content:"Stage de découverte de 2 semaines non rémunéré.", isOptimal:false,
             annotation:"Un stage de 2 semaines n'a rien à voir avec un apprentissage diplômant.",
-            analysis:"❌ Hors sujet : durée incompatible avec la préparation d'un CAP." },
+            analysis:"❌ Hors sujet : La durée est totalement incompatible avec la préparation d'un CAP complet." },
         ]
       },
       {
@@ -574,15 +574,15 @@ const SCENARIOS = [
           { id:"p2", label:"Renforcer l'équipe tout en se formant", content:"Intégrer l'équipe de la boulangerie partenaire et contribuer à la production tout en vous formant au métier.", isOptimal:true,
             annotation:"Cette formulation traduit bien la double dimension de l'apprentissage.",
             analysis:"✅ Réaliste : le candidat sait qu'il sera utile tout en étant en formation." },
-          { id:"p3", label:"Remplacer temporairement un salarié", content:"Assurer le remplacement temporaire d'un salarié absent pendant 3 mois.", isOptimal:false,
-            annotation:"L'apprentissage n'est pas un remplacement temporaire.",
-            analysis:"❌ Faux : l'apprenti ne remplace personne temporairement." },
+          { id:"p3", label:"Absorber un surcroît temporaire d'activité", content:"Venir renforcer notre équipe de production pour absorber un surcroît temporaire de commandes.", isOptimal:false,
+            annotation:"Ceci décrit un besoin temporaire justifiant un CDD ou de l'intérim, pas un apprentissage.",
+            analysis:"❌ Contradictoire : L'entreprise a choisi l'apprentissage pour investir sur l'avenir, pas pour du temporaire." },
           { id:"p4", label:"Tester le métier pendant quelques semaines", content:"Tester le métier de boulanger pendant quelques semaines avant de décider.", isOptimal:false,
             annotation:"L'apprentissage est un engagement ferme sur 1 à 2 ans.",
-            analysis:"❌ Minimisant : un apprentissage est un vrai engagement professionnel." },
-          { id:"p5", label:"Se spécialiser dans la vente en boutique", content:"Se spécialiser dans la vente et le conseil client en boutique.", isOptimal:false,
-            annotation:"Le CAP Boulanger forme à la production, pas à la vente.",
-            analysis:"❌ Hors sujet : le poste concerne la production en fournil." },
+            analysis:"⚠️ Minimisant : L'apprentissage est un engagement contractuel lourd, pas un simple essai." },
+          { id:"p5", label:"Remplacer un salarié qualifié absent", content:"Remplacer numériquement notre boulanger qualifié qui a quitté l'entreprise précipitamment.", isOptimal:false,
+            annotation:"Il est illégal de recruter un apprenti pour compenser un poste structurel normalement occupé par un salarié qualifié.",
+            analysis:"❌ Illégal : Un apprenti ne peut pas remplacer légalement un salarié qualifié absent (Art. L. 1242-2)." },
         ]
       },
       {
@@ -603,15 +603,15 @@ const SCENARIOS = [
           { id:"m4", label:"Gestion des stocks", content:"Participer au suivi des stocks et à la réception des matières premières.", isOptimal:true,
             annotation:"Initier l'apprenti à la gestion des stocks complète sa formation.",
             analysis:"✅ Formateur : c'est une compétence complémentaire importante." },
-          { id:"m5", label:"Ouvrir seul la boulangerie à 4h", content:"Ouvrir seul la boulangerie chaque matin à 4h et lancer la production sans supervision.", isOptimal:false,
-            annotation:"Un apprenti ne doit jamais être seul. C'est la responsabilité du tuteur.",
-            analysis:"❌ Dangereux : laisser un apprenti ouvrir seul pose des problèmes de sécurité." },
+          { id:"m5", label:"Assumer les responsabilités du salarié parti", content:"Reprendre immédiatement et en autonomie les responsabilités du boulanger titulaire qui nous a quittés.", isOptimal:false,
+            annotation:"Un apprenti est par définition en formation, l'employeur reste responsable de la production finale.",
+            analysis:"❌ Dangereux : On ne peut confier à un apprenti les responsabilités complètes d'un salarié confirmé." },
           { id:"m6", label:"Comptabilité de l'entreprise", content:"Tenir la comptabilité et gérer la trésorerie de la boulangerie.", isOptimal:false,
             annotation:"La comptabilité est un métier à part entière.",
-            analysis:"❌ Hors sujet : cela n'a rien à voir avec le métier de boulanger." },
+            analysis:"❌ Hors sujet : Cela n'a rien à voir avec le référentiel métier du boulanger." },
           { id:"m7", label:"Service en salle et caisse", content:"Assurer le service en salle, la prise de commandes et la tenue de caisse.", isOptimal:false,
             annotation:"Le CAP Boulanger forme à la production, pas à la vente.",
-            analysis:"❌ Confusion de poste : l'apprenti est formé au fournil, pas au comptoir." },
+            analysis:"❌ Confusion de poste : L'apprenti est formé à la production au fournil, pas au comptoir." },
         ]
       },
       {
@@ -631,13 +631,13 @@ const SCENARIOS = [
             analysis:"✅ Clair : le candidat connaît son volume de travail." },
           { id:"wc4", label:"Travail de nuit exclusif (22h – 6h)", content:"Travail exclusivement de nuit, de 22h à 6h, sans supervision.", isOptimal:false,
             annotation:"Le travail de nuit est interdit pour les apprentis mineurs et très encadré pour les majeurs.",
-            analysis:"❌ Problématique : le travail de nuit est fortement réglementé pour les apprentis." },
+            analysis:"❌ Illégal : Le travail de nuit est fortement réglementé et interdit pour les mineurs (Art. L. 3163-1)." },
           { id:"wc5", label:"Repos garanti samedi et dimanche", content:"Repos garanti tous les samedis et dimanches sans exception.", isOptimal:false,
             annotation:"Le week-end est la période la plus chargée en boulangerie.",
-            analysis:"❌ Irréaliste : promettre le repos systématique le week-end en boulangerie créerait une déception." },
+            analysis:"❌ Irréaliste : Promettre le repos systématique le week-end en boulangerie créerait une déception." },
           { id:"wc6", label:"Déplacements nationaux fréquents", content:"Déplacements fréquents dans toute la France pour des missions en boulangeries partenaires.", isOptimal:false,
             annotation:"L'apprenti est affecté à une boulangerie précise.",
-            analysis:"❌ Faux : l'apprenti travaille dans une seule boulangerie partenaire." },
+            analysis:"❌ Faux : L'apprenti travaillera dans un seul fournil partenaire fixe." },
         ]
       },
       {
@@ -648,19 +648,19 @@ const SCENARIOS = [
         options: [
           { id:"s1", label:"Pourcentage du SMIC selon l'âge", content:"Rémunération calculée sur un pourcentage du SMIC, selon l'âge et l'année de formation.", isOptimal:true,
             annotation:"C'est le cadre légal de la rémunération en apprentissage.",
-            analysis:"✅ Conforme : cette information permet au candidat de calculer son salaire." },
+            analysis:"✅ Conforme : cette information permet au candidat de calculer son salaire légal." },
           { id:"s2", label:"Grille officielle consultable en ligne", content:"Rémunération selon la grille officielle de l'apprentissage, consultable sur le site du ministère du Travail.", isOptimal:true,
             annotation:"Renvoyer vers la grille officielle montre la transparence de l'annonce.",
-            analysis:"✅ Transparent : le candidat peut vérifier par lui-même." },
+            analysis:"✅ Transparent : le candidat peut vérifier par lui-même sur les grilles de l'État." },
           { id:"s3", label:"Salaire fixe de 1 800 € net", content:"Salaire fixe de 1 800 € net par mois pour tous les apprentis.", isOptimal:false,
             annotation:"Ce montant est bien supérieur aux barèmes légaux.",
-            analysis:"❌ Trompeur : un tel salaire ne correspond pas aux barèmes." },
+            analysis:"❌ Trompeur : Ce montant ne correspond pas aux barèmes légaux de l'apprentissage." },
           { id:"s4", label:"Rémunération au mérite uniquement", content:"Rémunération uniquement au mérite, sans salaire de base garanti.", isOptimal:false,
             annotation:"L'apprenti a droit à un salaire fixe garanti par la loi.",
-            analysis:"❌ Illégal : le salaire de base est un droit." },
+            analysis:"❌ Illégal : Le salaire de base, encadré par la loi, est un droit absolu." },
           { id:"s5", label:"Rémunération en nature", content:"Rémunération sous forme d'avantages en nature : pain quotidien et logement.", isOptimal:false,
             annotation:"Un salarié, même apprenti, a droit à un salaire versé en argent.",
-            analysis:"❌ Illégal : le salaire monétaire est obligatoire." },
+            analysis:"❌ Illégal : Le paiement du salaire en monnaie est obligatoire." },
         ]
       },
       {
@@ -674,19 +674,19 @@ const SCENARIOS = [
             analysis:"✅ Essentiel : un apprenti motivé progressera plus vite." },
           { id:"r2", label:"Éligible au contrat d'apprentissage", content:"Être éligible au contrat d'apprentissage (conditions d'âge ou dérogations légales).", isOptimal:true,
             annotation:"C'est une condition légale obligatoire.",
-            analysis:"✅ Obligatoire : sans éligibilité, le contrat est juridiquement impossible." },
+            analysis:"✅ Obligatoire : l'éligibilité au contrat est requise par la loi (Art. L. 6222-1)." },
           { id:"r3", label:"Ponctualité et esprit d'équipe", content:"Faire preuve de ponctualité et apprécier le travail en équipe.", isOptimal:true,
             annotation:"En boulangerie, arriver à l'heure est crucial.",
             analysis:"✅ Pertinent : ces qualités sont directement liées aux conditions de travail." },
-          { id:"r4", label:"Diplôme BAC+2 minimum", content:"Être titulaire d'un diplôme BAC+2 minimum en gestion ou en commerce.", isOptimal:false,
-            annotation:"Le CAP est un diplôme de niveau 3, accessible dès la fin de 3ème.",
-            analysis:"❌ Disproportionné : cette exigence exclut la majorité des candidats visés." },
-          { id:"r5", label:"5 ans d'expérience en restauration", content:"Justifier d'au moins 5 ans d'expérience en restauration ou en boulangerie.", isOptimal:false,
+          { id:"r4", label:"Être immédiatement opérationnel sur les pâtes", content:"Maîtriser immédiatement toutes les techniques de panification sans avoir besoin d'être formé.", isOptimal:false,
+            annotation:"C'est un non-sens pour un contrat de formation en alternance.",
+            analysis:"❌ Contradictoire : C'est un apprenti, l'employeur doit le former, on ne peut pas exiger une opérationnalité immédiate." },
+          { id:"r5", label:"5 ans d'expérience en restauration", content:"Justifier d'au moins 5 ans d'expérience validée en boulangerie ou pâtisserie.", isOptimal:false,
             annotation:"L'apprentissage s'adresse à des débutants.",
-            analysis:"❌ Absurde : si le candidat a 5 ans d'expérience, il n'a pas besoin d'un CAP." },
-          { id:"r6", label:"Maîtrise de l'anglais et de l'espagnol", content:"Maîtrise courante de l'anglais et de l'espagnol.", isOptimal:false,
-            annotation:"Les langues étrangères n'ont aucun rapport avec le métier de boulanger artisanal.",
-            analysis:"❌ Sans rapport : exiger deux langues étrangères est discriminant et injustifié." },
+            analysis:"❌ Absurde : Si le candidat a 5 ans d'expérience, il n'a probablement pas besoin d'un CAP niveau débutant." },
+          { id:"r6", label:"Candidature masculine privilégiée (port de charges)", content:"Candidature masculine fortement privilégiée en raison du port régulier de sacs de farine de 25 kg.", isOptimal:false,
+            annotation:"Bien que le port de charges existe, le métier s'adapte (matériel de levage) et interdire les femmes est pénalement condamnable.",
+            analysis:"🚫 Discriminatoire : L'interdiction de discrimination fondée sur le sexe est absolue (Art. L. 1142-1)." },
         ]
       },
       {
@@ -706,13 +706,13 @@ const SCENARIOS = [
             analysis:"✅ Différenciant : c'est un service exclusif à forte valeur ajoutée." },
           { id:"b4", label:"Aide au permis (500 €)", content:"Aide au financement du permis de conduire de 500 € pour les apprentis majeurs (dispositif légal).", isOptimal:true,
             annotation:"Cette aide est un droit ouvert à tous les apprentis de 18 ans et plus.",
-            analysis:"✅ Concret : un avantage financier réel." },
+            analysis:"✅ Concret : un avantage financier réel qui lève un frein à l'emploi." },
           { id:"b5", label:"Ordinateur portable offert", content:"Ordinateur portable dernier cri offert dès la signature du contrat.", isOptimal:false,
             annotation:"Passerelle ne fournit pas d'ordinateur portable aux apprentis.",
-            analysis:"❌ Inventé : promettre un avantage qui n'existe pas est trompeur." },
+            analysis:"❌ Mensonger : Passerelle ne fournit pas de matériel informatique." },
           { id:"b6", label:"Voyage de fin de formation", content:"Voyage de fin de formation tous frais payés dans une capitale européenne.", isOptimal:false,
             annotation:"Aucun voyage n'est prévu dans le cadre de cette formation.",
-            analysis:"❌ Fictif : inventer des avantages se retournera contre l'employeur." },
+            analysis:"❌ Mensonger : Cet avantage n'est pas prévu." },
         ]
       },
     ]
@@ -773,6 +773,36 @@ function buildOptimalAd(steps) {
   return buildJobAd(steps, sel);
 }
 
+// Fonction pour déterminer le style du feedback
+const getFeedbackStyle = (text) => {
+  if (!text) return "bg-slate-50 text-slate-700 border-slate-200";
+  if (text.startsWith('✅')) return "bg-emerald-50 text-emerald-900 border-emerald-200";
+  if (text.startsWith('⚠️')) return "bg-amber-50 text-amber-900 border-amber-200";
+  if (text.startsWith('🚫')) return "bg-fuchsia-50 text-fuchsia-900 border-fuchsia-200";
+  if (text.startsWith('❌')) return "bg-red-50 text-red-900 border-red-200";
+  return "bg-slate-50 text-slate-700 border-slate-200";
+};
+
+// Hook personnalisé pour persister le state dans localStorage
+function useStickyState(defaultValue, key) {
+  const [value, setValue] = React.useState(() => {
+    try {
+      const stickyValue = window.localStorage.getItem(key);
+      return stickyValue !== null ? JSON.parse(stickyValue) : defaultValue;
+    } catch (err) {
+      return defaultValue;
+    }
+  });
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (err) {
+      // Ignorer les erreurs (ex: restrictions liées à l'iframe d'un LMS)
+    }
+  }, [key, value]);
+  return [value, setValue];
+}
+
 /* ─────────────────────────── FULLSCREEN BUTTON ─────────────────────────── */
 function FullscreenButton({ id }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -792,7 +822,7 @@ function FullscreenButton({ id }) {
   };
 
   return (
-    <button id={id} onClick={toggle} className="w-8 h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-lg flex items-center justify-center transition-colors ml-2 shadow-sm" title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}>
+    <button id={id} onClick={toggle} className="w-8 h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-lg flex items-center justify-center transition-colors ml-2 shadow-sm focus:outline-none focus:ring-4 focus:ring-slate-400" title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}>
       {isFullscreen ? <Minimize size={16}/> : <Maximize size={16}/>}
     </button>
   );
@@ -802,17 +832,17 @@ function FullscreenButton({ id }) {
 function ZoomControls({ zoom, setZoom }) {
   return (
     <div className="fixed bottom-6 right-6 flex items-center bg-white rounded-full shadow-lg border border-slate-200 z-[9000] p-1 gap-1">
-      <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors" title="Dézoomer">
+      <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400" title="Dézoomer">
         <ZoomOut size={16}/>
       </button>
       <span className="text-xs font-bold text-slate-700 w-10 text-center">
         {Math.round(zoom * 100)}%
       </span>
-      <button onClick={() => setZoom(z => Math.min(1.5, z + 0.1))} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors" title="Zoomer">
+      <button onClick={() => setZoom(z => Math.min(1.5, z + 0.1))} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400" title="Zoomer">
         <ZoomIn size={16}/>
       </button>
       <div className="w-px h-4 bg-slate-200 mx-1"/>
-      <button onClick={() => setZoom(1)} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors" title="Réinitialiser le zoom">
+      <button onClick={() => setZoom(1)} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400" title="Réinitialiser le zoom">
         <RefreshCw size={14}/>
       </button>
     </div>
@@ -820,7 +850,7 @@ function ZoomControls({ zoom, setZoom }) {
 }
 
 /* ─────────────────────────── TOUR COMPONENT ─────────────────────────── */
-function TourSpotlight({ step, onNext, isLast }) {
+function TourSpotlight({ step, onNext, isLast, zoomLevel = 1 }) {
   const [rect, setRect] = useState(null);
 
   useEffect(() => {
@@ -848,28 +878,39 @@ function TourSpotlight({ step, onNext, isLast }) {
 
   if (!rect) return null;
 
-  const tooltipWidth = 360; // Taille réduite et adaptée
+  // Calcul des coordonnées locales par rapport au conteneur zoomé
+  const tTop = rect.top / zoomLevel;
+  const tLeft = rect.left / zoomLevel;
+  const tWidth = rect.width / zoomLevel;
+  const tHeight = rect.height / zoomLevel;
+  const tBottom = rect.bottom / zoomLevel;
+  const tRight = rect.right / zoomLevel;
+
+  const tooltipWidth = 360;
 
   // Placement intelligent pour garder l'infobulle dans l'écran et ne pas cacher la cible
-  let top = rect.bottom + 24;
-  let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+  let top = tBottom + 24;
+  let left = tLeft + (tWidth / 2) - (tooltipWidth / 2);
 
   if (step.placement === 'right') {
-    top = rect.top + Math.min(rect.height / 3, 100);
-    left = rect.right + 32;
+    top = tTop + Math.min(tHeight / 3, 100);
+    left = tRight + 32;
   } else if (step.placement === 'left') {
-    top = rect.top + Math.min(rect.height / 3, 100);
-    left = rect.left - tooltipWidth - 32;
+    top = tTop + Math.min(tHeight / 3, 100);
+    left = tLeft - tooltipWidth - 32;
   } else if (step.placement === 'bottom') {
-    top = rect.bottom + 24;
-    left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+    top = tBottom + 24;
+    left = tLeft + (tWidth / 2) - (tooltipWidth / 2);
   }
 
-  // Sécurité : on garde l'infobulle dans la fenêtre
+  // Dimensions "virtuelles" du navigateur pour sécuriser l'infobulle
+  const winWidth = window.innerWidth / zoomLevel;
+  const winHeight = window.innerHeight / zoomLevel;
+
   if (left < 24) left = 24;
-  if (left + tooltipWidth > window.innerWidth - 24) left = window.innerWidth - tooltipWidth - 24;
+  if (left + tooltipWidth > winWidth - 24) left = winWidth - tooltipWidth - 24;
   if (top < 24) top = 24;
-  if (top + 200 > window.innerHeight) top = Math.max(24, window.innerHeight - 200);
+  if (top + 200 > winHeight) top = Math.max(24, winHeight - 200);
 
   return (
     <div className="fixed inset-0 z-[9990]">
@@ -879,8 +920,8 @@ function TourSpotlight({ step, onNext, isLast }) {
       {/* Masque global assombri avec trou lumineux sur la zone (Spotlight) */}
       <div style={{
         position: 'absolute',
-        top: rect.top - 8, left: rect.left - 8,
-        width: rect.width + 16, height: rect.height + 16,
+        top: tTop - 8, left: tLeft - 8,
+        width: tWidth + 16, height: tHeight + 16,
         boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.7), inset 0 0 0 2px #6366f1',
         borderRadius: '12px',
         pointerEvents: 'none',
@@ -894,7 +935,7 @@ function TourSpotlight({ step, onNext, isLast }) {
         <p className="text-sm text-slate-700 mb-6 leading-relaxed">{step.content}</p>
         <div className="flex justify-end">
           <button onClick={(e) => { e.stopPropagation(); onNext(); }} 
-                  className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors shadow-md">
+                  className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors shadow-md focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2">
             {step.nextLabel || (isLast ? "C'est compris !" : "Suivant")}
           </button>
         </div>
@@ -919,7 +960,7 @@ function WelcomeScreen({ onStart }) {
           L'objectif de cette activité pédagogique est d'apprendre à <strong>rédiger des offres d'emploi inclusives et attractives</strong>.<br/><br/>
           À travers différents scénarios pratiques, vous ferez des choix (intitulés, conditions, profils) pour construire la meilleure annonce possible, tout en respectant le cadre légal et la non-discrimination.
         </p>
-        <button onClick={onStart} className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-lg flex items-center gap-3 mx-auto">
+        <button onClick={onStart} className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-lg flex items-center gap-3 mx-auto focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2">
           Démarrer l'activité <ArrowRight size={20}/>
         </button>
       </div>
@@ -1054,7 +1095,7 @@ function StepEditor({ step, selected, onSelect, onNext, canProceed }) {
             </div>
             {step.hint && (
               <div className="relative group shrink-0">
-                <button id="btn-hint" className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors border border-indigo-100">
+                <button id="btn-hint" className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors border border-indigo-100 focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2">
                   <Info size={16}/>
                 </button>
                 <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
@@ -1080,7 +1121,9 @@ function StepEditor({ step, selected, onSelect, onNext, canProceed }) {
             const isDisabled = !isSelected && step.type === "multi" && selected.length >= (step.maxSelections || 99);
             return (
               <button key={opt.id} onClick={() => !isDisabled && onSelect(opt)}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-all group ${
+                disabled={isDisabled}
+                aria-pressed={isSelected}
+                className={`w-full text-left p-4 rounded-xl border-2 transition-all group focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 ${
                   isSelected ? "border-indigo-600 bg-indigo-50 shadow-md" :
                   isDisabled ? "border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed" :
                   "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md"
@@ -1097,10 +1140,14 @@ function StepEditor({ step, selected, onSelect, onNext, canProceed }) {
                     {!isSelected && !isDisabled && <Plus size={10} className="text-slate-400 group-hover:text-indigo-400"/>}
                   </div>
                 </div>
+                {/* Immediate Feedback Analysis displayed below selected option */}
                 {isSelected && (
-                  <div className="mt-3 flex gap-2 text-sm text-indigo-800 bg-white/60 p-3 rounded-lg border border-indigo-100 fade-in">
-                    <Info size={16} className="shrink-0 mt-0.5 text-indigo-500"/>
-                    <p className="leading-relaxed">{opt.annotation}</p>
+                  <div className={`mt-3 flex gap-2 text-sm p-3 rounded-lg border fade-in ${getFeedbackStyle(opt.analysis)}`}>
+                    <Info size={18} className="shrink-0 mt-0.5 opacity-80"/>
+                    <div className="flex flex-col gap-1.5">
+                      <p className="leading-relaxed font-bold">{opt.analysis}</p>
+                      <p className="leading-relaxed text-xs opacity-90">{opt.annotation}</p>
+                    </div>
                   </div>
                 )}
               </button>
@@ -1112,7 +1159,7 @@ function StepEditor({ step, selected, onSelect, onNext, canProceed }) {
       <div className="p-6 pt-4 border-t border-slate-100 shrink-0 flex justify-center">
         <div className="w-full max-w-2xl">
           <button onClick={onNext} disabled={!canProceed}
-            className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg">
+            className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2">
             {canProceed ? <><span>Étape suivante</span><ArrowRight size={18}/></> : <span className="text-slate-400">Faites votre choix</span>}
           </button>
         </div>
@@ -1122,13 +1169,44 @@ function StepEditor({ step, selected, onSelect, onNext, canProceed }) {
 }
 
 /* ─────────────────────────── AUDIT VIEW ─────────────────────────── */
-function AuditView({ scenario, selections, userAd, onBack }) {
+function AuditView({ scenario, selections, userAd, onBack, onRestart }) {
   const optimalAd = buildOptimalAd(scenario.steps);
+
+  // Compute the synthetic score
+  let score = 0;
+  scenario.steps.forEach((step, idx) => {
+    const userSel = selections[idx] || [];
+    const chosen = step.options.filter(o => userSel.includes(o.id));
+    const allGood = chosen.length > 0 && chosen.every(o => o.isOptimal) && chosen.length >= (step.maxSelections || 1);
+    if (allGood) score++;
+  });
 
   return (
     <div className="h-full overflow-y-auto bg-slate-100 p-6">
       <div className="max-w-5xl mx-auto space-y-8 pb-8">
-        <h2 className="text-2xl font-bold text-slate-900">Analyse de votre annonce</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-slate-900">Analyse de votre annonce</h2>
+          
+          {/* Restart Button */}
+          <button onClick={onRestart} className="px-5 py-2.5 bg-indigo-100 text-indigo-700 rounded-xl font-bold hover:bg-indigo-200 transition-colors flex items-center gap-2 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-400">
+            <RefreshCw size={16}/> Refaire avec les corrections
+          </button>
+        </div>
+
+        {/* Global Synthetic Score */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center justify-between overflow-hidden relative">
+          <div className="absolute left-0 top-0 bottom-0 w-2 bg-indigo-500"></div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Score global de l'annonce</h3>
+            <p className="text-slate-500 text-sm">Votre performance sur les choix proposés dans ce scénario.</p>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-black text-indigo-600">
+              {score} <span className="text-2xl text-slate-400">/ {scenario.steps.length}</span>
+            </div>
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">Étapes parfaites</div>
+          </div>
+        </div>
 
         {/* Side-by-side */}
         <div className="grid grid-cols-2 gap-6">
@@ -1181,10 +1259,15 @@ function AuditView({ scenario, selections, userAd, onBack }) {
                       <div className="space-y-2">
                         {chosen.length === 0 && <p className="text-sm text-slate-400 italic">Aucun choix effectué.</p>}
                         {chosen.map(o => (
-                          <div key={o.id} className={`p-3 rounded-lg border text-xs ${o.isOptimal ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-red-50 border-red-200 text-red-900"}`}>
+                          <div key={o.id} className={`p-3 rounded-lg border text-xs ${getFeedbackStyle(o.analysis)}`}>
                             <div className="font-bold mb-1">{o.label}</div>
-                            <div className="opacity-80">{o.content}</div>
-                            {!o.isOptimal && <div className="mt-1 text-red-700 font-medium">{o.analysis}</div>}
+                            <div className="opacity-80 mb-2">{o.content}</div>
+                            {!o.isOptimal && (
+                              <div className="pt-2 border-t border-black/10">
+                                <div className="font-bold">{o.analysis}</div>
+                                <div className="opacity-90">{o.annotation}</div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1196,8 +1279,11 @@ function AuditView({ scenario, selections, userAd, onBack }) {
                           {optimal.map(o => (
                             <div key={o.id} className="p-3 rounded-lg border border-indigo-100 bg-indigo-50/50 text-xs text-indigo-900">
                               <div className="font-bold mb-1">{o.label}</div>
-                              <div className="opacity-80">{o.content}</div>
-                              <div className="mt-1 text-indigo-700 font-medium">{o.analysis}</div>
+                              <div className="opacity-80 mb-2">{o.content}</div>
+                              <div className="pt-2 border-t border-indigo-200/50">
+                                <div className="font-bold text-indigo-700">{o.analysis}</div>
+                                <div className="opacity-90 text-indigo-600">{o.annotation}</div>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -1212,11 +1298,11 @@ function AuditView({ scenario, selections, userAd, onBack }) {
 
         {/* CTA */}
         <div className="flex justify-center gap-4">
-          <button onClick={onBack} className="px-6 py-3 bg-white border-2 border-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+          <button onClick={onBack} className="px-6 py-3 bg-white border-2 border-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm focus:outline-none focus:ring-4 focus:ring-slate-300">
             <ArrowLeft size={18}/> Retour au tableau de bord
           </button>
           <a href="https://1001parcours.cci.fr/experience/mod/page/view.php?id=1842"
-            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg">
+            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg focus:outline-none focus:ring-4 focus:ring-indigo-400">
             Terminer et quitter <ArrowRight size={18}/>
           </a>
         </div>
@@ -1225,221 +1311,23 @@ function AuditView({ scenario, selections, userAd, onBack }) {
   );
 }
 
-/* ─────────────────────────── CONTEXT VIEW ─────────────────────────── */
-function ContextView({ scenario, onContinue, onBack }) {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden fade-in">
-          <div className="bg-slate-900 p-8 text-white relative">
-            <button onClick={onBack} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
-              <X size={18}/>
-            </button>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-2 bg-white/10 rounded-lg"><BookOpen size={16} className="text-emerald-400"/></div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Contexte de la mission</span>
-            </div>
-            <h1 className="text-2xl font-bold mb-1">{scenario.title}</h1>
-            <p className="text-slate-400">{scenario.description}</p>
-          </div>
-          <div className="p-8">
-            <div className="flex items-start gap-3 mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-              <Info size={18} className="text-emerald-600 shrink-0 mt-0.5"/>
-              <p className="text-emerald-900 text-sm font-medium leading-relaxed">
-                Prenez connaissance du contexte avant de commencer. Ces éléments sont cruciaux pour faire les bons choix stratégiques et juridiques.
-              </p>
-            </div>
-            <div className="prose prose-slate text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-              {scenario.context.replace(/\*\*(.*?)\*\*/g, '$1')}
-            </div>
-            <div className="mt-8 flex justify-center">
-              <button onClick={onContinue}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3.5 rounded-xl font-bold transition-colors shadow-lg">
-                Commencer la rédaction <ArrowRight size={18}/>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────── DASHBOARD ─────────────────────────── */
-function Dashboard({ onCreateNew, completedScenarios, onReview }) {
-  const rows = [
-    ...completedScenarios.map(id => {
-      const sc = SCENARIOS.find(s => s.id === id);
-      return { id, title: sc?.title || "Offre", dept: sc?.role || "RH", status: "Terminé", candidates: 0, completed: true };
-    }),
-    { id:"d1", title:"Boulanger (H/F)", dept:"Production", status:"Active", candidates:12, completed:false },
-    { id:"d2", title:"Vendeur / Vendeuse", dept:"Vente", status:"Brouillon", candidates:0, completed:false },
-  ];
-
-  return (
-    <div className="p-8 overflow-y-auto h-full relative">
-      {/* LMS Banner */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-start gap-3 text-blue-900">
-        <Info size={18} className="text-blue-600 shrink-0 mt-0.5"/>
-        <div className="text-sm">
-          <span className="font-bold">Activité pédagogique — </span>
-          Une fois terminée, retournez sur{" "}
-          <a href="https://1001parcours.cci.fr/experience/mod/page/view.php?id=1842" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold underline hover:text-blue-800">
-            1001 Parcours
-          </a>.
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Offres d'emploi</h2>
-          <p className="text-slate-500 text-sm">Gérez vos recrutements en cours</p>
-        </div>
-        <button id="btn-new-offer" onClick={onCreateNew} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 text-sm flex items-center gap-2 transition-colors shadow-sm">
-          <Plus size={16}/> Nouvelle Offre
-        </button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          { label:"Offres actives", value:"3", color:"emerald", icon:<CheckCircle size={18}/> },
-          { label:"Candidatures", value:"57", color:"blue", icon:<Users size={18}/> },
-          { label:"Délai moyen", value:"12j", color:"amber", icon:<Clock size={18}/> },
-        ].map(s => (
-          <div key={s.label} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className={`w-9 h-9 bg-${s.color}-100 text-${s.color}-600 rounded-lg flex items-center justify-center mb-3`}>{s.icon}</div>
-            <div className="text-2xl font-bold text-slate-900">{s.value}</div>
-            <div className="text-slate-500 text-sm">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              {["Intitulé","Département","Statut","Candidats","Actions"].map(h => (
-                <th key={h} className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {rows.map(r => (
-              <tr key={r.id} className={`hover:bg-slate-50 transition-colors ${r.completed ? "cursor-pointer" : ""}`}
-                onClick={() => r.completed && onReview(r.id)}>
-                <td className="px-5 py-3.5 font-medium text-slate-900">
-                  <div className="flex items-center gap-2">
-                    {r.completed && (
-                      <span className="relative flex h-2 w-2 shrink-0">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"/>
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"/>
-                      </span>
-                    )}
-                    {r.title}
-                  </div>
-                </td>
-                <td className="px-5 py-3.5 text-slate-500">{r.dept}</td>
-                <td className="px-5 py-3.5">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    r.status==="Terminé" ? "bg-blue-100 text-blue-700 font-bold border border-blue-200" :
-                    r.status==="Active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
-                  }`}>{r.status}</span>
-                </td>
-                <td className="px-5 py-3.5 text-slate-500 flex items-center gap-1"><Users size={13}/>{r.candidates}</td>
-                <td className="px-5 py-3.5">
-                  {r.completed && <span className="text-xs text-indigo-600 font-medium hover:underline">Consulter →</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────── TEMPLATE SELECTOR ─────────────────────────── */
-function TemplateSelector({ onSelect, completedScenarios }) {
-  return (
-    <div className="p-8 overflow-y-auto h-full">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-1">Modèles disponibles</h2>
-          <p className="text-slate-500 text-sm">Sélectionnez un modèle pour démarrer la rédaction de votre annonce.</p>
-        </div>
-        <div className="grid grid-cols-3 gap-5">
-          {SCENARIOS.map((sc, i) => {
-            const done = completedScenarios.includes(sc.id);
-            return (
-              <button key={sc.id} onClick={() => onSelect(sc)}
-                className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all text-left group flex flex-col h-full relative overflow-hidden fade-in">
-                {done && (
-                  <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg flex items-center gap-1">
-                    <Check size={11}/> Terminé
-                  </div>
-                )}
-                <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                  <Briefcase size={20}/>
-                </div>
-                <h3 className="text-base font-bold text-slate-900 mb-1">{sc.title}</h3>
-                <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">{sc.role}</div>
-                <p className="text-slate-500 text-sm mb-4 flex-1 leading-relaxed">{sc.description}</p>
-                <div className="flex items-center gap-1.5 text-indigo-600 font-bold text-sm mt-auto pt-3 border-t border-slate-50 group-hover:translate-x-1 transition-transform">
-                  {done ? "Recommencer" : "Utiliser ce modèle"} <ArrowRight size={14}/>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────── HEADER ─────────────────────────── */
-function Header({ title, subtitle, action, onBack }) {
-  return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-10">
-      <div className="flex items-center gap-4">
-        {onBack && (
-          <button onClick={onBack} className="p-1.5 -ml-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition-colors" title="Retour au tableau de bord">
-            <ArrowLeft size={18}/>
-          </button>
-        )}
-        <div>
-          <h1 className="text-lg font-bold text-slate-900 leading-tight">{title}</h1>
-          {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
-        </div>
-        {action && <div className="pl-4 border-l border-slate-200">{action}</div>}
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 border border-indigo-200 text-sm font-bold">S</div>
-        <div className="hidden sm:block text-right">
-          <div className="text-xs font-bold text-slate-800">Sophie Martin</div>
-          <div className="text-[10px] text-slate-400">DRH</div>
-        </div>
-        <FullscreenButton id="btn-fullscreen-header" />
-      </div>
-    </header>
-  );
-}
-
 /* ─────────────────────────── CONTEXT MODAL ─────────────────────────── */
 function ContextModal({ scenario, step, onClose }) {
+  // Optionnel : focus piège sur la modale pour l'accessibilité
   return (
     <div className="fixed inset-0 z-[10010]">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose}/>
       <div className="relative flex items-center justify-center h-full p-4 pointer-events-none">
-        <div className="bg-white w-full max-w-xl max-h-[75vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto fade-in">
+        <div className="bg-white w-full max-w-xl max-h-[75vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto fade-in" role="dialog" aria-modal="true">
           <div className="bg-slate-900 p-5 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BookOpen size={16} className="text-emerald-400"/>
               <div>
-                <div className="font-bold text-sm">{step?.title}</div>
+                <div className="font-bold text-sm">{step ? step.title : "Contexte Global"}</div>
                 <div className="text-xs text-slate-400">{scenario.companyName}</div>
               </div>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1"><X size={16}/></button>
+            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-white rounded"><X size={16}/></button>
           </div>
           <div className="p-5 overflow-y-auto">
             {step?.spotlight && (
@@ -1458,7 +1346,7 @@ function ContextModal({ scenario, step, onClose }) {
             </div>
           </div>
           <div className="p-4 border-t border-slate-100 flex justify-end">
-            <button onClick={onClose} className="px-5 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors">
+            <button onClick={onClose} className="px-5 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors focus:outline-none focus:ring-4 focus:ring-slate-400">
               J'ai compris
             </button>
           </div>
@@ -1468,25 +1356,168 @@ function ContextModal({ scenario, step, onClose }) {
   );
 }
 
+/* ─────────────────────────── DASHBOARD ─────────────────────────── */
+function Dashboard({ onSelectScenario, completedScenarios, savedData, onReview }) {
+  const rows = SCENARIOS.map((sc, index) => {
+    const isCompleted = completedScenarios.includes(sc.id);
+    const isStarted = !!savedData[sc.id];
+    let status = "À faire";
+    let color = "slate";
+    if (isCompleted) { status = "Terminé"; color = "emerald"; }
+    else if (isStarted) { status = "En cours"; color = "amber"; }
+
+    return { ...sc, status, color, isCompleted, isStarted, index };
+  });
+
+  const completedCount = completedScenarios.length;
+  const inProgressCount = Object.keys(savedData).length - completedCount;
+
+  return (
+    <div className="p-8 overflow-y-auto h-full relative">
+      {/* LMS Banner */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-start gap-3 text-blue-900">
+        <Info size={18} className="text-blue-600 shrink-0 mt-0.5"/>
+        <div className="text-sm">
+          <span className="font-bold">Activité pédagogique — </span>
+          Une fois l'ensemble des scénarios terminés, retournez sur{" "}
+          <a href="https://1001parcours.cci.fr/experience/mod/page/view.php?id=1842" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold underline hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
+            1001 Parcours
+          </a>.
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Scénarios de recrutement</h2>
+          <p className="text-slate-500 text-sm">Gérez vos rédactions d'offres en cours</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[
+          { label:"Scénarios au total", value: SCENARIOS.length, color:"blue", icon:<Briefcase size={18}/> },
+          { label:"En cours", value: inProgressCount, color:"amber", icon:<Clock size={18}/> },
+          { label:"Terminés", value: completedCount, color:"emerald", icon:<CheckCircle size={18}/> },
+        ].map(s => (
+          <div key={s.label} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div className={`w-9 h-9 bg-${s.color}-100 text-${s.color}-600 rounded-lg flex items-center justify-center mb-3`}>{s.icon}</div>
+            <div className="text-2xl font-bold text-slate-900">{s.value}</div>
+            <div className="text-slate-500 text-sm">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr>
+              {["Scénario", "Entreprise", "Statut", "Actions"].map(h => (
+                <th key={h} className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map(r => (
+              <tr key={r.id} id={`scenario-row-${r.index}`}
+                tabIndex={0}
+                className="hover:bg-slate-50 transition-colors cursor-pointer group focus:outline-none focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-400 focus:ring-inset"
+                onClick={() => r.isCompleted ? onReview(r.id) : onSelectScenario(r)}
+                onKeyDown={(e) => { if(e.key === 'Enter') r.isCompleted ? onReview(r.id) : onSelectScenario(r); }}
+              >
+                <td className="px-5 py-4 font-medium text-slate-900">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-bold">
+                      {r.index + 1}
+                    </div>
+                    {r.title}
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-slate-500">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-slate-700">{r.companyName}</span>
+                    <span className="text-xs">{r.companyType}</span>
+                  </div>
+                </td>
+                <td className="px-5 py-4">
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold bg-${r.color}-50 text-${r.color}-700 border border-${r.color}-200`}>
+                    {r.status}
+                  </span>
+                </td>
+                <td className="px-5 py-4">
+                  <span className="text-sm text-indigo-600 font-bold group-hover:underline">
+                    {r.isCompleted ? "Consulter l'audit →" : r.isStarted ? "Reprendre →" : "Commencer →"}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── HEADER ─────────────────────────── */
+function Header({ title, subtitle, action, onBack, progress }) {
+  return (
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-10">
+      <div className="flex items-center gap-4">
+        {onBack && (
+          <button onClick={onBack} className="p-1.5 -ml-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400" title="Retour au tableau de bord">
+            <ArrowLeft size={18}/>
+          </button>
+        )}
+        <div>
+          <h1 className="text-lg font-bold text-slate-900 leading-tight">{title}</h1>
+          {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+        </div>
+        
+        {/* Barre de Progression Globale */}
+        {progress && (
+          <div className="ml-4 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 flex items-center gap-2">
+            <span>Scénario {progress.scenario}/{progress.totalScenarios}</span>
+            <span className="w-1 h-1 bg-indigo-300 rounded-full"></span>
+            <span>Étape {progress.step}/{progress.totalSteps}</span>
+          </div>
+        )}
+
+        {action && <div className="pl-4 border-l border-slate-200">{action}</div>}
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 border border-indigo-200 text-sm font-bold">S</div>
+        <div className="hidden sm:block text-right">
+          <div className="text-xs font-bold text-slate-800">Sophie Martin</div>
+          <div className="text-[10px] text-slate-400">DRH</div>
+        </div>
+        <FullscreenButton id="btn-fullscreen-header" />
+      </div>
+    </header>
+  );
+}
+
 /* ─────────────────────────── APP ─────────────────────────── */
 function App() {
-  const [zoomLevel, setZoomLevel] = useState(1.2);
-  const [view, setView] = useState("welcome"); // welcome | dashboard | templates | context | editor | audit
-  const [scenario, setScenario] = useState(null);
-  const [stepIdx, setStepIdx] = useState(0);
-  const [selections, setSelections] = useState({}); // stepIdx -> [optionIds]
-  const [completedScenarios, setCompletedScenarios] = useState([]);
-  const [savedData, setSavedData] = useState({});
+  const [zoomLevel, setZoomLevel] = useStickyState(1.2, "sim_zoom");
+  const [view, setView] = useStickyState("welcome", "sim_view"); // welcome | dashboard | editor | audit
+  const [scenarioId, setScenarioId] = useStickyState(null, "sim_scenarioId");
+  const scenario = SCENARIOS.find(s => s.id === scenarioId) || null;
+  const setScenario = (sc) => setScenarioId(sc ? sc.id : null);
+  
+  const [stepIdx, setStepIdx] = useStickyState(0, "sim_stepIdx");
+  const [selections, setSelections] = useStickyState({}, "sim_selections"); // stepIdx -> [optionIds]
+  const [completedScenarios, setCompletedScenarios] = useStickyState([], "sim_completedScenarios");
+  const [savedData, setSavedData] = useStickyState({}, "sim_savedData");
+  const [stepsCollapsed, setStepsCollapsed] = useStickyState(false, "sim_stepsCollapsed");
+  const [maxStepReached, setMaxStepReached] = useStickyState(0, "sim_maxStepReached");
+
   const [showPreview, setShowPreview] = useState(true);
   const [showContextModal, setShowContextModal] = useState(false);
-  const [stepsCollapsed, setStepsCollapsed] = useState(false);
-  const [maxStepReached, setMaxStepReached] = useState(0);
 
   // Tour States
-  const [fullscreenTourDone, setFullscreenTourDone] = useState(false);
-  const [dashboardTourDone, setDashboardTourDone] = useState(false);
-  const [editorTourDone, setEditorTourDone] = useState(false);
-  const [editorTourStep, setEditorTourStep] = useState(0);
+  const [fullscreenTourDone, setFullscreenTourDone] = useStickyState(false, "sim_fsTour");
+  const [dashboardTourDone, setDashboardTourDone] = useStickyState(false, "sim_dashTour");
+  const [editorTourDone, setEditorTourDone] = useStickyState(false, "sim_editorTour");
+  const [editorTourStep, setEditorTourStep] = useStickyState(0, "sim_editorTourStep");
 
   const editorTourSteps = [
     { targetId: "editor-steps-panel", placement: "right", title: "Plan de rédaction", content: "Voici les différentes étapes pour construire votre annonce. Vous pouvez rétracter ce panneau à l'aide de la flèche pour gagner de la place." },
@@ -1513,7 +1544,7 @@ function App() {
   };
 
   const goToDashboard = () => {
-    if (scenario) {
+    if (scenario && view === "editor") {
       setSavedData(prev => ({ ...prev, [scenario.id]: { selections, ad: userAd } }));
       if (!completedScenarios.includes(scenario.id)) setCompletedScenarios(prev => [...prev, scenario.id]);
     }
@@ -1523,16 +1554,19 @@ function App() {
   };
 
   const handleBack = () => {
-    if (view === "editor" || view === "context") {
-      goToDashboard();
-    } else if (view === "templates") {
-      setView("dashboard");
-    }
+    goToDashboard();
+  };
+
+  const handleRestartScenario = () => {
+    resetEditor();
+    setView("editor");
   };
 
   const handleSelectScenario = (sc) => {
     setScenario(sc);
     const saved = savedData[sc.id];
+    let isNew = true;
+    
     if (saved && saved.selections) {
       setSelections(saved.selections);
       if (completedScenarios.includes(sc.id)) {
@@ -1543,10 +1577,16 @@ function App() {
       }
       setStepIdx(0);
       setShowPreview(true);
+      isNew = false;
     } else {
       resetEditor();
     }
-    setView("context");
+    
+    setView("editor");
+    // Modale contextuelle directe si nouveau scénario
+    if (isNew) {
+      setShowContextModal(true);
+    }
   };
 
   const handleReview = (id) => {
@@ -1595,24 +1635,29 @@ function App() {
 
   const titles = {
     dashboard: "Tableau de bord",
-    templates: "Nouvelle offre",
-    context: `Contexte : ${scenario?.title || ""}`,
     editor: `Édition : ${scenario?.title || ""}`,
     audit: "Analyse de l'annonce",
   };
 
   const subtitles = {
     dashboard: "Vue d'ensemble de l'activité RH",
-    templates: "Sélectionnez un modèle de poste",
-    context: "Comprendre les enjeux du recrutement",
     editor: currentStep ? `Étape ${stepIdx + 1} / ${scenario?.steps.length} — ${currentStep.title}` : "",
     audit: "Comparaison et corrections",
   };
 
-  const isAudit = view === "audit";
+  // Progression globale pour le Header
+  let progress = null;
+  if (view === "editor" && scenario) {
+    progress = {
+      scenario: SCENARIOS.findIndex(s => s.id === scenario.id) + 1,
+      totalScenarios: SCENARIOS.length,
+      step: stepIdx + 1,
+      totalSteps: scenario.steps.length
+    };
+  }
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-50 font-sans">
+    <div className="fixed inset-0 overflow-hidden bg-slate-50 font-sans">
       
       {/* SCALED APPLICATION CONTAINER */}
       <div style={{
@@ -1638,10 +1683,11 @@ function App() {
             <Header
               title={titles[view] || ""}
               subtitle={subtitles[view] || ""}
-              onBack={(view === "templates" || view === "context" || view === "editor") ? handleBack : null}
+              onBack={(view === "editor" || view === "audit") ? handleBack : null}
+              progress={progress}
               action={view === "editor" ? (
                 <button id="btn-context" onClick={() => setShowContextModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold transition-colors focus:outline-none focus:ring-4 focus:ring-emerald-400">
                   <Info size={13}/> Voir le contexte
                 </button>
               ) : null}
@@ -1650,18 +1696,11 @@ function App() {
             <main className="flex-1 overflow-hidden relative">
               {view === "dashboard" && (
                 <Dashboard
-                  onCreateNew={() => setView("templates")}
+                  onSelectScenario={handleSelectScenario}
                   completedScenarios={completedScenarios}
+                  savedData={savedData}
                   onReview={handleReview}
                 />
-              )}
-
-              {view === "templates" && (
-                <TemplateSelector onSelect={handleSelectScenario} completedScenarios={completedScenarios}/>
-              )}
-
-              {view === "context" && scenario && (
-                <ContextView scenario={scenario} onContinue={() => setView("editor")} onBack={() => setView("templates")}/>
               )}
 
               {view === "editor" && scenario && currentStep && (
@@ -1670,7 +1709,7 @@ function App() {
                   <div id="editor-steps-panel" className={`${stepsCollapsed ? "w-20" : "w-64"} bg-white border-r border-slate-100 p-4 overflow-y-auto shrink-0 z-0 transition-all duration-300 flex flex-col relative`}>
                     <div className="flex items-center justify-between mb-4 px-1">
                       {!stepsCollapsed && <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Étapes</div>}
-                      <button onClick={() => setStepsCollapsed(!stepsCollapsed)} className={`p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors ${stepsCollapsed ? "mx-auto" : ""}`} title={stepsCollapsed ? "Agrandir le panneau" : "Réduire le panneau"}>
+                      <button onClick={() => setStepsCollapsed(!stepsCollapsed)} className={`p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 ${stepsCollapsed ? "mx-auto" : ""}`} title={stepsCollapsed ? "Agrandir le panneau" : "Réduire le panneau"}>
                         {stepsCollapsed ? <ChevronRight size={14}/> : <ChevronLeft size={14}/>}
                       </button>
                     </div>
@@ -1683,7 +1722,7 @@ function App() {
                           <button key={i} onClick={() => !isLocked && setStepIdx(i)}
                             disabled={isLocked}
                             title={stepsCollapsed ? s.title : (isLocked ? "Terminez l'étape précédente pour y accéder" : "")}
-                            className={`w-full text-left rounded-xl transition-all flex items-center ${stepsCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 gap-3"} ${
+                            className={`w-full text-left rounded-xl transition-all flex items-center focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-inset ${stepsCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 gap-3"} ${
                               isActive ? "bg-indigo-50 text-indigo-700 font-bold" :
                               done ? "text-emerald-700 hover:bg-emerald-50" :
                               isLocked ? "text-slate-400 cursor-not-allowed" : "text-slate-500 hover:bg-slate-50"
@@ -1701,7 +1740,7 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Editor Left Panel - Note the addition of min-w-0 to fix the flex overflow bug! */}
+                  {/* Editor Left Panel */}
                   <div id="editor-left-panel" className="flex-1 min-w-0 border-r border-slate-200 overflow-hidden relative z-0 bg-white">
                     <StepEditor
                       step={currentStep}
@@ -1719,7 +1758,7 @@ function App() {
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                           <FileText size={12}/> Aperçu
                         </span>
-                        <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                        <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">
                           <X size={14}/>
                         </button>
                       </div>
@@ -1730,7 +1769,7 @@ function App() {
                   )}
                   {!showPreview && (
                     <button onClick={() => setShowPreview(true)}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 bg-white border border-slate-200 py-2 px-1.5 rounded-l-lg shadow text-slate-500 hover:text-indigo-600 transition-colors text-xs writing-mode-vertical"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 bg-white border border-slate-200 py-2 px-1.5 rounded-l-lg shadow text-slate-500 hover:text-indigo-600 transition-colors text-xs writing-mode-vertical focus:outline-none focus:ring-2 focus:ring-indigo-400"
                       style={{ position:"absolute" }}>
                       <FileText size={14}/>
                     </button>
@@ -1739,7 +1778,7 @@ function App() {
               )}
 
               {view === "audit" && scenario && (
-                <AuditView scenario={scenario} selections={selections} userAd={userAd} onBack={goToDashboard}/>
+                <AuditView scenario={scenario} selections={selections} userAd={userAd} onBack={goToDashboard} onRestart={handleRestartScenario} />
               )}
             </main>
           </div>
@@ -1749,54 +1788,55 @@ function App() {
         {showContextModal && scenario && (
           <ContextModal scenario={scenario} step={currentStep} onClose={() => setShowContextModal(false)}/>
         )}
+
+        {/* Spotlights intégrés au conteneur de zoom */}
+        {view === "welcome" && !fullscreenTourDone && (
+          <TourSpotlight
+            zoomLevel={zoomLevel}
+            step={{ 
+              targetId: "btn-fullscreen-welcome", 
+              placement: "bottom", 
+              title: "Mode Plein Écran", 
+              content: "L'activité nécessite d'être en plein écran pour un confort de lecture optimal. Cliquez ici pour l'activer et commencer l'expérience.", 
+              nextLabel: "Passer en plein écran" 
+            }}
+            onNext={() => {
+              setFullscreenTourDone(true);
+              if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(e => console.error("Erreur plein écran:", e));
+              }
+            }}
+            isLast={true}
+          />
+        )}
+
+        {view === "dashboard" && !dashboardTourDone && (
+          <TourSpotlight
+            zoomLevel={zoomLevel}
+            step={{ targetId: "scenario-row-0", title: "À vous de jouer !", content: "Cliquez sur un scénario dans le tableau pour démarrer la rédaction de votre annonce." }}
+            onNext={() => setDashboardTourDone(true)}
+            isLast={true}
+          />
+        )}
+
+        {view === "editor" && !editorTourDone && editorTourSteps[editorTourStep] && (
+          <TourSpotlight
+            zoomLevel={zoomLevel}
+            step={editorTourSteps[editorTourStep]}
+            onNext={() => {
+              if (editorTourStep < editorTourSteps.length - 1) {
+                setEditorTourStep(s => s + 1);
+              } else {
+                setEditorTourDone(true);
+              }
+            }}
+            isLast={editorTourStep === editorTourSteps.length - 1}
+          />
+        )}
+
       </div>
 
       {/* --- ÉLÉMENTS FIXES (HORS DU CONTENEUR ZOOMÉ) --- */}
-      
-      {/* Affichage du Spotlight Plein Écran au tout début */}
-      {view === "welcome" && !fullscreenTourDone && (
-        <TourSpotlight
-          step={{ 
-            targetId: "btn-fullscreen-welcome", 
-            placement: "bottom", 
-            title: "Mode Plein Écran", 
-            content: "L'activité nécessite d'être en plein écran pour un confort de lecture optimal. Cliquez ici pour l'activer et commencer l'expérience.", 
-            nextLabel: "Passer en plein écran" 
-          }}
-          onNext={() => {
-            setFullscreenTourDone(true);
-            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-              document.documentElement.requestFullscreen().catch(e => console.error("Erreur plein écran:", e));
-            }
-          }}
-          isLast={true}
-        />
-      )}
-
-      {/* Affichage du Spotlight Dashboard */}
-      {view === "dashboard" && !dashboardTourDone && (
-        <TourSpotlight
-          step={{ targetId: "btn-new-offer", title: "À vous de jouer !", content: "Cliquez sur « Nouvelle Offre » pour choisir votre premier scénario et démarrer la rédaction." }}
-          onNext={() => setDashboardTourDone(true)}
-          isLast={true}
-        />
-      )}
-
-      {/* Affichage du Spotlight Editeur (uniquement la première fois) */}
-      {view === "editor" && !editorTourDone && editorTourSteps[editorTourStep] && (
-        <TourSpotlight
-          step={editorTourSteps[editorTourStep]}
-          onNext={() => {
-            if (editorTourStep < editorTourSteps.length - 1) {
-              setEditorTourStep(s => s + 1);
-            } else {
-              setEditorTourDone(true);
-            }
-          }}
-          isLast={editorTourStep === editorTourSteps.length - 1}
-        />
-      )}
-
       {/* Boutons de zoom fixés en bas à droite de la fenêtre */}
       <ZoomControls zoom={zoomLevel} setZoom={setZoomLevel} />
       

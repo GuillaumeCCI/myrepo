@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from 'react';
+import { Info, CheckCircle, AlertTriangle, GripVertical, RefreshCw } from 'lucide-react';
+
+// --- DONNÉES PÉDAGOGIQUES ---
+const INITIAL_ITEMS = [
+  {
+    id: 1,
+    text: "« Vendre 10 % de plus qu'en 2025, d'ici le 31 décembre. »",
+    category: "OBJECTIF",
+    status: "pool" // 'pool' ou l'ID de la zone
+  },
+  {
+    id: 2,
+    text: "« Ce matin, tu rappelles les trois clients dont la commande est en retard. »",
+    category: "MISSION",
+    status: "pool"
+  },
+  {
+    id: 3,
+    text: "« Marc et Julie assurent l'accueil en alternance le lundi matin. »",
+    category: "PLANNING",
+    status: "pool"
+  },
+  {
+    id: 4,
+    text: "« Sophie travaille en caisse de 9h à 13h ce samedi. »",
+    category: "PLANNING",
+    status: "pool"
+  },
+  {
+    id: 5,
+    text: "« Réduire les réclamations clients de moitié avant juin. »",
+    category: "OBJECTIF",
+    status: "pool"
+  },
+  {
+    id: 6,
+    text: "« Cet après-midi, tu présentes le nouveau produit à chaque client qui passe en caisse. »",
+    category: "MISSION",
+    status: "pool"
+  }
+];
+
+const ZONES = [
+  { id: "OBJECTIF", title: "OBJECTIF", subtitle: "le « quoi »" },
+  { id: "MISSION", title: "MISSION", subtitle: "le « comment »" },
+  { id: "PLANNING", title: "PLANNING", subtitle: "le « quand » et « qui »" }
+];
+
+// --- MATRICE DE FEEDBACKS CONTEXTUELS ---
+const getFeedback = (itemId, targetZone) => {
+  const item = INITIAL_ITEMS.find(i => i.id === itemId);
+  if (item.category === targetZone) return null; // Succès
+
+  const specificFeedbacks = {
+    1: {
+      MISSION: "C'est un résultat global à atteindre, pas l'action concrète pour y arriver. La mission définirait le 'comment'.",
+      PLANNING: "C'est un but chiffré dans le temps, mais cela n'indique pas qui travaille et quand."
+    },
+    2: {
+      OBJECTIF: "C'est une action métier très précise à réaliser, pas un résultat global mesurable visé à la fin du processus.",
+      PLANNING: "Même s'il y a 'Ce matin', c'est avant tout une tâche concrète à accomplir, pas l'organisation des emplois du temps."
+    },
+    3: {
+      OBJECTIF: "Aucun résultat de vente ou de performance n'est attendu ici, c'est de l'organisation pure.",
+      MISSION: "On gère la présence et le roulement (qui/quand), mais on ne décrit pas précisément la tâche ou la consigne métier à faire pendant l'accueil."
+    },
+    4: {
+      OBJECTIF: "Travailler de telle heure à telle heure n'est pas un but de performance mesurable, c'est de l'allocation de temps.",
+      MISSION: "Cela indique sa présence sur une plage horaire, mais ne détaille pas la tâche spécifique à réaliser en caisse (le 'comment')."
+    },
+    5: {
+      MISSION: "C'est le résultat global escompté. La mission correspondrait à l'action pour y parvenir (ex : 'rappeler chaque client mécontent').",
+      PLANNING: "C'est une cible de performance et de qualité, cela ne concerne en rien l'organisation des horaires de l'équipe."
+    },
+    6: {
+      OBJECTIF: "C'est le moyen (le 'comment') pour générer des ventes, mais ce n'est pas un résultat chiffré visé.",
+      PLANNING: "Bien qu'on précise 'cet après-midi', c'est la description d'une consigne métier à réaliser, pas la gestion des horaires d'une personne."
+    }
+  };
+
+  return specificFeedbacks[itemId][targetZone] || "Ce n'est pas la bonne catégorie. Réfléchissez au rôle de cette phrase.";
+};
+
+export default function App() {
+  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [dragState, setDragState] = useState(null); // { id, item, startX, startY, offsetX, offsetY, x, y, width, height, isDragging }
+  const [selectedItemId, setSelectedItemId] = useState(null); // Pour la sélection au clic (mobile)
+  const [feedback, setFeedback] = useState(null); // { type: 'error' | 'success', text: string }
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    const allPlaced = items.every(item => item.status === item.category);
+    if (allPlaced && items.length > 0) {
+      setIsComplete(true);
+      setFeedback({ type: 'success', text: "Parfait ! Vous avez reconstitué la chaîne complète. La distinction entre le quoi, le comment et le quand est acquise." });
+    }
+  }, [items]);
+
+  // --- LOGIQUE DE DÉPLACEMENT ---
+  const handleMove = (itemId, targetZone) => {
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (item.category === targetZone) {
+      // Succès silencieux ou petit feedback positif
+      setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: targetZone } : i));
+      setFeedback(null);
+    } else {
+      // Erreur : on laisse l'item dans le pool et on affiche le feedback
+      const errorText = getFeedback(itemId, targetZone);
+      setFeedback({ type: 'error', text: errorText });
+      
+      // Animation visuelle d'erreur (optionnelle, gérée via CSS)
+      setTimeout(() => {
+        // Optionnel: auto-hide feedback
+      }, 5000);
+    }
+    setDragState(null);
+    setSelectedItemId(null);
+  };
+
+  // --- DRAG & DROP PERSONNALISÉ (Souris + Touch) ---
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handlePointerMove = (e) => {
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+
+      // Tolérance de 5px pour différencier un vrai "drag" d'un simple clic
+      if (!dragState.isDragging && Math.sqrt(dx * dx + dy * dy) > 5) {
+        setDragState(prev => ({ ...prev, isDragging: true, x: e.clientX - prev.offsetX, y: e.clientY - prev.offsetY }));
+      } else if (dragState.isDragging) {
+        setDragState(prev => ({ ...prev, x: e.clientX - prev.offsetX, y: e.clientY - prev.offsetY }));
+      }
+    };
+
+    const handlePointerUp = (e) => {
+      if (dragState.isDragging) {
+        // Le drop : on cherche quelle zone est sous le curseur
+        const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+        const zoneElement = dropTarget?.closest('[data-zone-id]');
+        if (zoneElement) {
+          const zoneId = zoneElement.getAttribute('data-zone-id');
+          handleMove(dragState.id, zoneId);
+        }
+      } else {
+        // Si la carte n'a pas bougé (ou presque pas), on traite cela comme un clic (fallback)
+        if (items.find(i => i.id === dragState.id).status === 'pool') {
+          setFeedback(null);
+          setSelectedItemId(dragState.id === selectedItemId ? null : dragState.id);
+        }
+      }
+      setDragState(null);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [dragState, items, selectedItemId]);
+
+  const handlePointerDown = (e, item) => {
+    if (e.button !== undefined && e.button !== 0) return; // Seulement clic gauche
+    if (item.status !== 'pool') return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragState({
+      id: item.id,
+      item: item,
+      startX: e.clientX,
+      startY: e.clientY,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+      isDragging: false
+    });
+  };
+
+  // --- HANDLERS CLIC (Mobile / Accessibilité) ---
+  const handleZoneClick = (zoneId) => {
+    if (selectedItemId) {
+      handleMove(selectedItemId, zoneId);
+    }
+  };
+
+  const resetActivity = () => {
+    setItems(INITIAL_ITEMS);
+    setIsComplete(false);
+    setFeedback(null);
+    setSelectedItemId(null);
+    setDragState(null);
+  };
+
+  // --- RENDU DES CARTES ---
+  const renderCard = (item) => {
+    const isSelected = selectedItemId === item.id;
+    const isPlaced = item.status !== 'pool';
+    const isBeingDragged = dragState?.id === item.id && dragState.isDragging;
+
+    return (
+      <div
+        key={item.id}
+        onPointerDown={(e) => handlePointerDown(e, item)}
+        className={`
+          relative p-4 rounded-xl border flex items-start gap-3 transition-all duration-200 select-none touch-none
+          ${isPlaced ? 'bg-gray-50 border-gray-200 text-gray-500 cursor-default' : 'bg-white border-gray-200 text-gray-800 cursor-grab active:cursor-grabbing hover:border-[#1a5b82] hover:shadow-md'}
+          ${isSelected ? 'ring-2 ring-[#1a5b82] border-[#1a5b82] shadow-lg' : ''}
+          ${isBeingDragged ? 'opacity-30 scale-95' : 'scale-100'}
+        `}
+      >
+        {!isPlaced && (
+          <div className="mt-1 text-gray-400">
+            <GripVertical size={16} />
+          </div>
+        )}
+        <p className="text-sm font-medium leading-relaxed flex-1 pointer-events-none">
+          {item.text}
+        </p>
+        {isPlaced && (
+          <div className="absolute top-2 right-2 text-green-600">
+            <CheckCircle size={16} />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-6 font-sans">
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        {/* EN-TÊTE */}
+        <header className="space-y-2">
+          <p className="text-gray-600">
+            Faites glisser chaque situation dans la bonne case (ou cliquez sur une carte puis sur une case).
+          </p>
+        </header>
+
+        {/* POOL DE CARTES (Zone de départ) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {items.filter(item => item.status === 'pool').map(renderCard)}
+        </div>
+
+        {/* ZONES DE DROP */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-gray-200">
+      {ZONES.map(zone => {
+        const zoneItems = items.filter(item => item.status === zone.id);
+        const isHighlight = selectedItemId !== null;
+        const isDraggingOver = dragState?.isDragging;
+
+        return (
+          <div 
+            key={zone.id}
+            data-zone-id={zone.id}
+            onClick={() => handleZoneClick(zone.id)}
+            className={`
+              flex flex-col gap-3 rounded-xl p-4 transition-colors duration-200 border-2 min-h-[220px] bg-white
+              ${isHighlight ? 'border-dashed border-[#1a5b82]/50 bg-[#1a5b82]/5 cursor-pointer hover:bg-[#1a5b82]/10' : ''}
+              ${!isHighlight && isDraggingOver ? 'border-dashed border-gray-300 hover:border-[#1a5b82] hover:bg-[#1a5b82]/5' : ''}
+              ${!isHighlight && !isDraggingOver ? 'border-dashed border-gray-300' : ''}
+            `}
+          >
+            <div className="mb-2 pointer-events-none">
+              <h2 className="text-sm font-bold tracking-wider text-[#1a5b82]">{zone.title}</h2>
+              <p className="text-xs text-gray-500 italic">{zone.subtitle}</p>
+            </div>
+            
+            <div className="flex-1 space-y-3 pointer-events-none">
+              {zoneItems.map(renderCard)}
+              {zoneItems.length === 0 && (
+                <div className="h-full flex items-center justify-center text-sm text-gray-400 italic">
+                  Glissez ici
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* PANNEAU DE FEEDBACK CONTEXTUEL */}
+        {feedback && (
+          <div className={`
+            fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl p-4 rounded-xl shadow-2xl flex items-start gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300 z-50 border
+            ${feedback.type === 'error' ? 'bg-red-50 border-red-200 text-red-900' : 'bg-green-50 border-green-200 text-green-900'}
+          `}>
+            <div className="mt-0.5">
+              {feedback.type === 'error' ? <AlertTriangle size={20} className="text-red-500"/> : <CheckCircle size={20} className="text-green-600"/>}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold mb-1 text-sm">
+                {feedback.type === 'error' ? "Analyse de la situation" : "Objectif atteint !"}
+              </h3>
+              <p className="text-sm leading-relaxed opacity-90">{feedback.text}</p>
+            </div>
+          </div>
+        )}
+
+        {/* BOUTON REJOUER */}
+    {isComplete && (
+      <div className="flex justify-center pt-8 pb-12">
+        <button 
+          onClick={resetActivity}
+          className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-[#1a5b82] rounded-lg transition-colors border border-gray-200 shadow-sm font-medium"
+        >
+          <RefreshCw size={18} />
+          Recommencer l'exercice
+        </button>
+      </div>
+    )}
+
+    {/* CALQUE FLOTTANT DE DRAG & DROP (LA CARTE QUI SUIT LA SOURIS) */}
+    {dragState && dragState.isDragging && (
+      <div
+        className="fixed z-50 p-4 rounded-xl border border-[#1a5b82] bg-white text-gray-800 shadow-2xl flex items-start gap-3 pointer-events-none ring-2 ring-[#1a5b82] opacity-95"
+        style={{
+          left: dragState.x,
+          top: dragState.y,
+          width: dragState.width,
+          height: dragState.height,
+          margin: 0,
+        }}
+      >
+        <div className="mt-1 text-[#1a5b82]">
+          <GripVertical size={16} />
+        </div>
+        <p className="text-sm font-medium leading-relaxed flex-1">
+          {dragState.item.text}
+        </p>
+      </div>
+    )}
+
+  </div>
+</div>
+);
+}

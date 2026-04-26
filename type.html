@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation - Maîtriser les objectifs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f5f9', 100: '#e1ecf2', 500: '#1a4f72', 600: '#153d58', 900: '#0a1d2a' },
+                        success: { 50: '#E1F5EE', 500: '#22c55e', 600: '#1D9E75', 800: '#0F6E56', 900: '#064e3b' },
+                        danger: { 50: '#FCEBEB', 500: '#ef4444', 600: '#E24B4A', 800: '#A32D2D' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; color: #0f172a; overflow-x: hidden; }
+        .tab-transition { transition: all 0.2s ease-in-out; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .celebrate { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .progress-fill { transition: width 0.4s ease-out; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 50% { transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+        
+        /* Animation d'erreur : Secousse */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); border-color: #E24B4A; }
+            40%, 80% { transform: translateX(6px); border-color: #E24B4A; }
+        }
+        .shake { animation: shake 0.4s ease-in-out; border-color: #E24B4A !important; }
+
+        /* Animations du badge de score */
+        .score-badge { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .score-bump { transform: scale(1.15); color: #064e3b; background-color: #d1fae5; border-color: #34d399; }
+        .score-drop { transform: scale(0.95); color: #7f1d1d; background-color: #fee2e2; border-color: #f87171; }
+        
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Effet spotlight pour le bouton plein écran */
+        .spotlight-active {
+            box-shadow: 0 0 0 4px #ffffff, 0 0 0 8px #1a4f72, 0 0 30px 10px rgba(26, 79, 114, 0.6);
+            background-color: #ffffff !important;
+            color: #1a4f72 !important;
+            transform: scale(1.05);
+            z-index: 50;
+        }
+
+        /* Mode Plein Écran - Centrage vertical et zoom très léger */
+        html.is-fullscreen { font-size: 16px; }
+        @media (min-width: 1280px) { html.is-fullscreen { font-size: 18px; } }
+        html.is-fullscreen body { justify-content: center; }
+        html.is-fullscreen main { display: flex; flex-direction: column; justify-content: center; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div id="spotlight-overlay" class="fixed inset-0 bg-slate-900/60 z-40 transition-opacity duration-500 opacity-0 pointer-events-none" onclick="dismissSpotlight()"></div>
+
+        <div class="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 relative">
+            
+            <div class="relative z-10">
+                <h1 class="text-xl font-bold text-slate-800 tracking-tight">Fixer des objectifs efficaces</h1>
+                <p class="text-sm font-medium text-slate-500 mt-0.5">Méthode d'apprentissage par induction</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <!-- SCORE BADGE -->
+                <div id="score-badge" class="score-badge flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-lg font-bold text-sm border border-brand-100 shadow-sm relative z-10">
+                    🏆 <span id="score-text">0 pts</span>
+                </div>
+
+                <nav class="flex space-x-2 bg-slate-100 p-1 rounded-lg relative z-10">
+                    <button onclick="setMainTab(0)" id="nav-main-0" class="px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm">1. Reconnaître</button>
+                    <button onclick="attemptSetMainTab(1)" id="nav-main-1" class="px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex items-center gap-1.5" title="Terminez la partie 1 pour débloquer">
+                        2. Reformuler
+                        <svg id="nav-lock-icon" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </button>
+                </nav>
+                
+                <div class="relative z-50">
+                    <button id="fullscreen-btn" onclick="toggleFullscreen()" class="relative p-2.5 text-slate-500 hover:text-brand-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all" title="Plein écran">
+                        <svg id="fs-icon-expand" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        <svg id="fs-icon-compress" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4l5 5m0 0V4m0 5H4 M20 4l-5 5m0 0V4m0 5h5 M4 20l5-5m0 0v5m0-5H4 M20 20l-5-5m0 0v5m0-5h5"></path></svg>
+                    </button>
+                    <div id="spotlight-tooltip" class="absolute top-full right-0 mt-4 w-52 bg-brand-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-xl animate-bounce opacity-0 pointer-events-none transition-opacity duration-500">
+                        <div class="absolute -top-1.5 right-3 w-3 h-3 bg-brand-600 transform rotate-45"></div>
+                        Mettez en plein écran pour une meilleure expérience
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Barre de progression globale -->
+        <div class="h-1 bg-slate-100 w-full relative z-10">
+            <div id="global-progress-bar" class="h-full bg-brand-500 progress-fill" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10" id="app-container"></main>
+
+    <script>
+        const PART1_DATA = [
+            {
+                title: "Résultat vs Moyen",
+                intro: [
+                    ["Objectif de résultat", "ce qu'on veut obtenir à la fin. Le salarié n'en a pas toujours le contrôle total.", "Ex : vendre 10 % de plus."],
+                    ["Objectif de moyen", "ce qu'on décide de faire pour y arriver. Le salarié en a le contrôle total.", "Ex : appeler chaque client chaque semaine."]
+                ],
+                question: "Cet objectif est…",
+                choices: ["Un résultat", "Un moyen"],
+                final: "Règle d'or : chaque objectif de résultat doit être accompagné de 2 à 4 objectifs de moyen. Sans eux, le collaborateur sait où aller - mais pas comment.",
+                steps: [
+                    { s: "« Atteindre 50 000 € de chiffre d'affaires ce mois-ci. »", c: 0, ok: "C'est un chiffre à atteindre à la fin - c'est bien un résultat.", ko: "On ne décrit aucune action ici. On fixe ce qu'on veut obtenir - c'est un résultat." },
+                    { s: "« Appeler au moins 10 clients par jour pour présenter la nouvelle offre. »", c: 1, ok: "C'est une action que le salarié fait lui-même, sous son contrôle total - c'est un moyen.", ko: "Il n'y a pas de résultat à atteindre ici. On décrit ce que le salarié va faire - c'est un moyen." },
+                    { s: "« Réduire les réclamations clients de moitié avant juin. »", c: 0, ok: "Moins de réclamations, c'est quelque chose qu'on mesure à la fin - c'est un résultat.", ko: "Même sans montant en euros, une cible mesurable dans le temps est toujours un résultat." },
+                    { s: "« Proposer un produit complémentaire à chaque client qui passe en caisse. »", c: 1, ok: "Le salarié contrôle totalement ce geste - c'est un moyen.", ko: "Pas de chiffre final ici. On décrit une action répétée - c'est un moyen, pas un résultat." },
+                    { s: "« Faire en sorte que chaque client reparte satisfait. »", c: 1, ok: "Bien vu - sans chiffre ni date, ce n'est pas un résultat mesurable. Un résultat valide dirait : « Atteindre 4,5/5 à l'enquête satisfaction. »", ko: "Piège : ça ressemble à un résultat, mais sans chiffre ni date, on ne peut pas mesurer si c'est atteint. C'est un moyen imprécis." }
+                ]
+            },
+            {
+                title: "Quantitatif vs Qualitatif",
+                intro: [
+                    ["Objectif quantitatif", "il s'exprime avec un chiffre. On peut dire « atteint » ou « non atteint » sans débat.", "Ex : taux de rupture inférieur à 2 %."],
+                    ["Objectif qualitatif", "il décrit une qualité, une perception, sans chiffre direct.", "Ex : accueil client irréprochable."]
+                ],
+                question: "Cet objectif est…",
+                choices: ["Quantitatif", "Qualitatif"],
+                final: "À retenir : le qualitatif n'est pas un défaut - mais il doit être rendu mesurable pour être pilotable. « Bon accueil » devient « 4,5/5 à l'enquête satisfaction ». Sans chiffre, on ne peut pas évaluer ni progresser.",
+                steps: [
+                    { s: "« Atteindre un taux de satisfaction de 4/5 à l'enquête mensuelle. »", c: 0, ok: "4/5 est un score chiffré - c'est quantitatif, même si le sujet est la satisfaction.", ko: "La satisfaction semble qualitative, mais ici elle est mesurée par un score. Dès qu'il y a un chiffre, c'est quantitatif." },
+                    { s: "« Améliorer l'ambiance et la propreté du rayon. »", c: 1, ok: "Aucun chiffre, aucun seuil : c'est qualitatif - et difficile à évaluer tel quel.", ko: "Cherchez un chiffre ou un seuil. Il n'y en a pas - c'est une intention sans mesure, donc qualitatif." },
+                    { s: "« Réduire le taux de retours produits à moins de 3 % ce trimestre. »", c: 0, ok: "3 % est un seuil chiffré clair : c'est quantitatif.", ko: "3 % est un chiffre précis. Dès qu'on peut dire « atteint » ou « non atteint » avec un nombre, c'est quantitatif." },
+                    { s: "« Offrir une expérience d'achat agréable à chaque client. »", c: 1, ok: "« Agréable » est une perception, pas un chiffre - c'est qualitatif. Pour le piloter, il faudrait un indicateur.", ko: "« Agréable » ne se mesure pas directement. Sans mesure associée, c'est qualitatif." },
+                    { s: "« Maintenir un score NPS supérieur à 40 sur l'ensemble de l'année. »", c: 0, ok: "Bien vu - le NPS mesure la satisfaction, mais c'est un score chiffré. La satisfaction peut tout à fait être quantitative.", ko: "Piège classique : NPS porte sur la satisfaction, qui semble qualitative. Mais 40 est un chiffre - c'est quantitatif." }
+                ]
+            },
+            {
+                title: "Individuel vs Collectif",
+                intro: [
+                    ["Objectif individuel", "il désigne une personne nommée. Il responsabilise et permet une évaluation précise.", "Ex : Nicole réassortit avant 9h."],
+                    ["Objectif collectif", "il s'applique à toute l'équipe, sans prénom. Il crée de la solidarité mais peut masquer les écarts.", "Ex : l'équipe atteint un taux de démarque inférieur à 1 %."]
+                ],
+                question: "Cet objectif s'adresse à…",
+                choices: ["Un individu", "Toute l'équipe"],
+                final: "Bonne pratique : mixer les deux. Un objectif collectif donne la direction à l'équipe. Un objectif individuel responsabilise chaque collaborateur. L'un sans l'autre crée soit de la concurrence malsaine, soit du flottement.",
+                steps: [
+                    { s: "« L'équipe atteint un taux de démarque inférieur à 1 % ce mois-ci. »", c: 1, ok: "Pas de prénom : c'est toute l'équipe qui est visée - c'est collectif.", ko: "Cherchez un prénom. Il n'y en a pas - l'objectif s'applique à tout le monde." },
+                    { s: "« Marc réalise au moins 3 ventes additionnelles par jour cette semaine. »", c: 0, ok: "Marc est nommé - c'est un objectif individuel.", ko: "Il y a un prénom. Quand quelqu'un est désigné, c'est toujours individuel." },
+                    { s: "« L'équipe du matin propose un accompagnement à chaque client. »", c: 1, ok: "« L'équipe du matin » désigne un groupe sans nommer personne - c'est collectif.", ko: "Aucun prénom ici. Un groupe sans nom individuel, c'est collectif." },
+                    { s: "« Sophie maintient son rayon en parfait état de présentation toute la journée. »", c: 0, ok: "Sophie est nommée : c'est individuel.", ko: "Il y a un prénom - c'est donc individuel, même si la tâche concerne le rayon entier." },
+                    { s: "« Chaque vendeur atteint un panier moyen de 45 € d'ici vendredi. »", c: 0, ok: "Bien vu - « chaque vendeur » désigne chaque personne individually, pas l'équipe comme un tout.", ko: "Piège : « chaque vendeur » semble collectif, mais c'est une cible par personne - c'est individuel." }
+                ]
+            },
+            {
+                title: "Opérationnel vs Stratégique",
+                intro: [
+                    ["Objectif opérationnel", "court terme : le jour, la semaine, le mois. C'est ce qui anime l'équipe au quotidien.", "Ex : CA journalier de 1 400 €."],
+                    ["Objectif stratégique", "long terme : l'année, voire plusieurs années. Décidé par la direction.", "Ex : part de marque distributeur à 35 % en 2027."]
+                ],
+                question: "Cet objectif est…",
+                choices: ["Opérationnel", "Stratégique"],
+                final: "À retenir : les deux horizons se servent mutuellement. L'objectif stratégique donne le cap ; les objectifs opérationnels sont les étapes concrètes pour l'atteindre. Un manager efficace pilote les deux en permanence.",
+                steps: [
+                    { s: "« Atteindre 1 400 € de chiffre d'affaires aujourd'hui. »", c: 0, ok: "Aujourd'hui : court terme immédiat - c'est opérationnel.", ko: "Stratégique, c'est l'année ou plusieurs années. Aujourd'hui, c'est le court terme par excellence." },
+                    { s: "« Atteindre une part de marque distributeur de 35 % d'ici 2027. »", c: 1, ok: "2027, c'est dans plusieurs années - c'est un objectif stratégique, décidé au niveau de la direction.", ko: "Opérationnel, c'est le jour ou la semaine. Plusieurs années, c'est stratégique." },
+                    { s: "« Réduire le taux de rupture à moins de 2 % cette semaine. »", c: 0, ok: "Cette semaine : court terme, piloté au quotidien - c'est opérationnel.", ko: "Une semaine, c'est le court terme. Opérationnel désigne tout ce qui se pilote au jour le jour." },
+                    { s: "« Ouvrir un deuxième point de vente d'ici 3 ans. »", c: 1, ok: "3 ans, décidé par la direction : c'est stratégique.", ko: "3 ans, c'est un horizon long - bien au-delà du mois ou du trimestre. C'est stratégique." },
+                    { s: "« Atteindre un CA semestriel de 280 000 € sur le rayon frais. »", c: 0, ok: "Bien vu - un semestre reste dans l'horizon opérationnel (pilotage trimestriel ou semestriel).", ko: "Piège : un semestre peut sembler long, mais c'est encore de l'opérationnel. Stratégique, c'est l'année ou plus." }
+                ]
+            }
+        ];
+
+        const PART2_DATA = [
+            {
+                bad: "« Faire mieux au rayon frais ce mois-ci. »",
+                defauts: ["Pas de chiffre", "Pas de date précise", "Pas de responsable", "Résultat ou moyen ?"],
+                good: "« L'équipe du rayon frais atteint un CA de 18 000 € d'ici le 31 du mois, avec un taux de rupture inférieur à 2 %. »",
+                explain: ["Un chiffre cible (18 000 €)", "Une échéance précise (31 du mois)", "Un périmètre clair (l'équipe du rayon frais)", "Un indicateur complémentaire (taux de rupture)"],
+                concepts: [
+                    { name: "un indicateur chiffré", words: ["€", "euro", "ca", "chiffre", "taux", "%", "18", "vente", "objectif"] },
+                    { name: "une date précise", words: ["31", "fin", "date", "semaine", "jour", "avant", "d'ici", "mois"] }
+                ]
+            },
+            {
+                bad: "« Il faudrait que les vendeurs soient plus motivés et accueillent mieux les clients. »",
+                defauts: ["Qualitatif non mesurable", "Pas de responsable nommé", "Mélange résultat et moyen", "Pas d'échéance"],
+                good: "« Chaque vendeur propose un accompagnement personnalisé à 80 % des clients entrants, mesuré via la grille d'observation hebdomadaire du manager. »",
+                explain: ["Un comportement observable et mesurable (80 %)", "Un responsable individualisé (chaque vendeur)", "Un outil de mesure concret (grille d'observation)", "Une fréquence de suivi (hebdomadaire)"],
+                concepts: [
+                    { name: "une mesure claire", words: ["%", "taux", "grille", "score", "note", "sur", "evaluation", "80"] },
+                    { name: "une action concrète", words: ["accompagne", "bonjour", "sourire", "propose", "demande", "client"] }
+                ]
+            },
+            {
+                bad: "« Augmenter les ventes. »",
+                defauts: ["Pas de chiffre", "Pas d'échéance", "Pas de périmètre", "Trop vague pour être pilotable"],
+                good: "« Le rayon boucherie atteint 22 000 € de CA sur le mois de mars, soit +8 % vs mars de l'année précédente. »",
+                explain: ["Un rayon ciblé (boucherie)", "Un chiffre absolu (22 000 €) et relatif (+8 %)", "Une période précise (mars)", "Une référence pour mesurer la progression (vs N-1)"],
+                concepts: [
+                    { name: "un objectif chiffré", words: ["€", "euro", "ca", "chiffre", "%", "taux", "montant", "vente"] },
+                    { name: "une période", words: ["mois", "mars", "semaine", "annee", "trimestre", "fin"] }
+                ]
+            },
+            {
+                bad: "« Sophie doit s'améliorer dans la relation client et être plus réactive. »",
+                defauts: ["Qualitatif non mesurable", "Ambigu : résultat ou comportement ?", "Pas d'échéance", "Pas de critère d'évaluation"],
+                good: "« Sophie rappelle chaque demande client en attente sous 24h, et atteint un score de satisfaction individuel de 4,2/5 à l'enquête de fin de mois. »",
+                explain: ["Un comportement précis et mesurable (rappel sous 24h)", "Un indicateur de résultat chiffré (4,2/5)", "Un périmètre individuel (Sophie)", "Une échéance claire (fin de mois)"],
+                concepts: [
+                    { name: "un délai", words: ["heure", "h", "jour", "24", "48", "minute", "rapidement"] },
+                    { name: "un indicateur", words: ["note", "score", "satisfaction", "sur", "avis", "etoile", "retour"] }
+                ]
+            }
+        ];
+
+        // --- FULLSCREEN & SPOTLIGHT ---
+        function toggleFullscreen() {
+            dismissSpotlight();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => { console.warn(err.message); });
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const isFs = !!document.fullscreenElement;
+            document.documentElement.classList.toggle('is-fullscreen', isFs);
+            document.getElementById('fs-icon-expand').classList.toggle('hidden', isFs);
+            document.getElementById('fs-icon-compress').classList.toggle('hidden', !isFs);
+        });
+
+        function showSpotlight() {
+            if (document.fullscreenElement) return;
+            const overlay = document.getElementById('spotlight-overlay');
+            const btn = document.getElementById('fullscreen-btn');
+            const tooltip = document.getElementById('spotlight-tooltip');
+            
+            overlay.classList.remove('pointer-events-none', 'opacity-0');
+            btn.classList.add('spotlight-active');
+            tooltip.classList.remove('pointer-events-none', 'opacity-0');
+            setTimeout(dismissSpotlight, 5500);
+        }
+
+        function dismissSpotlight() {
+            document.getElementById('spotlight-overlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('spotlight-tooltip').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('fullscreen-btn').classList.remove('spotlight-active');
+        }
+
+        // --- AUDIO ---
+        const AudioContextAPI = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContextAPI();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function playSuccessSound() {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) {}
+        }
+        function playErrorSound() {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        // --- SCORE & VISUAL EFFECTS ---
+        function updateScore(points) {
+            state.score = Math.max(0, state.score + points);
+            const badge = document.getElementById('score-badge');
+            const text = document.getElementById('score-text');
+            
+            if (badge && text) {
+                text.textContent = `${state.score} pts`;
+                badge.classList.remove('score-bump', 'score-drop');
+                void badge.offsetWidth; // Force reflow pour rejouer l'animation
+                
+                if (points > 0) badge.classList.add('score-bump');
+                else if (points < 0) badge.classList.add('score-drop');
+                
+                setTimeout(() => badge.classList.remove('score-bump', 'score-drop'), 300);
+            }
+        }
+
+        function spawnFloatingText(text, isSuccess, x, y) {
+            const el = document.createElement('div');
+            el.textContent = text;
+            el.className = `fixed z-[9999] font-black text-xl md:text-2xl pointer-events-none transition-all duration-700 ease-out drop-shadow-md ${isSuccess ? 'text-success-500' : 'text-danger-500'}`;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(el);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    el.style.transform = `translate(-50%, -150px) scale(1.1)`;
+                    el.style.opacity = '0';
+                });
+            });
+
+            setTimeout(() => el.remove(), 700);
+        }
+
+        // --- EVALUATION LOGIC ---
+        function evaluateText(text, concepts) {
+            const normalizedText = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            let foundCount = 0;
+            let foundNames = [];
+            let missingNames = [];
+
+            concepts.forEach(c => {
+                const match = c.words.some(w => normalizedText.includes(w.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")));
+                if (match) {
+                    foundCount++;
+                    foundNames.push(c.name);
+                } else {
+                    missingNames.push(c.name);
+                }
+            });
+            return { score: foundCount, total: concepts.length, foundNames, missingNames };
+        }
+
+        // --- STATE ---
+        const state = {
+            score: 0,
+            mainTab: 0,
+            p1CurrentTab: 0,
+            p1Answered: PART1_DATA.map(d => new Array(d.steps.length).fill(false)),
+            p1Feedback: PART1_DATA.map(d => new Array(d.steps.length).fill(null)),
+            p1Mistakes: PART1_DATA.map(d => new Array(d.steps.length).fill(0)), // Track mistakes for scoring
+            p1Completed: new Array(PART1_DATA.length).fill(false),
+            p1ActiveStep: new Array(PART1_DATA.length).fill(0),
+            
+            p2Revealed: new Array(PART2_DATA.length).fill(false),
+            p2Texts: new Array(PART2_DATA.length).fill(""),
+            p2Evaluations: new Array(PART2_DATA.length).fill(null),
+            p2Shake: new Array(PART2_DATA.length).fill(false), // Track shake animation
+            p2MaxScore: new Array(PART2_DATA.length).fill(0) // Prevent point farming
+        };
+
+        const appContainer = document.getElementById('app-container');
+
+        function updateGlobalState() {
+            const allP1Completed = state.p1Completed.every(Boolean);
+            const nav1 = document.getElementById('nav-main-1');
+            const icon = document.getElementById('nav-lock-icon');
+            
+            if (allP1Completed) {
+                nav1.classList.remove('opacity-60', 'cursor-not-allowed');
+                nav1.removeAttribute('title');
+                if(icon) icon.classList.add('hidden');
+            } else {
+                nav1.classList.add('opacity-60', 'cursor-not-allowed');
+                nav1.setAttribute('title', 'Terminez la partie 1 pour débloquer');
+                if(icon) icon.classList.remove('hidden');
+            }
+
+            const p1ScoreBar = state.p1Completed.filter(Boolean).length;
+            const p2ScoreBar = state.p2Revealed.filter(Boolean).length;
+            const totalScoreBar = p1ScoreBar + p2ScoreBar;
+            const maxScoreBar = PART1_DATA.length + PART2_DATA.length;
+            document.getElementById('global-progress-bar').style.width = `${(totalScoreBar / maxScoreBar) * 100}%`;
+        }
+
+        function attemptSetMainTab(index) {
+            const allP1Completed = state.p1Completed.every(Boolean);
+            if (index === 1 && !allP1Completed) return; // Prevent navigation if locked
+            setMainTab(index);
+        }
+
+        function setMainTab(index) {
+            state.mainTab = index;
+            const nav0 = document.getElementById('nav-main-0');
+            const nav1 = document.getElementById('nav-main-1');
+            if (index === 0) {
+                nav0.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm";
+                nav1.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex items-center gap-1.5";
+            } else {
+                nav1.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm flex items-center gap-1.5";
+                nav0.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200";
+            }
+            updateGlobalState();
+            render();
+        }
+
+        function setP1Tab(index) {
+            state.p1CurrentTab = index;
+            render();
+        }
+
+        function handleChoice(p1Index, stepIndex, choiceIndex, event) {
+            if (state.p1Answered[p1Index][stepIndex]) return;
+            const step = PART1_DATA[p1Index].steps[stepIndex];
+            const isCorrect = choiceIndex === step.c;
+            
+            // Coordonnées pour l'animation flottante
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top;
+
+            if (isCorrect) {
+                playSuccessSound();
+                state.p1Answered[p1Index][stepIndex] = true;
+                state.p1Feedback[p1Index][stepIndex] = { type: 'ok', text: step.ok, choiceClicked: choiceIndex };
+                
+                // Calcul des points (100 si 1er essai, 50 sinon)
+                const pts = state.p1Mistakes[p1Index][stepIndex] === 0 ? 100 : 50;
+                updateScore(pts);
+                spawnFloatingText(`+${pts} pts`, true, x, y);
+
+                if (state.p1Answered[p1Index].every(Boolean)) state.p1Completed[p1Index] = true;
+                
+                render();
+                setTimeout(() => {
+                    const actionArea = document.getElementById('step-action-area');
+                    if(actionArea) actionArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 150);
+            } else {
+                playErrorSound();
+                state.p1Mistakes[p1Index][stepIndex]++;
+                state.p1Feedback[p1Index][stepIndex] = { type: 'ko', text: step.ko, choiceClicked: choiceIndex, shake: true };
+                
+                updateScore(-10);
+                spawnFloatingText("-10 pts", false, x, y);
+                
+                render();
+                setTimeout(() => {
+                    if (!state.p1Answered[p1Index][stepIndex]) {
+                        if(state.p1Feedback[p1Index][stepIndex]) {
+                            state.p1Feedback[p1Index][stepIndex].shake = false; // Arrêter le tremblement
+                        }
+                        state.p1Feedback[p1Index][stepIndex] = null;
+                        render();
+                    }
+                }, 4000);
+            }
+        }
+
+        function nextStep(p1Index) {
+            state.p1ActiveStep[p1Index]++;
+            render();
+        }
+
+        function restartP1Panel(p1Index) {
+            state.p1Answered[p1Index] = new Array(PART1_DATA[p1Index].steps.length).fill(false);
+            state.p1Feedback[p1Index] = new Array(PART1_DATA[p1Index].steps.length).fill(null);
+            state.p1Mistakes[p1Index] = new Array(PART1_DATA[p1Index].steps.length).fill(0);
+            state.p1Completed[p1Index] = false;
+            state.p1ActiveStep[p1Index] = 0;
+            updateGlobalState();
+            render();
+        }
+
+        function updateP2Text(index, value) {
+            state.p2Texts[index] = value;
+            const btn = document.getElementById('reveal-btn-' + index);
+            if (btn) {
+                const hasText = value.trim().length > 0;
+                btn.disabled = !hasText;
+                if (hasText) {
+                    btn.className = "bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm mt-1";
+                } else {
+                    btn.className = "bg-slate-200 text-slate-400 cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-all mt-1";
+                }
+            }
+        }
+
+        function revealP2(index, event) {
+            const text = state.p2Texts[index].trim();
+            if (!text) return;
+            
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top;
+
+            const evaluation = evaluateText(text, PART2_DATA[index].concepts);
+            state.p2Evaluations[index] = evaluation;
+            state.p2Revealed[index] = true;
+            
+            const currentPts = evaluation.score * 100;
+            
+            if (evaluation.score > 0) {
+                playSuccessSound();
+                if (currentPts > state.p2MaxScore[index]) {
+                    const diff = currentPts - state.p2MaxScore[index];
+                    updateScore(diff);
+                    spawnFloatingText(`+${diff} pts`, true, x, y);
+                    state.p2MaxScore[index] = currentPts;
+                } else {
+                    spawnFloatingText("Déjà validé", true, x, y);
+                }
+            } else {
+                playErrorSound();
+                updateScore(-10);
+                spawnFloatingText("Oups ! (-10 pts)", false, x, y);
+                state.p2Shake[index] = true;
+            }
+            
+            updateGlobalState();
+            render();
+        }
+
+        function retryP2(index) {
+            state.p2Revealed[index] = false;
+            state.p2Evaluations[index] = null;
+            updateGlobalState();
+            render();
+        }
+
+        function render() {
+            if (state.mainTab === 0) appContainer.innerHTML = generatePart1HTML();
+            else appContainer.innerHTML = generatePart2HTML();
+            updateGlobalState();
+        }
+
+        function generatePart1HTML() {
+            const data = PART1_DATA[state.p1CurrentTab];
+            const p1Index = state.p1CurrentTab;
+
+            const tabsHTML = PART1_DATA.map((tabData, idx) => {
+                const isActive = idx === state.p1CurrentTab;
+                const isCompleted = state.p1Completed[idx];
+                let baseClasses = "px-4 py-2.5 sm:py-2 text-sm border rounded-full font-medium transition-all duration-200 cursor-pointer ";
+                if (isActive) {
+                    baseClasses += isCompleted ? "bg-success-600 text-white border-success-600 shadow-md" : "bg-brand-500 text-white border-brand-500 shadow-md";
+                } else {
+                    baseClasses += isCompleted ? "bg-white text-success-600 border-success-600 hover:bg-success-50" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100";
+                }
+                const icon = isCompleted ? `<span class="mr-1">✓</span>` : `<span class="mr-1 text-slate-400">${idx + 1}.</span>`;
+                return `<button onclick="setP1Tab(${idx})" class="${baseClasses}">${icon}${tabData.title}</button>`;
+            }).join('');
+
+            const introHTML = `
+                <div class="bg-white rounded-r-xl rounded-l-sm border-l-4 border-brand-500 p-5 shadow-sm mb-8 fade-in">
+                    <h3 class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-3">À retenir avant de commencer</h3>
+                    <div class="space-y-3">
+                        ${data.intro.map(([title, def, ex]) => `
+                            <p class="text-sm text-slate-700"><strong class="text-slate-900">${title}</strong> - ${def} <em class="text-slate-500 ml-1">${ex}</em></p>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            const currentStepIndex = state.p1ActiveStep[p1Index];
+            const totalSteps = data.steps.length;
+            const isFullyCompleted = state.p1Completed[p1Index] && currentStepIndex >= totalSteps;
+            const currentStepDisplay = isFullyCompleted ? totalSteps : currentStepIndex + 1;
+
+            let dotsHTML = '<div class="flex items-center gap-1.5 mb-2">';
+            for (let i = 0; i < totalSteps; i++) {
+                if (i === currentStepIndex && !isFullyCompleted) dotsHTML += '<div class="w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors duration-300"></div>';
+                else if (i < currentStepIndex || isFullyCompleted) dotsHTML += '<div class="w-2.5 h-2.5 rounded-full bg-success-600 transition-colors duration-300"></div>';
+                else dotsHTML += '<div class="w-2.5 h-2.5 rounded-full bg-slate-200 transition-colors duration-300"></div>';
+            }
+            dotsHTML += '</div>';
+
+            const paginationHTML = `
+                <div class="mb-5 ml-1 fade-in">
+                    ${dotsHTML}
+                    <div class="text-sm text-slate-500 font-medium mt-1">Situation ${currentStepDisplay} sur ${totalSteps}</div>
+                </div>
+            `;
+
+            let stepsHTML = "";
+            if (!isFullyCompleted && currentStepIndex < totalSteps) {
+                const step = data.steps[currentStepIndex];
+                const answered = state.p1Answered[p1Index][currentStepIndex];
+                const feedback = state.p1Feedback[p1Index][currentStepIndex];
+
+                const choicesHTML = data.choices.map((choiceLabel, choiceIndex) => {
+                    let btnClass = "px-5 py-3 sm:py-2 text-sm border rounded-lg font-medium transition-colors duration-200 ";
+                    let disabled = "";
+                    if (answered) {
+                        if (choiceIndex === step.c) btnClass += "bg-success-50 border-success-600 text-success-800 cursor-default";
+                        else btnClass += "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50";
+                        disabled = "disabled";
+                    } else {
+                        if (feedback && feedback.type === 'ko' && feedback.choiceClicked === choiceIndex) btnClass += "bg-danger-50 border-danger-600 text-danger-800";
+                        else btnClass += "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 cursor-pointer";
+                    }
+                    return `<button ${disabled} onclick="handleChoice(${p1Index}, ${currentStepIndex}, ${choiceIndex}, event)" class="${btnClass}">${choiceLabel}</button>`;
+                }).join('');
+
+                let feedbackHTML = "";
+                let cardClass = "bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm fade-in";
+                
+                if (feedback) {
+                    if (feedback.type === 'ok') {
+                        feedbackHTML = `<div class="mt-4 text-sm text-success-800 flex items-start gap-2 fade-in bg-success-50 p-3 rounded-lg border border-success-100">
+                            <svg class="w-5 h-5 text-success-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>${feedback.text}</span></div>`;
+                    } else {
+                        feedbackHTML = `<div class="mt-4 text-sm text-danger-800 flex items-start gap-2 fade-in bg-danger-50 p-3 rounded-lg border border-danger-100">
+                            <svg class="w-5 h-5 text-danger-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <span>${feedback.text}</span></div>`;
+                        if (feedback.shake) {
+                            cardClass += " shake";
+                            delete feedback.shake; // Animation consommée
+                        }
+                    }
+                }
+
+                let nextBtnHTML = "";
+                if (answered) {
+                    const btnText = (currentStepIndex === totalSteps - 1) ? "Voir la conclusion finale" : "Situation suivante ➔";
+                    nextBtnHTML = `
+                        <div id="step-action-area" class="mt-5 pt-5 border-t border-slate-100 flex justify-end fade-in">
+                            <button onclick="nextStep(${p1Index})" class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">${btnText}</button>
+                        </div>`;
+                }
+
+                stepsHTML = `
+                    <div class="${cardClass}">
+                        <div class="text-sm font-semibold text-slate-500 mb-2">Situation ${currentStepIndex + 1}</div>
+                        <div class="text-base font-medium text-slate-800 mb-4">${step.s}</div>
+                        <div class="text-sm text-slate-600 mb-3">${data.question}</div>
+                        <div class="flex flex-wrap gap-2">${choicesHTML}</div>
+                        ${feedbackHTML}
+                        ${nextBtnHTML}
+                    </div>`;
+            }
+
+            let finalHTML = "";
+            if (isFullyCompleted) {
+                let nextActionBtn = "";
+                if (p1Index < PART1_DATA.length - 1) {
+                    nextActionBtn = `<button onclick="setP1Tab(${p1Index + 1})" class="text-sm bg-brand-500 text-white hover:bg-brand-600 font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm">Passer à la série suivante ➔</button>`;
+                } else {
+                    nextActionBtn = `<button onclick="attemptSetMainTab(1)" class="text-sm bg-brand-500 text-white hover:bg-brand-600 font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm">Passer à la Partie 2 (Reformuler) ➔</button>`;
+                }
+                finalHTML = `
+                    <div class="mt-2 bg-brand-50 rounded-xl p-6 border border-brand-100 shadow-sm celebrate">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                            <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wider">Règle déduite</h4>
+                        </div>
+                        <p class="text-slate-800 mb-6 leading-relaxed text-base">${data.final}</p>
+                        <div class="flex flex-wrap gap-3">
+                            ${nextActionBtn}
+                            <button onclick="restartP1Panel(${p1Index})" class="text-sm bg-white border border-brand-200 text-brand-600 hover:bg-brand-50 font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm">Recommencer cette série</button>
+                        </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Partie 1 : Induire les règles</h2>
+                        <p class="text-slate-500">Testez vos hypothèses sur ces situations pour découvrir les définitions.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center mb-8">${tabsHTML}</div>
+                    <div class="max-w-2xl mx-auto">
+                        ${introHTML}
+                        ${paginationHTML}
+                        <div class="flex flex-col gap-4">${stepsHTML}</div>
+                        ${finalHTML}
+                    </div>
+                </div>`;
+        }
+
+        function generatePart2HTML() {
+            const cardsHTML = PART2_DATA.map((c, i) => {
+                const isRevealed = state.p2Revealed[i];
+                const userText = state.p2Texts[i];
+                const hasText = userText.trim().length > 0;
+
+                const defautsHTML = c.defauts.map(d => `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger-50 text-danger-800 border border-danger-200">✗ ${d}</span>`).join('');
+
+                let cardClass = "bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 relative";
+                if (state.p2Shake[i]) {
+                    cardClass += " shake";
+                    state.p2Shake[i] = false; // Consommer l'animation
+                }
+
+                let revealBtnHTML = "";
+                let evaluationHTML = "";
+                
+                if (isRevealed) {
+                    const eval = state.p2Evaluations[i];
+                    if (eval && eval.score > 0) {
+                        const conceptsList = eval.foundNames.map(n => `<strong class="font-semibold text-success-900">${n}</strong>`).join(" et ");
+                        let missingMsg = "";
+                        if (eval.missingNames.length > 0) {
+                            const missingList = eval.missingNames.map(n => `<strong class="font-semibold">${n}</strong>`).join(", ");
+                            missingMsg = `<div class="mt-2 text-success-700">Il manquait cependant : ${missingList}. Comparez avec l'expert ci-dessous.</div>`;
+                        }
+                        
+                        evaluationHTML = `
+                            <div class="mt-3 bg-success-50 text-success-800 p-4 rounded-lg border border-success-200 text-sm flex items-start gap-3 fade-in shadow-sm">
+                                <svg class="w-6 h-6 text-success-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <span class="block font-bold text-base mb-1">Bien joué !</span>
+                                    Vous avez pensé à inclure : ${conceptsList}.
+                                    ${missingMsg}
+                                </div>
+                            </div>`;
+                    } else {
+                        const missingList = eval.missingNames.map(n => `<strong class="font-semibold">${n}</strong>`).join(", ");
+                        evaluationHTML = `
+                            <div class="mt-3 bg-danger-50 text-danger-800 p-4 rounded-lg border border-danger-200 text-sm flex items-start gap-3 fade-in shadow-sm">
+                                <svg class="w-6 h-6 text-danger-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <span class="block font-bold text-base mb-1">C'est un bon début mais...</span>
+                                    Il manquait des éléments précis : ${missingList}. Comparez avec la version de l'expert ci-dessous.
+                                </div>
+                            </div>`;
+                    }
+                } else {
+                    const btnClass = hasText
+                        ? "bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm"
+                        : "bg-slate-200 text-slate-400 cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-all";
+                    revealBtnHTML = `<button id="reveal-btn-${i}" onclick="revealP2(${i}, event)" ${hasText ? '' : 'disabled'} class="${btnClass} mt-1">Confronter à la version experte</button>`;
+                }
+
+                let goodBlockHTML = "";
+                if (isRevealed) {
+                    const explainsHTML = c.explain.map(e => `<li class="flex items-start gap-2"><svg class="w-4 h-4 text-success-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>${e}</span></li>`).join('');
+                    goodBlockHTML = `
+                        <div class="mt-6 fade-in celebrate bg-success-50/40 p-5 rounded-xl border-2 border-success-400 shadow-sm">
+                            <div class="text-sm font-bold text-success-800 uppercase tracking-wider mb-2">La version de l'expert</div>
+                            <div class="bg-white border border-success-200 text-slate-800 p-4 rounded-lg font-medium mb-4 shadow-sm">${c.good}</div>
+                            <div>
+                                <div class="text-sm text-slate-700 font-semibold mb-2">Ce qui a été corrigé pour rendre l'objectif pilotable :</div>
+                                <ul class="text-sm text-slate-700 space-y-1.5">${explainsHTML}</ul>
+                            </div>
+                            <div class="mt-4 border-t border-success-200 pt-3">
+                                <button onclick="retryP2(${i})" class="text-sm text-brand-600 hover:text-brand-800 font-medium underline inline-block">Modifier ma réponse</button>
+                            </div>
+                        </div>`;
+                }
+
+                const hintHTML = !isRevealed && !hasText
+                    ? `<p class="text-xs text-slate-400 mt-3 italic">Rédigez votre version pour débloquer la comparaison.</p>`
+                    : "";
+
+                return `
+                    <div class="${cardClass}">
+                        <div class="text-sm font-semibold text-slate-500 mb-4">Objectif ${i + 1} sur ${PART2_DATA.length}</div>
+                        <div class="mb-5">
+                            <div class="text-xs font-bold text-danger-600 uppercase tracking-wider mb-2">À corriger</div>
+                            <div class="text-base font-medium text-slate-800 mb-3 bg-slate-50 p-3 rounded-lg border border-slate-100">${c.bad}</div>
+                            <div class="flex flex-wrap gap-2">${defautsHTML}</div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="ta-${i}" class="block text-sm font-medium text-slate-700 mb-2">Votre proposition de reformulation :</label>
+                            <textarea id="ta-${i}" ${isRevealed ? 'disabled' : ''} oninput="updateP2Text(${i}, this.value)" rows="5" class="block w-full rounded-lg border-slate-300 border ${isRevealed ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-slate-50 text-slate-900 focus:border-brand-500 focus:bg-white'} p-3 text-sm transition-colors outline-none" placeholder="Rédigez la nouvelle version ici...">${userText}</textarea>
+                        </div>
+                        ${revealBtnHTML}
+                        ${evaluationHTML}
+                        ${hintHTML}
+                        ${goodBlockHTML}
+                    </div>`;
+            }).join('');
+
+            const exampleHTML = `
+                <div class="bg-brand-50 rounded-xl border border-brand-200 shadow-sm p-6 mb-8 fade-in">
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h3 class="text-sm font-bold text-brand-800 uppercase tracking-wider">Exemple pour s'échauffer</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg border border-danger-100 shadow-sm">
+                            <div class="text-xs font-bold text-danger-600 uppercase tracking-wider mb-2">Avant (Vague)</div>
+                            <div class="text-slate-800 font-medium mb-3">« Être plus souriant avec les clients. »</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-danger-50 text-danger-800">✗ Non mesurable</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-danger-50 text-danger-800">✗ Pas de délai</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-success-200 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-1.5 h-full bg-success-500"></div>
+                            <div class="text-xs font-bold text-success-600 uppercase tracking-wider mb-2">Après (Pilotable)</div>
+                            <div class="text-slate-800 font-medium mb-3">« Atteindre 4,5/5 sur le critère "amabilité" aux visites mystères du trimestre. »</div>
+                            <ul class="text-xs text-slate-600 space-y-1.5">
+                                <li class="flex items-start gap-1.5"><svg class="w-4 h-4 text-success-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Indicateur chiffré (4,5/5)</li>
+                                <li class="flex items-start gap-1.5"><svg class="w-4 h-4 text-success-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Mesure concrète (visites mystères)</li>
+                                <li class="flex items-start gap-1.5"><svg class="w-4 h-4 text-success-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Échéance (du trimestre)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return `
+                <div class="fade-in max-w-3xl mx-auto">
+                    <div class="mb-8 text-center sm:text-left">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Partie 2 : Reformuler</h2>
+                        <p class="text-slate-500">Transformez ces intentions vagues en véritables objectifs pilotables, puis comparez avec la version experte.</p>
+                    </div>
+                    ${exampleHTML}
+                    <div class="flex flex-col gap-8">${cardsHTML}</div>
+                </div>`;
+        }
+
+        render();
+        setTimeout(showSpotlight, 600);
+    </script>
+</body>
+</html>

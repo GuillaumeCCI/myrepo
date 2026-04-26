@@ -21,11 +21,7 @@
         }
     </script>
     <style>
-        /* Ajustement de la taille de base pour une meilleure lisibilité en intégration (iframe, présentation) */
-        html { font-size: 16px; }
-        @media (min-width: 768px) { html { font-size: 18px; } }
-        @media (min-width: 1024px) { html { font-size: 20px; } }
-
+        /* Taille par défaut standard - Le zoom est géré par JS sur le html { font-size } */
         body { background-color: #f8fafc; color: #0f172a; overflow-x: hidden; }
         .tab-transition { transition: all 0.2s ease-in-out; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -62,7 +58,8 @@
             z-index: 50;
         }
 
-        /* Mode Plein Écran - Centrage vertical (sans zoom supplémentaire) */
+        /* Mode Plein Écran - Centrage vertical naturel */
+        :fullscreen { overflow: auto; }
         html.is-fullscreen body { justify-content: center; }
         html.is-fullscreen main { display: flex; flex-direction: column; justify-content: center; }
     </style>
@@ -72,29 +69,41 @@
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div id="spotlight-overlay" class="fixed inset-0 bg-slate-900/60 z-40 transition-opacity duration-500 opacity-0 pointer-events-none" onclick="dismissSpotlight()"></div>
 
-        <div class="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 relative">
+        <div class="max-w-[98%] xl:max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4 relative">
             
-            <div class="relative z-10">
+            <div class="relative z-10 w-full md:w-auto text-center md:text-left">
                 <h1 class="text-xl font-bold text-slate-800 tracking-tight">Fixer des objectifs efficaces</h1>
                 <p class="text-sm font-medium text-slate-500 mt-0.5">Méthode d'apprentissage par induction</p>
             </div>
             
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <!-- SCORE BADGE -->
                 <div id="score-badge" class="score-badge flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-lg font-bold text-sm border border-brand-100 shadow-sm relative z-10">
                     🏆 <span id="score-text">0 pts</span>
                 </div>
 
-                <nav class="flex space-x-2 bg-slate-100 p-1 rounded-lg relative z-10">
-                    <button onclick="setMainTab(0)" id="nav-main-0" class="px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm">1. Reconnaître</button>
-                    <button onclick="attemptSetMainTab(1)" id="nav-main-1" class="px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex items-center gap-1.5" title="Terminez la partie 1 pour débloquer">
+                <nav class="flex space-x-1.5 sm:space-x-2 bg-slate-100 p-1 rounded-lg relative z-10">
+                    <button onclick="setMainTab(0)" id="nav-main-0" class="px-3 sm:px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm">1. Reconnaître</button>
+                    <button onclick="attemptSetMainTab(1)" id="nav-main-1" class="px-3 sm:px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex items-center gap-1.5" title="Terminez la partie 1 pour débloquer">
                         2. Reformuler
                         <svg id="nav-lock-icon" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     </button>
                 </nav>
                 
+                <!-- BOUTONS DE ZOOM -->
+                <div class="flex items-center bg-slate-100 rounded-lg p-1 relative z-50 shadow-inner border border-slate-200/60">
+                    <button onclick="zoomOut()" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow" title="Dézoomer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
+                    </button>
+                    <span id="zoom-level-text" onclick="resetZoom()" class="text-[11px] font-bold text-slate-600 w-10 text-center cursor-pointer select-none hover:text-brand-600 transition-colors" title="Réinitialiser">100%</span>
+                    <button onclick="zoomIn()" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow" title="Zoomer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                    </button>
+                </div>
+
+                <!-- PLEIN ECRAN -->
                 <div class="relative z-50">
-                    <button id="fullscreen-btn" onclick="toggleFullscreen()" class="relative p-2.5 text-slate-500 hover:text-brand-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all" title="Plein écran">
+                    <button id="fullscreen-btn" onclick="toggleFullscreen()" class="relative p-2 text-slate-500 hover:text-brand-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all" title="Plein écran">
                         <svg id="fs-icon-expand" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                         <svg id="fs-icon-compress" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4l5 5m0 0V4m0 5H4 M20 4l-5 5m0 0V4m0 5h5 M4 20l5-5m0 0v5m0-5H4 M20 20l-5-5m0 0v5m0-5h5"></path></svg>
                     </button>
@@ -111,7 +120,7 @@
         </div>
     </header>
 
-    <main class="flex-grow w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10" id="app-container"></main>
+    <main class="flex-grow w-full max-w-[98%] xl:max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10" id="app-container"></main>
 
     <script>
         const PART1_DATA = [
@@ -227,6 +236,18 @@
                 ]
             }
         ];
+
+        // --- GESTION DU ZOOM ---
+        let currentZoomLevel = 100;
+        function setZoom(level) {
+            currentZoomLevel = Math.min(Math.max(level, 50), 150); // Min 50%, Max 150%
+            document.documentElement.style.fontSize = `${currentZoomLevel}%`;
+            const zoomText = document.getElementById('zoom-level-text');
+            if (zoomText) zoomText.textContent = `${currentZoomLevel}%`;
+        }
+        function zoomIn() { setZoom(currentZoomLevel + 10); }
+        function zoomOut() { setZoom(currentZoomLevel - 10); }
+        function resetZoom() { setZoom(100); }
 
         // --- FULLSCREEN & SPOTLIGHT ---
         function toggleFullscreen() {
@@ -354,15 +375,15 @@
             p1CurrentTab: 0,
             p1Answered: PART1_DATA.map(d => new Array(d.steps.length).fill(false)),
             p1Feedback: PART1_DATA.map(d => new Array(d.steps.length).fill(null)),
-            p1Mistakes: PART1_DATA.map(d => new Array(d.steps.length).fill(0)), // Track mistakes for scoring
+            p1Mistakes: PART1_DATA.map(d => new Array(d.steps.length).fill(0)),
             p1Completed: new Array(PART1_DATA.length).fill(false),
             p1ActiveStep: new Array(PART1_DATA.length).fill(0),
             
             p2Revealed: new Array(PART2_DATA.length).fill(false),
             p2Texts: new Array(PART2_DATA.length).fill(""),
             p2Evaluations: new Array(PART2_DATA.length).fill(null),
-            p2Shake: new Array(PART2_DATA.length).fill(false), // Track shake animation
-            p2MaxScore: new Array(PART2_DATA.length).fill(0) // Prevent point farming
+            p2Shake: new Array(PART2_DATA.length).fill(false),
+            p2MaxScore: new Array(PART2_DATA.length).fill(0)
         };
 
         const appContainer = document.getElementById('app-container');
@@ -391,7 +412,7 @@
 
         function attemptSetMainTab(index) {
             const allP1Completed = state.p1Completed.every(Boolean);
-            if (index === 1 && !allP1Completed) return; // Prevent navigation if locked
+            if (index === 1 && !allP1Completed) return;
             setMainTab(index);
         }
 
@@ -400,11 +421,11 @@
             const nav0 = document.getElementById('nav-main-0');
             const nav1 = document.getElementById('nav-main-1');
             if (index === 0) {
-                nav0.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm";
-                nav1.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex items-center gap-1.5";
+                nav0.className = "px-3 sm:px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm";
+                nav1.className = "px-3 sm:px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex items-center gap-1.5";
             } else {
-                nav1.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm flex items-center gap-1.5";
-                nav0.className = "px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200";
+                nav1.className = "px-3 sm:px-4 py-2 text-sm font-medium rounded-md tab-transition bg-white text-brand-500 shadow-sm flex items-center gap-1.5";
+                nav0.className = "px-3 sm:px-4 py-2 text-sm font-medium rounded-md tab-transition text-slate-600 hover:text-slate-900 hover:bg-slate-200";
             }
             updateGlobalState();
             render();
@@ -420,7 +441,6 @@
             const step = PART1_DATA[p1Index].steps[stepIndex];
             const isCorrect = choiceIndex === step.c;
             
-            // Coordonnées pour l'animation flottante
             const rect = event.currentTarget.getBoundingClientRect();
             const x = rect.left + rect.width / 2;
             const y = rect.top;
@@ -430,7 +450,6 @@
                 state.p1Answered[p1Index][stepIndex] = true;
                 state.p1Feedback[p1Index][stepIndex] = { type: 'ok', text: step.ok, choiceClicked: choiceIndex };
                 
-                // Calcul des points (100 si 1er essai, 50 sinon)
                 const pts = state.p1Mistakes[p1Index][stepIndex] === 0 ? 100 : 50;
                 updateScore(pts);
                 spawnFloatingText(`+${pts} pts`, true, x, y);
@@ -454,7 +473,7 @@
                 setTimeout(() => {
                     if (!state.p1Answered[p1Index][stepIndex]) {
                         if(state.p1Feedback[p1Index][stepIndex]) {
-                            state.p1Feedback[p1Index][stepIndex].shake = false; // Arrêter le tremblement
+                            state.p1Feedback[p1Index][stepIndex].shake = false;
                         }
                         state.p1Feedback[p1Index][stepIndex] = null;
                         render();
@@ -485,9 +504,9 @@
                 const hasText = value.trim().length > 0;
                 btn.disabled = !hasText;
                 if (hasText) {
-                    btn.className = "bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm mt-1";
+                    btn.className = "bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm mt-1 w-full sm:w-auto";
                 } else {
-                    btn.className = "bg-slate-200 text-slate-400 cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-all mt-1";
+                    btn.className = "bg-slate-200 text-slate-400 cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-all mt-1 w-full sm:w-auto";
                 }
             }
         }
@@ -558,7 +577,7 @@
             }).join('');
 
             const introHTML = `
-                <div class="bg-white rounded-r-xl rounded-l-sm border-l-4 border-brand-500 p-5 shadow-sm mb-8 fade-in">
+                <div class="bg-white rounded-r-xl rounded-l-sm border-l-4 border-brand-500 p-5 shadow-sm mb-4 fade-in w-full">
                     <h3 class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-3">À retenir avant de commencer</h3>
                     <div class="space-y-3">
                         ${data.intro.map(([title, def, ex]) => `
@@ -573,7 +592,7 @@
             const isFullyCompleted = state.p1Completed[p1Index] && currentStepIndex >= totalSteps;
             const currentStepDisplay = isFullyCompleted ? totalSteps : currentStepIndex + 1;
 
-            let dotsHTML = '<div class="flex items-center gap-1.5 mb-2">';
+            let dotsHTML = '<div class="flex items-center gap-1.5">';
             for (let i = 0; i < totalSteps; i++) {
                 if (i === currentStepIndex && !isFullyCompleted) dotsHTML += '<div class="w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors duration-300"></div>';
                 else if (i < currentStepIndex || isFullyCompleted) dotsHTML += '<div class="w-2.5 h-2.5 rounded-full bg-success-600 transition-colors duration-300"></div>';
@@ -582,7 +601,7 @@
             dotsHTML += '</div>';
 
             const paginationHTML = `
-                <div class="mb-5 ml-1 fade-in">
+                <div class="mb-3 fade-in w-full">
                     ${dotsHTML}
                     <div class="text-sm text-slate-500 font-medium mt-1">Situation ${currentStepDisplay} sur ${totalSteps}</div>
                 </div>
@@ -609,7 +628,7 @@
                 }).join('');
 
                 let feedbackHTML = "";
-                let cardClass = "bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm fade-in";
+                let cardClass = "bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm fade-in w-full";
                 
                 if (feedback) {
                     if (feedback.type === 'ok') {
@@ -622,7 +641,7 @@
                             <span>${feedback.text}</span></div>`;
                         if (feedback.shake) {
                             cardClass += " shake";
-                            delete feedback.shake; // Animation consommée
+                            delete feedback.shake;
                         }
                     }
                 }
@@ -632,7 +651,7 @@
                     const btnText = (currentStepIndex === totalSteps - 1) ? "Voir la conclusion finale" : "Situation suivante ➔";
                     nextBtnHTML = `
                         <div id="step-action-area" class="mt-5 pt-5 border-t border-slate-100 flex justify-end fade-in">
-                            <button onclick="nextStep(${p1Index})" class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">${btnText}</button>
+                            <button onclick="nextStep(${p1Index})" class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm w-full sm:w-auto">${btnText}</button>
                         </div>`;
                 }
 
@@ -656,7 +675,7 @@
                     nextActionBtn = `<button onclick="attemptSetMainTab(1)" class="text-sm bg-brand-500 text-white hover:bg-brand-600 font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm">Passer à la Partie 2 (Reformuler) ➔</button>`;
                 }
                 finalHTML = `
-                    <div class="mt-2 bg-brand-50 rounded-xl p-6 border border-brand-100 shadow-sm celebrate">
+                    <div class="mt-2 bg-brand-50 rounded-xl p-6 border border-brand-100 shadow-sm celebrate w-full">
                         <div class="flex items-center gap-2 mb-3">
                             <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
                             <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wider">Règle déduite</h4>
@@ -670,16 +689,17 @@
             }
 
             return `
-                <div class="fade-in">
-                    <div class="mb-8">
+                <div class="fade-in w-full">
+                    <div class="mb-8 text-center sm:text-left max-w-3xl mx-auto w-full">
                         <h2 class="text-2xl font-bold text-slate-800 mb-2">Partie 1 : Induire les règles</h2>
                         <p class="text-slate-500">Testez vos hypothèses sur ces situations pour découvrir les définitions.</p>
                     </div>
-                    <div class="flex flex-wrap gap-2 justify-center mb-8">${tabsHTML}</div>
-                    <div class="max-w-2xl mx-auto">
+                    <div class="flex flex-wrap gap-2 justify-center mb-8 max-w-3xl mx-auto w-full">${tabsHTML}</div>
+                    
+                    <div class="w-full max-w-3xl mx-auto flex flex-col gap-2">
                         ${introHTML}
                         ${paginationHTML}
-                        <div class="flex flex-col gap-4">${stepsHTML}</div>
+                        ${stepsHTML}
                         ${finalHTML}
                     </div>
                 </div>`;
@@ -693,10 +713,10 @@
 
                 const defautsHTML = c.defauts.map(d => `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger-50 text-danger-800 border border-danger-200">✗ ${d}</span>`).join('');
 
-                let cardClass = "bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 relative";
+                let cardClass = "bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 relative w-full";
                 if (state.p2Shake[i]) {
                     cardClass += " shake";
-                    state.p2Shake[i] = false; // Consommer l'animation
+                    state.p2Shake[i] = false;
                 }
 
                 let revealBtnHTML = "";
@@ -734,8 +754,8 @@
                     }
                 } else {
                     const btnClass = hasText
-                        ? "bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm"
-                        : "bg-slate-200 text-slate-400 cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-all";
+                        ? "bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm w-full sm:w-auto"
+                        : "bg-slate-200 text-slate-400 cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-all mt-1 w-full sm:w-auto";
                     revealBtnHTML = `<button id="reveal-btn-${i}" onclick="revealP2(${i}, event)" ${hasText ? '' : 'disabled'} class="${btnClass} mt-1">Confronter à la version experte</button>`;
                 }
 
@@ -780,7 +800,7 @@
             }).join('');
 
             const exampleHTML = `
-                <div class="bg-brand-50 rounded-xl border border-brand-200 shadow-sm p-6 mb-8 fade-in">
+                <div class="bg-brand-50 rounded-xl border border-brand-200 shadow-sm p-6 mb-8 fade-in w-full">
                     <div class="flex items-center gap-2 mb-4">
                         <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <h3 class="text-sm font-bold text-brand-800 uppercase tracking-wider">Exemple pour s'échauffer</h3>
@@ -809,13 +829,15 @@
             `;
 
             return `
-                <div class="fade-in max-w-3xl mx-auto">
-                    <div class="mb-8 text-center sm:text-left">
+                <div class="fade-in w-full">
+                    <div class="mb-8 text-center sm:text-left max-w-3xl mx-auto w-full">
                         <h2 class="text-2xl font-bold text-slate-800 mb-2">Partie 2 : Reformuler</h2>
                         <p class="text-slate-500">Transformez ces intentions vagues en véritables objectifs pilotables, puis comparez avec la version experte.</p>
                     </div>
-                    ${exampleHTML}
-                    <div class="flex flex-col gap-8">${cardsHTML}</div>
+                    <div class="w-full max-w-3xl mx-auto flex flex-col gap-6">
+                        ${exampleHTML}
+                        ${cardsHTML}
+                    </div>
                 </div>`;
         }
 

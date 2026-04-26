@@ -21,6 +21,11 @@
         }
     </script>
     <style>
+        /* Ajustement de la taille de base pour une meilleure lisibilité en intégration (iframe, présentation) */
+        html { font-size: 16px; }
+        @media (min-width: 768px) { html { font-size: 18px; } }
+        @media (min-width: 1024px) { html { font-size: 20px; } }
+
         body { background-color: #f8fafc; color: #0f172a; overflow-x: hidden; }
         .tab-transition { transition: all 0.2s ease-in-out; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -57,9 +62,7 @@
             z-index: 50;
         }
 
-        /* Mode Plein Écran - Centrage vertical et zoom très léger */
-        html.is-fullscreen { font-size: 16px; }
-        @media (min-width: 1280px) { html.is-fullscreen { font-size: 18px; } }
+        /* Mode Plein Écran - Centrage vertical (sans zoom supplémentaire) */
         html.is-fullscreen body { justify-content: center; }
         html.is-fullscreen main { display: flex; flex-direction: column; justify-content: center; }
     </style>

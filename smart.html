@@ -20,88 +20,111 @@
         
         /* Pour masquer les éléments proprement */
         .hidden-el { display: none !important; }
+
+        /* Correction du fond noir natif en plein écran */
+        ::backdrop {
+            background-color: #F8FAFC;
+        }
+        #app-container:fullscreen {
+            background-color: #F8FAFC;
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto !important;
+        }
+        #app-container:-webkit-full-screen {
+            background-color: #F8FAFC;
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto !important;
+        }
     </style>
 </head>
-<body class="bg-[#F8FAFC] font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto min-h-screen" id="app-container">
-
-    <div class="flex flex-col items-center py-12 px-4 sm:px-6 w-full min-h-full">
-        
-        <!-- Bouton Plein Écran -->
-        <div class="w-full max-w-3xl flex justify-end mb-4 z-40 relative">
-            <button id="fullscreen-btn" onclick="toggleFullscreen()" class="group flex items-center gap-2 px-4 py-2 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl shadow-sm transition-all text-slate-600 hover:text-indigo-700 font-medium">
-                <i data-lucide="maximize" class="w-5 h-5" id="fs-icon"></i>
-                <span class="hidden sm:inline" id="fs-text">Plein écran</span>
-            </button>
-        </div>
-        
-        <div class="w-full max-w-3xl bg-white rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden transition-all duration-500 relative">
-            <!-- En-tête -->
-            <div class="px-8 pt-10 pb-8 text-center relative">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400"></div>
-                
-                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-50/50 border border-indigo-100/50 mb-6 shadow-sm">
-                    <i data-lucide="target" class="w-6 h-6 text-indigo-500"></i>
-                </div>
-                
-                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
-                    Critères <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">SMART</span>
-                </h1>
-                
-                <p class="text-slate-500 text-lg max-w-lg mx-auto">
-                    Retrouvez la signification de chaque lettre de l'acronyme SMART.
-                </p>
-
-                <!-- Compteur d'indices avec infobulle -->
-                <div id="hint-counter-container" class="group relative mt-8 inline-flex items-center gap-3 border shadow-sm rounded-full px-5 py-2 transition-colors duration-300 cursor-help bg-white border-slate-200">
-                    <div id="hint-pulse" class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)] animate-pulse"></div>
-                    <span id="hint-text" class="text-sm font-medium text-slate-600">
-                        Indices disponibles : <span class="font-bold" id="hints-remaining">2</span> sur 2
-                    </span>
-
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 bg-slate-800 text-white text-sm rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50 pointer-events-none translate-y-1 group-hover:translate-y-0">
-                        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45"></div>
-                        <p class="relative z-10 text-center leading-relaxed">
-                            Si vous hésitez, utilisez un indice pour dévoiler la <strong>question clé</strong> d'une lettre et vous mettre sur la piste.
-                        </p>
-                    </div>
-                </div>
+<body class="bg-[#F8FAFC]">
+    
+    <!-- Conteneur Principal (C'est lui qui passe en plein écran pour permettre le scroll) -->
+    <div id="app-container" class="font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto min-h-screen bg-[#F8FAFC]">
+        <div class="flex flex-col items-center py-12 px-4 sm:px-6 w-full min-h-full">
+            
+            <!-- Bouton Plein Écran -->
+            <div class="w-full max-w-3xl flex justify-end mb-4 z-40 relative">
+                <button id="fullscreen-btn" onclick="toggleFullscreen()" class="group flex items-center gap-2 px-4 py-2 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl shadow-sm transition-all text-slate-600 hover:text-indigo-700 font-medium">
+                    <i data-lucide="maximize" class="w-5 h-5" id="fs-icon"></i>
+                    <span class="hidden sm:inline" id="fs-text">Plein écran</span>
+                </button>
             </div>
-
-            <!-- Conteneur des lignes SMART -->
-            <div class="px-6 pb-16 sm:pb-12 sm:px-12">
-                <div id="smart-rows-container" class="space-y-8">
-                    <!-- Les lignes sont générées par JS -->
-                </div>
-
-                <!-- Zone d'actions -->
-                <div class="mt-10 pt-8 border-t border-slate-100 flex justify-center">
+            
+            <!-- Carte Principale Blanche -->
+            <div class="w-full max-w-3xl bg-white rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden transition-all duration-500 relative">
+                
+                <!-- En-tête -->
+                <div class="px-8 pt-10 pb-8 text-center relative">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400"></div>
                     
-                    <!-- Bouton Vérifier -->
-                    <button id="verify-btn" onclick="checkAnswers()" class="group relative px-10 py-5 sm:py-4 text-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] active:translate-y-0 w-full sm:w-auto">
-                        Vérifier mes réponses
-                    </button>
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-50/50 border border-indigo-100/50 mb-6 shadow-sm">
+                        <i data-lucide="target" class="w-6 h-6 text-indigo-500"></i>
+                    </div>
+                    
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
+                        Critères <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">SMART</span>
+                    </h1>
+                    
+                    <p class="text-slate-500 text-lg max-w-lg mx-auto">
+                        Retrouvez la signification de chaque lettre de l'acronyme SMART.
+                    </p>
 
-                    <!-- Message de fin -->
-                    <div id="completion-message" class="text-center w-full animate-fade-in hidden-el">
-                        <div id="completion-icon-container" class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5">
-                            <i data-lucide="check-circle-2" id="completion-icon" class="w-10 h-10"></i>
+                    <!-- Compteur d'indices avec infobulle -->
+                    <div id="hint-counter-container" class="group relative mt-8 inline-flex items-center gap-3 border shadow-sm rounded-full px-5 py-2 transition-colors duration-300 cursor-help bg-white border-slate-200">
+                        <div id="hint-pulse" class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)] animate-pulse"></div>
+                        <span id="hint-text" class="text-sm font-medium text-slate-600">
+                            Indices disponibles : <span class="font-bold" id="hints-remaining">2</span> sur 2
+                        </span>
+
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 bg-slate-800 text-white text-sm rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50 pointer-events-none translate-y-1 group-hover:translate-y-0">
+                            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45"></div>
+                            <p class="relative z-10 text-center leading-relaxed">
+                                Si vous hésitez, utilisez un indice pour dévoiler la <strong>question clé</strong> d'une lettre et vous mettre sur la piste.
+                            </p>
                         </div>
-                        <h3 id="completion-title" class="text-2xl font-bold text-slate-900 mb-2"></h3>
-                        <p id="completion-subtitle" class="text-slate-500 mb-8"></p>
-                        <button onclick="resetActivity()" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors active:scale-95">
-                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                            Recommencer l'activité
-                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Relancer tutoriel -->
-        <button id="replay-tutorial-btn" onclick="startTutorial()" class="mt-6 flex items-center gap-2 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">
-            <i data-lucide="help-circle" class="w-4 h-4"></i> Astuce : Plein écran
-        </button>
-    </div>
+                <!-- Conteneur des lignes SMART -->
+                <div class="px-6 pb-16 sm:pb-12 sm:px-12">
+                    <div id="smart-rows-container" class="space-y-8">
+                        <!-- Les lignes sont générées par JS -->
+                    </div>
+
+                    <!-- Zone d'actions -->
+                    <div class="mt-10 pt-8 border-t border-slate-100 flex justify-center">
+                        
+                        <!-- Bouton Vérifier -->
+                        <button id="verify-btn" onclick="checkAnswers()" class="group relative px-10 py-5 sm:py-4 text-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] active:translate-y-0 w-full sm:w-auto">
+                            Vérifier mes réponses
+                        </button>
+
+                        <!-- Message de fin -->
+                        <div id="completion-message" class="text-center w-full animate-fade-in hidden-el">
+                            <div id="completion-icon-container" class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5">
+                                <i data-lucide="check-circle-2" id="completion-icon" class="w-10 h-10"></i>
+                            </div>
+                            <h3 id="completion-title" class="text-2xl font-bold text-slate-900 mb-2"></h3>
+                            <p id="completion-subtitle" class="text-slate-500 mb-8"></p>
+                            <button onclick="resetActivity()" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors active:scale-95">
+                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                                Recommencer l'activité
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Fin Carte Principale -->
+
+            <!-- Relancer tutoriel -->
+            <button id="replay-tutorial-btn" onclick="startTutorial()" class="mt-6 flex items-center gap-2 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">
+                <i data-lucide="help-circle" class="w-4 h-4"></i> Astuce : Plein écran
+            </button>
+            
+        </div>
+    </div> <!-- Fin App Container -->
 
     <!-- OVERLAY SPOTLIGHT -->
     <div id="spotlight-overlay" class="fixed inset-0 z-50 pointer-events-none hidden-el">
@@ -424,7 +447,7 @@
 
         document.addEventListener('fullscreenchange', () => {
             isFullscreen = !!document.fullscreenElement;
-            appContainer.className = `bg-[#F8FAFC] font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto ${isFullscreen ? 'h-screen' : 'min-h-screen'}`;
+            appContainer.className = `font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto bg-[#F8FAFC] ${isFullscreen ? 'h-screen' : 'min-h-screen'}`;
             
             const fsIconContainer = document.getElementById('fs-icon').parentNode;
             document.getElementById('fs-text').textContent = isFullscreen ? 'Quitter' : 'Plein écran';

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Défi SMART - Édition Boulangerie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 h-screen overflow-y-auto">
+
+    <!-- Bouton Plein Écran -->
+    <button id="fullscreen-btn" onclick="toggleFullScreen()" class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur p-2 rounded-full shadow-md text-slate-600 hover:text-amber-600 hover:bg-white transition-all border border-slate-200" title="Activer/Désactiver le plein écran">
+        <!-- Icone Maximize -->
+        <svg id="icon-maximize" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <!-- Icone Minimize (cachée par défaut) -->
+        <svg id="icon-minimize" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+    </button>
+
+    <!-- Écran d'Introduction -->
+    <div id="screen-intro" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden w-full">
+            <div class="bg-amber-600 p-8 text-center">
+                <svg class="w-16 h-16 text-white mx-auto mb-4 lucide lucide-croissant" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.2 18H4.774a1.5 1.5 0 0 1-1.352-.97 11 11 0 0 1 .132-6.487"/>
+                    <path d="M18 10.2V4.774a1.5 1.5 0 0 0-.97-1.352 11 11 0 0 0-6.486.132"/>
+                    <path d="M18 5a4 3 0 0 1 4 3 2 2 0 0 1-2 2 10 10 0 0 0-5.139 1.42"/>
+                    <path d="M5 18a3 4 0 0 0 3 4 2 2 0 0 0 2-2 10 10 0 0 1 1.42-5.14"/>
+                    <path d="M8.709 2.554a10 10 0 0 0-6.155 6.155 1.5 1.5 0 0 0 .676 1.626l9.807 5.42a2 2 0 0 0 2.718-2.718l-5.42-9.807a1.5 1.5 0 0 0-1.626-.676"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-white">Le Défi SMART - Édition Boulangerie</h1>
+            </div>
+            <div class="p-8 text-center space-y-6">
+                <p class="text-lg text-slate-700">
+                    Entre la cuisson du pain et la préparation des pâtisseries, sauriez-vous fixer de vrais objectifs SMART ?
+                </p>
+                <div class="bg-amber-50 p-6 rounded-xl text-left text-sm text-amber-900 border border-amber-200">
+                    <h3 class="font-bold mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        Règles du jeu :
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>On vous propose un objectif pour votre boutique. Choisissez la <strong>bonne justification</strong> parmi les 3 options.</li>
+                        <li>Attention : l'objectif proposé n'est peut-être pas SMART du tout !</li>
+                        <li>Raccourcis clavier : <kbd class="bg-white px-2 py-1 rounded border shadow-sm mx-1">1</kbd> <kbd class="bg-white px-2 py-1 rounded border shadow-sm mx-1">2</kbd> <kbd class="bg-white px-2 py-1 rounded border shadow-sm mx-1">3</kbd> pour sélectionner, <kbd class="bg-white px-2 py-1 rounded border shadow-sm mx-1">Entrée</kbd> pour valider.</li>
+                        <li>Le jeu se termine dès que vous obtenez <strong>5 bonnes réponses</strong>.</li>
+                    </ul>
+                </div>
+                <button onclick="startGame()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-transform transform hover:scale-105 flex items-center justify-center w-full sm:w-auto mx-auto">
+                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    Aux fourneaux !
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de Jeu -->
+    <div id="screen-playing" class="hidden min-h-screen py-8 px-4 flex items-center justify-center">
+        <div class="max-w-4xl mx-auto w-full">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-100">
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-100 h-3 relative">
+                    <div id="progress-bar-fill" class="bg-amber-500 h-3 transition-all duration-500 ease-out" style="width: 0%;"></div>
+                </div>
+
+                <div class="p-6 sm:p-10">
+                    <!-- Header Stats -->
+                    <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
+                        <span class="font-semibold text-slate-400 uppercase tracking-widest text-xs">
+                            Gestion de boutique
+                        </span>
+                        <div class="flex items-center space-x-2 bg-amber-50 px-3 py-1 rounded-full text-amber-700 font-bold text-sm border border-amber-100">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                            <span>Objectif : <span id="score-display">0</span> / 5</span>
+                        </div>
+                    </div>
+
+                    <!-- Question -->
+                    <div class="bg-slate-50 p-6 rounded-xl border-l-4 border-amber-500 mb-8">
+                        <p id="question-text" class="text-xl sm:text-2xl font-semibold text-slate-800 leading-snug"></p>
+                    </div>
+
+                    <!-- Options -->
+                    <div id="options-container" class="space-y-4"></div>
+
+                    <!-- Zone de Feedback & Actions -->
+                    <div class="mt-8 pt-6 border-t border-slate-100 min-h-[120px] flex flex-col sm:flex-row gap-6 items-center justify-between">
+                        
+                        <!-- Feedback -->
+                        <div id="feedback-container" class="flex-1 w-full"></div>
+
+                        <!-- Bouton d'action -->
+                        <div id="action-container" class="flex-none w-full sm:w-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de Succès -->
+    <div id="screen-success" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden w-full text-center">
+            <div class="bg-green-600 p-8 text-center">
+                <svg class="w-16 h-16 text-white mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                <h1 class="text-3xl font-bold text-white">Fournée réussie !</h1>
+            </div>
+            <div class="p-8 space-y-6">
+                <p class="text-lg text-slate-700">
+                    Bravo ! Vous avez identifié avec succès 5 justifications. Vous savez désormais faire la différence entre une "bonne idée commerciale" et un véritable "objectif SMART" pour piloter votre boulangerie.
+                </p>
+                <button onclick="startGame()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-8 rounded-xl shadow-md transition flex items-center justify-center w-full sm:w-auto mx-auto">
+                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Rejouer une partie
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- BASE DE DONNÉES ---
+        const allQuestionsPool = [
+            { id: 1, text: "Augmenter les ventes de baguettes tradition de 15 % d'ici la fin du mois de juin.", options: [ { text: "C'est une bonne justification car l'énoncé identifie clairement un indicateur de progression mesurable et une date butoir stricte.", isCorrect: true }, { text: "C'est une bonne justification car la marge sur la baguette tradition est de 60 %, contre seulement 40 % sur la baguette classique.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Le taux de marge élevé justifie financièrement pourquoi il faut vendre plus de traditions, mais c'est bien la cible (+15%) et la date (fin juin) qui rendent l'objectif SMART." },
+            { id: 2, text: "Réduire le gaspillage de viennoiseries invendues de 20 % sur le prochain trimestre.", options: [ { text: "C'est une bonne justification car la baisse est spécifiquement chiffrée et bornée par une contrainte de temps claire.", isCorrect: true }, { text: "C'est une bonne justification car la boulangerie jette actuellement pour environ 300 € de viennoiseries par semaine.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Les 300 € de pertes hebdomadaires donnent le contexte, mais la validité de la méthode SMART repose sur le delta visé (-20 %) et la période (le trimestre)." },
+            { id: 3, text: "Faire les meilleurs croissants de la ville.", options: [ { text: "C'est une bonne justification car obtenir la note de 9/10 sur les avis en ligne nous attirera beaucoup plus de clients.", isCorrect: false }, { text: "C'est une bonne justification car vendre 500 croissants tous les dimanches matins nous assure une rentabilité excellente.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: true } ], explanation: "L'expression 'meilleurs croissants' est purement subjective. Il n'y a aucune donnée chiffrée ou temporelle dans l'énoncé de base." },
+            { id: 4, text: "Recruter un apprenti tourier d'ici le 1er septembre pour préparer la saison de Noël.", options: [ { text: "C'est une bonne justification car le livrable attendu est précis (un recrutement) et s'accompagne d'un délai de réalisation strict.", isCorrect: true }, { text: "C'est une bonne justification car le budget prévisionnel permet d'absorber un salaire d'apprenti à 800 € par mois sans souci.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Le salaire (800 €) valide le côté réaliste (Réalisable), mais la formulation est SMART avant tout parce qu'elle donne une cible exacte et une date." },
+            { id: 5, text: "Vendre 50 formules déjeuner par jour du lundi au vendredi d'ici le mois d'octobre.", options: [ { text: "C'est une bonne justification car l'objectif quantifie précisément un volume régulier sur un horizon défini.", isCorrect: true }, { text: "C'est une bonne justification car le snacking génère déjà 45 % du chiffre d'affaires quotidien entre 12h et 14h.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Le chiffre d'affaires (45 %) montre l'intérêt financier de la démarche, mais la phrase est SMART uniquement car elle contient une quantité cible (50) et une échéance." },
+            { id: 6, text: "Avoir une plus belle vitrine pour attirer les passants.", options: [ { text: "C'est une bonne justification car investir 1500 € dans de nouveaux présentoirs augmentera les achats d'impulsion de 10 %.", isCorrect: false }, { text: "C'est une bonne justification car changer la décoration tous les 15 jours dynamise l'image de la boutique aux yeux des habitués.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: true } ], explanation: "La notion de 'plus belle vitrine' est une appréciation subjective, non mesurable objectivement. De plus, il n'y a aucun délai temporel fixé." },
+            { id: 7, text: "Diminuer le temps d'attente en caisse à moins de 3 minutes pendant le rush du dimanche matin d'ici 2 mois.", options: [ { text: "C'est une bonne justification car la progression est spécifique, chronométrable et fixée avec un horizon de réalisation.", isCorrect: true }, { text: "C'est une bonne justification car actuellement, 15 % des clients abandonnent la file quand elle dépasse la porte de la boutique.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Les clients qui partent (15 %) justifient l'urgence d'agir, mais ce qui valide la structure SMART, c'est le seuil chrono (3 min) et la deadline (2 mois)." },
+            { id: 8, text: "Atteindre 500 abonnés sur la page Instagram de la boulangerie avant le 31 décembre.", options: [ { text: "C'est une bonne justification car l'évolution souhaitée est un chiffre absolu mesurable et encadré dans un laps de temps défini.", isCorrect: true }, { text: "C'est une bonne justification car un post sponsorisé à 50 € permet en moyenne de toucher 2000 personnes du quartier.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Le budget publicitaire (50 €) est une tactique pour y arriver, mais l'objectif lui-même est SMART car il fixe un cap (500) et une date de fin." },
+            { id: 9, text: "Vendre beaucoup plus de bûches de Noël cette année.", options: [ { text: "C'est une bonne justification car l'an dernier, la vente de 300 bûches a représenté 20 % du chiffre d'affaires de décembre.", isCorrect: false }, { text: "C'est une bonne justification car la marge sur la pâtisserie festive est supérieure de 30 % à celle du pain classique.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: true } ], explanation: "L'énoncé dit 'beaucoup plus'. Ce n'est absolument pas un indicateur de mesure précis. Un objectif SMART nécessiterait une valeur absolue (ex: 350 bûches)." },
+            { id: 10, text: "Réduire la consommation d'électricité du fournil de 10 % sur le prochain semestre.", options: [ { text: "C'est une bonne justification car la cible financière et énergétique est exacte et doit être atteinte sur une période calendaire identifiée.", isCorrect: true }, { text: "C'est une bonne justification car la facture énergétique a augmenté de 25 % l'année dernière, menaçant la viabilité de l'entreprise.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "L'augmentation passée de la facture (25 %) est le motif de la décision, mais l'énoncé est SMART grâce à l'indicateur clair à atteindre (-10 %) et au délai." },
+            { id: 11, text: "Être la boulangerie préférée du quartier.", options: [ { text: "C'est une bonne justification car avoir 80 % de clients réguliers assure un fond de roulement stable tout au long de l'année.", isCorrect: false }, { text: "C'est une bonne justification car gagner le concours de la meilleure baguette rapporterait environ 30 % de nouveaux clients en 1 mois.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: true } ], explanation: "Être la 'préférée' est un statut subjectif. Sans un critère de mesure dans l'énoncé initial (ex: remporter un concours officiel avant une date), ce n'est pas SMART." },
+            { id: 12, text: "Lancer une nouvelle gamme de 3 pains bio d'ici la rentrée de septembre.", options: [ { text: "C'est une bonne justification car le livrable est spécifiquement quantifié (3 produits) avec une date de lancement claire.", isCorrect: true }, { text: "C'est une bonne justification car la demande pour le bio a crû de 18 % sur le secteur, c'est un relais de croissance majeur.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "La croissance du marché bio (18 %) justifie la pertinence du produit, mais la phrase est SMART uniquement grâce au nombre de recettes fixé et à la date de sortie." },
+            { id: 13, text: "Que l'équipe de vente soit toujours souriante.", options: [ { text: "C'est une bonne justification car un accueil chaleureux augmente le panier moyen d'environ 1,50 € par client.", isCorrect: false }, { text: "C'est une bonne justification car les avis Google mentionnent la gentillesse des vendeurs dans 40 % des commentaires positifs.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: true } ], explanation: "L'injonction 'toujours souriante' n'est pas une métrique objective et ne comporte aucun délai. Il faudrait cibler un taux de satisfaction mesuré." },
+            { id: 14, text: "Obtenir 30 nouvelles commandes de pièces montées pour la saison des mariages (mai à août).", options: [ { text: "C'est une bonne justification car la cible est un nombre exact de commandes à réaliser sur une période saisonnière précise et délimitée.", isCorrect: true }, { text: "C'est une bonne justification car une pièce montée est facturée en moyenne 150 €, ce qui représente un excellent complément de trésorerie.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: false } ], explanation: "Le prix moyen de 150 € prouve l'intérêt financier fort de l'action, mais c'est bien la quantité cible (30) et la période encadrée qui rendent l'objectif SMART." },
+            { id: 15, text: "Ne plus jamais être en rupture de pains au chocolat le dimanche matin.", options: [ { text: "C'est une bonne justification car ajuster la production de +15 % le dimanche permettra de satisfaire les lève-tard.", isCorrect: false }, { text: "C'est une bonne justification car les ruptures entraînent une perte estimée de 40 € de chiffre d'affaires chaque weekend.", isCorrect: false }, { text: "Ce n'est pas un objectif SMART.", isCorrect: true } ], explanation: "L'expression 'ne plus jamais' est un absolu souvent irréaliste, et il manque une métrique. Un but SMART serait : 'Maintenir un stock tampon de 20 pièces jusqu'à 11h tous les dimanches de ce mois'." }
+        ];
+
+        // --- VARIABLES D'ÉTAT ---
+        let gameState = 'intro'; // 'intro', 'playing', 'success'
+        let score = 0;
+        let availableQuestions = [];
+        let usedQuestionIds = [];
+        let currentQuestion = null;
+        let selectedOptionIndex = null;
+        let isAnswerRevealed = false;
+        let isLastAnswerCorrect = null;
+
+        // SVGs
+        const svgCheck = `<svg class="w-6 h-6 text-green-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`;
+        const svgCross = `<svg class="w-6 h-6 text-red-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
+        const svgInfo = `<svg class="w-6 h-6 text-red-600 flex-none mt-0.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
+        const svgArrowRight = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+
+        // Utilitaires
+        const shuffleArray = (array) => {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        };
+
+        const showScreen = (id) => {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-playing').classList.add('hidden');
+            document.getElementById('screen-success').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+        };
+
+        const getNextQuestion = () => {
+            if (availableQuestions.length === 0) {
+                availableQuestions = [...allQuestionsPool];
+                usedQuestionIds = [];
+            }
+            
+            availableQuestions = shuffleArray(availableQuestions);
+            let nextQRaw = availableQuestions.pop();
+            usedQuestionIds.push(nextQRaw.id);
+            
+            // On sépare l'option "Ce n'est pas..." pour la garder à la fin
+            const notSmartOption = nextQRaw.options.find(o => o.text === "Ce n'est pas un objectif SMART.");
+            const otherOptions = nextQRaw.options.filter(o => o.text !== "Ce n'est pas un objectif SMART.");
+            
+            return {
+                ...nextQRaw,
+                options: [...shuffleArray(otherOptions), notSmartOption]
+            };
+        };
+
+        // Actions
+        window.startGame = () => {
+            score = 0;
+            gameState = 'playing';
+            
+            let startingPool = allQuestionsPool.filter(q => !usedQuestionIds.includes(q.id));
+            if(startingPool.length === 0) {
+                startingPool = [...allQuestionsPool];
+                usedQuestionIds = [];
+            }
+            
+            availableQuestions = shuffleArray(startingPool);
+            currentQuestion = availableQuestions.pop();
+            
+            // On sépare l'option "Ce n'est pas..." pour la garder à la fin lors du démarrage
+            const notSmartOption = currentQuestion.options.find(o => o.text === "Ce n'est pas un objectif SMART.");
+            const otherOptions = currentQuestion.options.filter(o => o.text !== "Ce n'est pas un objectif SMART.");
+            currentQuestion.options = [...shuffleArray(otherOptions), notSmartOption];
+            
+            usedQuestionIds.push(currentQuestion.id);
+
+            resetTurn();
+            showScreen('screen-playing');
+            renderUI();
+        };
+
+        const resetTurn = () => {
+            selectedOptionIndex = null;
+            isAnswerRevealed = false;
+            isLastAnswerCorrect = null;
+        };
+
+        window.handleOptionSelect = (index) => {
+            if (isAnswerRevealed) return;
+            selectedOptionIndex = index;
+            renderUI();
+        };
+
+        window.handleValidation = () => {
+            if (selectedOptionIndex === null || isAnswerRevealed) return;
+            
+            isAnswerRevealed = true;
+            isLastAnswerCorrect = currentQuestion.options[selectedOptionIndex].isCorrect;
+            
+            if (isLastAnswerCorrect) {
+                score += 1;
+            }
+            renderUI();
+        };
+
+        window.handleNext = () => {
+            if (score >= 5 && isLastAnswerCorrect) {
+                gameState = 'success';
+                showScreen('screen-success');
+                return;
+            }
+
+            currentQuestion = getNextQuestion();
+            resetTurn();
+            renderUI();
+        };
+
+        // Rendu Dynamique
+        const renderUI = () => {
+            if(gameState !== 'playing') return;
+
+            // Header & Score
+            document.getElementById('progress-bar-fill').style.width = Math.min((score / 5) * 100, 100) + '%';
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('question-text').innerText = currentQuestion.text;
+
+            // Options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            currentQuestion.options.forEach((option, index) => {
+                const isSelected = selectedOptionIndex === index;
+                let btnClasses = "p-5 border-2 rounded-xl text-left transition-all duration-200 w-full relative group ";
+                let indexCircle = '';
+                let iconSVG = '';
+
+                if (!isAnswerRevealed) {
+                    btnClasses += isSelected 
+                        ? "border-amber-500 bg-amber-50 ring-4 ring-amber-100" 
+                        : "border-slate-200 hover:border-amber-300 hover:bg-slate-50 cursor-pointer";
+                    
+                    const circleColors = isSelected ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-100 text-slate-400 border-slate-300 group-hover:border-amber-300';
+                    indexCircle = `<div class="w-6 h-6 rounded border flex items-center justify-center text-xs font-bold transition-colors ${circleColors}">${index + 1}</div>`;
+                } else {
+                    if (option.isCorrect) {
+                        btnClasses += "border-green-500 bg-green-50";
+                        iconSVG = svgCheck;
+                    } else if (isSelected && !option.isCorrect) {
+                        btnClasses += "border-red-500 bg-red-50 opacity-90";
+                        iconSVG = svgCross;
+                    } else {
+                        btnClasses += "border-slate-200 bg-white opacity-70 cursor-default";
+                    }
+                }
+
+                const buttonHtml = `
+                    <button onclick="handleOptionSelect(${index})" ${isAnswerRevealed ? 'disabled' : ''} class="${btnClasses}">
+                        <div class="flex items-center">
+                            <div class="flex-none mr-4">
+                                ${indexCircle}
+                                ${iconSVG}
+                            </div>
+                            <div class="flex-1 text-lg text-slate-700">
+                                ${option.text}
+                            </div>
+                        </div>
+                    </button>
+                `;
+                optionsContainer.insertAdjacentHTML('beforeend', buttonHtml);
+            });
+
+            // Feedback
+            const feedbackContainer = document.getElementById('feedback-container');
+            feedbackContainer.innerHTML = '';
+            if (isAnswerRevealed) {
+                const feedbackClass = isLastAnswerCorrect ? 'bg-green-50 text-green-900 border-green-200' : 'bg-red-50 text-red-900 border-red-200';
+                const feedbackIcon = isLastAnswerCorrect ? svgCheck.replace('w-6 h-6 text-green-600', 'w-6 h-6 text-green-600 flex-none mt-0.5') : svgInfo;
+                const feedbackTitle = isLastAnswerCorrect ? "Bonne réponse !" : "Pas tout à fait...";
+                
+                feedbackContainer.innerHTML = `
+                    <div class="p-4 rounded-xl flex items-start gap-3 border animate-slide-up ${feedbackClass}">
+                        ${feedbackIcon}
+                        <div>
+                            <strong class="block mb-1">${feedbackTitle}</strong>
+                            <span class="text-sm leading-relaxed opacity-90">${currentQuestion.explanation}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Actions Button
+            const actionContainer = document.getElementById('action-container');
+            actionContainer.innerHTML = '';
+            if (!isAnswerRevealed) {
+                const disabledState = selectedOptionIndex === null;
+                const btnClass = disabledState ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg';
+                const kbdClass = `hidden sm:inline-block bg-amber-500 text-amber-100 px-2 py-0.5 rounded text-xs ml-2 border border-amber-400`;
+                
+                actionContainer.innerHTML = `
+                    <button onclick="handleValidation()" ${disabledState ? 'disabled' : ''} class="py-3 px-8 rounded-xl font-bold transition-all w-full sm:w-auto flex items-center justify-center gap-2 ${btnClass}">
+                        Valider
+                        ${!disabledState ? `<kbd class="${kbdClass}">Entrée</kbd>` : ''}
+                    </button>
+                `;
+            } else {
+                actionContainer.innerHTML = `
+                    <button onclick="handleNext()" class="py-3 px-8 rounded-xl font-bold shadow-md bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center gap-2 transition-all w-full sm:w-auto animate-pulse" style="animation-iteration-count: 3;">
+                        Continuer
+                        ${svgArrowRight}
+                        <kbd class="hidden sm:inline-block bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-xs ml-2 border border-slate-600">Entrée</kbd>
+                    </button>
+                `;
+            }
+        };
+
+        // Raccourcis Clavier
+        document.addEventListener('keydown', (e) => {
+            if (gameState !== 'playing') return;
+            
+            if (!isAnswerRevealed) {
+                if (e.key === '1') handleOptionSelect(0);
+                if (e.key === '2') handleOptionSelect(1);
+                if (e.key === '3') handleOptionSelect(2);
+                if (e.key === 'Enter' && selectedOptionIndex !== null) handleValidation();
+            } else {
+                if (e.key === 'Enter') handleNext();
+            }
+        });
+
+        // Plein écran
+        window.toggleFullScreen = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Erreur lors du passage en plein écran: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
+
+        // Écouter les changements de plein écran pour mettre à jour l'icône
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                document.getElementById('icon-maximize').classList.add('hidden');
+                document.getElementById('icon-minimize').classList.remove('hidden');
+            } else {
+                document.getElementById('icon-maximize').classList.remove('hidden');
+                document.getElementById('icon-minimize').classList.add('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>

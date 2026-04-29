@@ -1,438 +1,504 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { Lightbulb, CheckCircle2, XCircle, RefreshCw, Target, Info, Maximize, Minimize, X, ChevronRight, HelpCircle } from 'lucide-react';
-
-// --- Données de l'exercice ---
-const smartData = [
-  {
-    letter: 'S',
-    validAnswers: ['specifique'],
-    displayAnswer: 'Spécifique',
-    hint: 'Qui ? Quoi ? Sur quel périmètre précis ?'
-  },
-  {
-    letter: 'M',
-    validAnswers: ['mesurable'],
-    displayAnswer: 'Mesurable',
-    hint: "Quel chiffre ? Comment on mesure l'atteinte ?"
-  },
-  {
-    letter: 'A',
-    validAnswers: ['atteignable'],
-    displayAnswer: 'Atteignable',
-    hint: 'Le salarié a-t-il les compétences et les moyens ?'
-  },
-  {
-    letter: 'R',
-    validAnswers: ['realiste', 'pertinent'],
-    displayAnswer: 'Réaliste',
-    hint: "L'objectif est-il en lien avec les enjeux du poste ?"
-  },
-  {
-    letter: 'T',
-    validAnswers: ['temporel', 'temporellement', 'temporellement defini', 'defini', 'defini dans le temps'],
-    displayAnswer: 'Temporel',
-    hint: 'Quelle date limite ? Quels jalons intermédiaires ?'
-  }
-];
-
-const normalizeText = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-
-// --- Étapes du Tutoriel Spotlight ---
-const tutorialSteps = [
-  { 
-    id: 'fullscreen-btn', 
-    title: 'Plein écran',
-    action: 'Agrandissez',
-    text: "l'interface pour un confort optimal.", 
-    position: 'bottom' 
-  }
-];
-
-export default function SmartActivity() {
-  const [inputs, setInputs] = useState({ S: '', M: '', A: '', R: '', T: '' });
-  const [hintsUsed, setHintsUsed] = useState([]);
-  const [validation, setValidation] = useState({ S: null, M: null, A: null, R: null, T: null });
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [isPerfect, setIsPerfect] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  // --- Refs et État du Tutoriel ---
-  const elementRefs = useRef({});
-  const containerRef = useRef(null);
-  const [tutorialStep, setTutorialStep] = useState(null); // null = inactif
-  const [targetRect, setTargetRect] = useState(null);
-
-  const MAX_HINTS = 2;
-  const hintsRemaining = MAX_HINTS - hintsUsed.length;
-
-  // Lancement automatique du tutoriel au premier montage
-  useEffect(() => {
-    const hasSeenTutorial = localStorage.getItem('smart-tutorial-seen');
-    if (!hasSeenTutorial) {
-      // Léger délai pour s'assurer que le rendu est terminé
-      setTimeout(() => setTutorialStep(0), 500);
-      localStorage.setItem('smart-tutorial-seen', 'true');
-    }
-  }, []);
-
-  // Gestion du Plein Écran
-  const toggleFullscreen = async () => {
-    try {
-      if (!document.fullscreenElement) {
-        await containerRef.current?.requestFullscreen();
-        setIsFullscreen(true);
-      } else {
-        await document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    } catch (err) {
-      console.warn("Le plein écran n'est pas supporté par ce navigateur.");
-    }
-  };
-
-  useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
-
-  // Calcul du Rectangle Spotlight
-  useLayoutEffect(() => {
-    const updateRect = () => {
-      if (tutorialStep === null) return;
-      const step = tutorialSteps[tutorialStep];
-      const el = elementRefs.current[step.id];
-      
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        // Padding autour de l'élément (règle : montrer le contexte immédiat)
-        const pad = 12; 
-        setTargetRect({
-          top: rect.top - pad,
-          left: rect.left - pad,
-          width: rect.width + pad * 2,
-          height: rect.height + pad * 2,
-          bottom: rect.bottom + pad,
-          right: rect.right + pad,
-        });
-      }
-    };
-
-    updateRect();
-    window.addEventListener('resize', updateRect);
-    window.addEventListener('scroll', updateRect, true);
-    return () => {
-      window.removeEventListener('resize', updateRect);
-      window.removeEventListener('scroll', updateRect, true);
-    };
-  }, [tutorialStep]);
-
-  const endTutorial = () => setTutorialStep(null);
-  const nextTutorialStep = () => {
-    if (tutorialStep < tutorialSteps.length - 1) {
-      setTutorialStep(prev => prev + 1);
-    } else {
-      endTutorial();
-    }
-  };
-
-  // --- Logique Métier de l'Activité ---
-  const handleInputChange = (letter, value) => {
-    setInputs(prev => ({ ...prev, [letter]: value }));
-    if (validation[letter] !== null) setValidation(prev => ({ ...prev, [letter]: null }));
-  };
-
-  const handleBlur = (letter) => {
-    if (!inputs[letter].trim()) return;
-    const item = smartData.find(d => d.letter === letter);
-    const isCorrect = item.validAnswers.includes(normalizeText(inputs[letter]));
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activité Méthode SMART</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
-    setValidation(prev => {
-      const newValidation = { ...prev, [letter]: isCorrect };
-      const allCorrect = smartData.every(d => d.letter === letter ? isCorrect : prev[d.letter] === true);
-      if (allCorrect) {
-        setIsPerfect(true);
-        setIsCompleted(true);
-      }
-      return newValidation;
-    });
-  };
-
-  const useHint = (letter) => {
-    if (hintsRemaining > 0 && !hintsUsed.includes(letter)) {
-      setHintsUsed(prev => [...prev, letter]);
-    }
-  };
-
-  const checkAnswers = () => {
-    const newValidation = { ...validation };
-    const newInputs = { ...inputs };
-    let allCorrectInitially = true;
-
-    smartData.forEach(item => {
-      const isCorrect = item.validAnswers.includes(normalizeText(inputs[item.letter] || ''));
-      if (!isCorrect) {
-        allCorrectInitially = false;
-        newInputs[item.letter] = item.displayAnswer;
-        newValidation[item.letter] = 'revealed';
-      } else {
-        newValidation[item.letter] = true;
-      }
-    });
-    setInputs(newInputs);
-    setValidation(newValidation);
-    setIsPerfect(allCorrectInitially);
-    setIsCompleted(true);
-  };
-
-  const resetActivity = () => {
-    setInputs({ S: '', M: '', A: '', R: '', T: '' });
-    setHintsUsed([]);
-    setValidation({ S: null, M: null, A: null, R: null, T: null });
-    setIsCompleted(false);
-    setIsPerfect(null);
-  };
-
-  // --- Positionnement intelligent de la bulle Tutoriel ---
-  const getTooltipStyle = () => {
-    if (!targetRect) return { opacity: 0 };
-    const step = tutorialSteps[tutorialStep];
-    const style = { position: 'absolute', opacity: 1, zIndex: 60 };
-    
-    // Règle : ancrage physique à l'élément
-    let left = targetRect.left;
-    if (left + 320 > window.innerWidth) left = window.innerWidth - 340; // Clamping
-    if (left < 16) left = 16;
-    style.left = left;
-
-    if (step.position === 'bottom') {
-      style.top = targetRect.bottom + 16;
-    } else {
-      style.bottom = (window.innerHeight - targetRect.top) + 16;
-    }
-    return style;
-  };
-
-  return (
-    <div 
-      ref={containerRef} 
-      className={`bg-[#F8FAFC] font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto ${isFullscreen ? 'h-screen' : 'min-h-screen'}`}
-    >
-      <div className="flex flex-col items-center py-12 px-4 sm:px-6 w-full min-h-full">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         
-        {/* Bouton Plein Écran Global (Très visible) */}
-        <div className="w-full max-w-3xl flex justify-end mb-4 z-40">
-          <button
-            ref={el => elementRefs.current['fullscreen-btn'] = el}
-            onClick={toggleFullscreen}
-            className="group flex items-center gap-2 px-4 py-2 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl shadow-sm transition-all text-slate-600 hover:text-indigo-700 font-medium"
-          >
-            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-            <span className="hidden sm:inline">{isFullscreen ? 'Quitter' : 'Plein écran'}</span>
-          </button>
+        /* Pour masquer les éléments proprement */
+        .hidden-el { display: none !important; }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto min-h-screen" id="app-container">
+
+    <div class="flex flex-col items-center py-12 px-4 sm:px-6 w-full min-h-full">
+        
+        <!-- Bouton Plein Écran -->
+        <div class="w-full max-w-3xl flex justify-end mb-4 z-40 relative">
+            <button id="fullscreen-btn" onclick="toggleFullscreen()" class="group flex items-center gap-2 px-4 py-2 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl shadow-sm transition-all text-slate-600 hover:text-indigo-700 font-medium">
+                <i data-lucide="maximize" class="w-5 h-5" id="fs-icon"></i>
+                <span class="hidden sm:inline" id="fs-text">Plein écran</span>
+            </button>
         </div>
         
-        <div className="w-full max-w-3xl bg-white rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden transition-all duration-500 relative">
-          {/* En-tête premium */}
-          <div className="px-8 pt-10 pb-8 text-center relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400"></div>
-            
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-50/50 border border-indigo-100/50 mb-6 shadow-sm">
-              <Target className="w-6 h-6 text-indigo-500" />
-            </div>
-            
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
-              Critères <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">SMART</span>
-            </h1>
-            
-            <p className="text-slate-500 text-lg max-w-lg mx-auto">
-              Retrouvez la signification de chaque lettre de l'acronyme SMART.
-            </p>
-
-            <div className={`group relative mt-8 inline-flex items-center gap-3 border shadow-sm rounded-full px-5 py-2 transition-colors duration-300 cursor-help ${hintsRemaining === 0 ? 'bg-rose-50 border-rose-200' : 'bg-white border-slate-200'}`}>
-              <div className={`w-2.5 h-2.5 rounded-full ${hintsRemaining > 0 ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)] animate-pulse' : 'bg-rose-400'}`} />
-              <span className={`text-sm font-medium ${hintsRemaining === 0 ? 'text-rose-700' : 'text-slate-600'}`}>
-                Indices disponibles : <span className="font-bold">{hintsRemaining}</span> sur {MAX_HINTS}
-              </span>
-
-              {/* Infobulle (Tooltip) au survol */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 bg-slate-800 text-white text-sm rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50 pointer-events-none translate-y-1 group-hover:translate-y-0">
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45"></div>
-                <p className="relative z-10 text-center leading-relaxed">
-                  Si vous hésitez, utilisez un indice pour dévoiler la <strong>question clé</strong> d'une lettre et vous mettre sur la piste.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Lignes d'activité */}
-          <div className="px-6 pb-16 sm:pb-12 sm:px-12">
-            <div className="space-y-8">
-              {smartData.map((item) => {
-                const isHintUsed = hintsUsed.includes(item.letter);
-                const status = validation[item.letter];
+        <div class="w-full max-w-3xl bg-white rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden transition-all duration-500 relative">
+            <!-- En-tête -->
+            <div class="px-8 pt-10 pb-8 text-center relative">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400"></div>
                 
-                return (
-                  <div key={item.letter} className="group flex flex-col sm:flex-row gap-4 items-start sm:items-center p-2 rounded-2xl transition-all duration-300 hover:bg-slate-50/50">
-                    <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 text-white shadow-md text-2xl font-bold group-hover:bg-indigo-700 group-hover:shadow-lg transition-all duration-300">
-                      {item.letter}
-                    </div>
-
-                    <div className="flex-grow w-full">
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-grow">
-                          <input
-                            ref={el => elementRefs.current[`input-${item.letter}`] = el}
-                            type="text"
-                            value={inputs[item.letter]}
-                            onChange={(e) => handleInputChange(item.letter, e.target.value)}
-                            onBlur={() => handleBlur(item.letter)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                e.target.blur();
-                              }
-                            }}
-                            placeholder="Saisissez le terme..."
-                            disabled={isCompleted}
-                            className={`w-full pl-5 pr-12 py-3.5 rounded-xl border text-base font-medium outline-none transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal
-                              ${status === true ? 'border-emerald-300 bg-emerald-50/30 text-emerald-800' 
-                              : status === 'revealed' ? 'border-slate-200 bg-slate-50 text-slate-500 italic'
-                              : status === false ? 'border-rose-300 bg-rose-50/30 text-rose-800 focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10' 
-                              : 'border-slate-200 bg-slate-50/50 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10'} 
-                              ${isCompleted ? 'opacity-70 cursor-not-allowed' : ''}`}
-                          />
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-all">
-                            {status === true && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-                            {status === 'revealed' && <Info className="w-5 h-5 text-slate-400" />}
-                            {status === false && <XCircle className="w-5 h-5 text-rose-400" />}
-                          </div>
-                        </div>
-
-                        <button
-                          ref={el => elementRefs.current[`hint-${item.letter}`] = el}
-                          onClick={() => useHint(item.letter)}
-                          disabled={isHintUsed || hintsRemaining === 0 || isCompleted}
-                          className={`flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-medium transition-all duration-200 sm:w-auto w-full ${
-                            isHintUsed ? 'bg-amber-50/50 text-amber-700 border border-amber-200/50 cursor-default'
-                            : hintsRemaining > 0 && !isCompleted ? 'bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/50 active:scale-[0.98] shadow-sm hover:shadow'
-                            : 'bg-slate-50 text-slate-400 border border-slate-100 cursor-not-allowed'
-                          }`}
-                        >
-                          <Lightbulb className={`w-4 h-4 ${isHintUsed ? 'text-amber-500' : ''}`} />
-                          <span className="sm:hidden lg:inline">{isHintUsed ? 'Dévoilé' : 'Indice'}</span>
-                        </button>
-                      </div>
-
-                      {isHintUsed && (
-                        <div className="mt-4 bg-amber-50/80 border border-amber-100 p-4 rounded-xl text-sm animate-fade-in flex items-start gap-3">
-                          <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-semibold text-amber-900 block mb-0.5">La bonne question</span> 
-                            <span className="text-amber-800/90 italic">« {item.hint} »</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-10 pt-8 border-t border-slate-100 flex justify-center">
-              {!isCompleted ? (
-                <button
-                  ref={el => elementRefs.current['submit-btn'] = el}
-                  onClick={checkAnswers}
-                  className="group relative px-10 py-5 sm:py-4 text-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] active:translate-y-0 w-full sm:w-auto"
-                >
-                  Vérifier mes réponses
-                </button>
-              ) : (
-                <div className="text-center w-full animate-fade-in">
-                  <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-5 ${isPerfect ? 'bg-emerald-50 border-8 border-emerald-50/50' : 'bg-indigo-50 border-8 border-indigo-50/50'}`}>
-                    <CheckCircle2 className={`w-10 h-10 ${isPerfect ? 'text-emerald-500' : 'text-indigo-500'}`} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                    {isPerfect ? 'Parfait !' : 'Exercice terminé !'}
-                  </h3>
-                  <p className="text-slate-500 mb-8">
-                    {isPerfect ? 'Vous maîtrisez les 5 critères de la méthode SMART.' : 'Voici à quoi correspondent les acronymes de la méthode SMART.'}
-                  </p>
-                  <button
-                    onClick={resetActivity}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors active:scale-95"
-                  >
-                    <RefreshCw className="w-5 h-5" />
-                    Recommencer l'activité
-                  </button>
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-50/50 border border-indigo-100/50 mb-6 shadow-sm">
+                    <i data-lucide="target" class="w-6 h-6 text-indigo-500"></i>
                 </div>
-              )}
+                
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
+                    Critères <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">SMART</span>
+                </h1>
+                
+                <p class="text-slate-500 text-lg max-w-lg mx-auto">
+                    Retrouvez la signification de chaque lettre de l'acronyme SMART.
+                </p>
+
+                <!-- Compteur d'indices avec infobulle -->
+                <div id="hint-counter-container" class="group relative mt-8 inline-flex items-center gap-3 border shadow-sm rounded-full px-5 py-2 transition-colors duration-300 cursor-help bg-white border-slate-200">
+                    <div id="hint-pulse" class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)] animate-pulse"></div>
+                    <span id="hint-text" class="text-sm font-medium text-slate-600">
+                        Indices disponibles : <span class="font-bold" id="hints-remaining">2</span> sur 2
+                    </span>
+
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 bg-slate-800 text-white text-sm rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50 pointer-events-none translate-y-1 group-hover:translate-y-0">
+                        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45"></div>
+                        <p class="relative z-10 text-center leading-relaxed">
+                            Si vous hésitez, utilisez un indice pour dévoiler la <strong>question clé</strong> d'une lettre et vous mettre sur la piste.
+                        </p>
+                    </div>
+                </div>
             </div>
-          </div>
+
+            <!-- Conteneur des lignes SMART -->
+            <div class="px-6 pb-16 sm:pb-12 sm:px-12">
+                <div id="smart-rows-container" class="space-y-8">
+                    <!-- Les lignes sont générées par JS -->
+                </div>
+
+                <!-- Zone d'actions -->
+                <div class="mt-10 pt-8 border-t border-slate-100 flex justify-center">
+                    
+                    <!-- Bouton Vérifier -->
+                    <button id="verify-btn" onclick="checkAnswers()" class="group relative px-10 py-5 sm:py-4 text-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] active:translate-y-0 w-full sm:w-auto">
+                        Vérifier mes réponses
+                    </button>
+
+                    <!-- Message de fin -->
+                    <div id="completion-message" class="text-center w-full animate-fade-in hidden-el">
+                        <div id="completion-icon-container" class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5">
+                            <i data-lucide="check-circle-2" id="completion-icon" class="w-10 h-10"></i>
+                        </div>
+                        <h3 id="completion-title" class="text-2xl font-bold text-slate-900 mb-2"></h3>
+                        <p id="completion-subtitle" class="text-slate-500 mb-8"></p>
+                        <button onclick="resetActivity()" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors active:scale-95">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                            Recommencer l'activité
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        {/* Relancer le tutoriel (Discret) */}
-        {!isCompleted && tutorialStep === null && (
-          <button onClick={() => setTutorialStep(0)} className="mt-6 flex items-center gap-2 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">
-            <HelpCircle className="w-4 h-4" /> {tutorialSteps.length === 1 ? 'Astuce : Plein écran' : 'Revoir le tutoriel'}
-          </button>
-        )}
-      </div>
-
-      {/* OVERLAY SPOTLIGHT (TUTORIEL) */}
-      {tutorialStep !== null && targetRect && (
-        <div className="fixed inset-0 z-50 pointer-events-none">
-          <div className="absolute top-0 left-0 right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out" style={{ height: targetRect.top }} />
-          <div className="absolute bottom-0 left-0 right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out" style={{ top: targetRect.bottom }} />
-          <div className="absolute left-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out" style={{ top: targetRect.top, height: targetRect.height, width: targetRect.left }} />
-          <div className="absolute right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out" style={{ top: targetRect.top, height: targetRect.height, left: targetRect.right }} />
-          
-          <div 
-            className="w-[320px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 pointer-events-auto transition-all duration-300 ease-out flex flex-col gap-4"
-            style={getTooltipStyle()}
-          >
-            <div className={`absolute w-4 h-4 bg-white border-slate-200 rotate-45 ${tutorialSteps[tutorialStep].position === 'bottom' ? '-top-2 border-l border-t left-6' : '-bottom-2 border-r border-b left-1/2 -translate-x-1/2'}`} />
-
-            <div className="relative z-10 flex justify-between items-center mb-1">
-              {tutorialSteps.length > 1 ? (
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-md">
-                  Étape {tutorialStep + 1} sur {tutorialSteps.length}
-                </span>
-              ) : (
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-md">
-                  Astuce
-                </span>
-              )}
-              <button onClick={endTutorial} className="text-slate-400 hover:text-slate-600 transition-colors p-1" title="Passer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="relative z-10">
-              <h3 className="font-bold text-slate-900 text-lg mb-1">{tutorialSteps[tutorialStep].title}</h3>
-              <p className="text-slate-600 leading-snug">
-                <span className="font-semibold text-indigo-600">{tutorialSteps[tutorialStep].action}</span> {tutorialSteps[tutorialStep].text}
-              </p>
-            </div>
-
-            <div className="relative z-10 flex items-center justify-between mt-2">
-              <button onClick={endTutorial} className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
-                Passer
-              </button>
-              <button onClick={nextTutorialStep} className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm transition-colors active:scale-95">
-                {tutorialSteps.length === 1 ? 'Compris' : tutorialStep === tutorialSteps.length - 1 ? 'Terminer' : 'Suivant'}
-                {tutorialSteps.length > 1 && tutorialStep < tutorialSteps.length - 1 && <ChevronRight className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      `}} />
+        <!-- Relancer tutoriel -->
+        <button id="replay-tutorial-btn" onclick="startTutorial()" class="mt-6 flex items-center gap-2 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">
+            <i data-lucide="help-circle" class="w-4 h-4"></i> Astuce : Plein écran
+        </button>
     </div>
-  );
-}
+
+    <!-- OVERLAY SPOTLIGHT -->
+    <div id="spotlight-overlay" class="fixed inset-0 z-50 pointer-events-none hidden-el">
+        <!-- 4 Masques -->
+        <div id="mask-top" class="absolute top-0 left-0 right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out"></div>
+        <div id="mask-bottom" class="absolute bottom-0 left-0 right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out"></div>
+        <div id="mask-left" class="absolute left-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out"></div>
+        <div id="mask-right" class="absolute right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300 ease-out"></div>
+        
+        <!-- Bulle Info -->
+        <div id="spotlight-tooltip" class="w-[320px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 pointer-events-auto transition-all duration-300 ease-out flex flex-col gap-4 absolute opacity-0 z-60">
+            <div id="tooltip-arrow" class="absolute w-4 h-4 bg-white border-slate-200 rotate-45"></div>
+
+            <div class="relative z-10 flex justify-between items-center mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-md">Astuce</span>
+                <button onclick="endTutorial()" class="text-slate-400 hover:text-slate-600 transition-colors p-1" title="Passer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="relative z-10">
+                <h3 class="font-bold text-slate-900 text-lg mb-1">Plein écran</h3>
+                <p class="text-slate-600 leading-snug">
+                    <span class="font-semibold text-indigo-600">Agrandissez</span> l'interface pour un confort optimal.
+                </p>
+            </div>
+
+            <div class="relative z-10 flex items-center justify-between mt-2">
+                <button onclick="endTutorial()" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">Passer</button>
+                <button onclick="endTutorial()" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm transition-colors active:scale-95">
+                    Compris
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIQUE JAVASCRIPT -->
+    <script>
+        // --- Données ---
+        const smartData = [
+            { letter: 'S', validAnswers: ['specifique'], displayAnswer: 'Spécifique', hint: 'Qui ? Quoi ? Sur quel périmètre précis ?' },
+            { letter: 'M', validAnswers: ['mesurable'], displayAnswer: 'Mesurable', hint: "Quel chiffre ? Comment on mesure l'atteinte ?" },
+            { letter: 'A', validAnswers: ['atteignable'], displayAnswer: 'Atteignable', hint: 'Le salarié a-t-il les compétences et les moyens ?' },
+            { letter: 'R', validAnswers: ['realiste', 'pertinent'], displayAnswer: 'Réaliste', hint: "L'objectif est-il en lien avec les enjeux du poste ?" },
+            { letter: 'T', validAnswers: ['temporel', 'temporellement', 'temporellement defini', 'defini', 'defini dans le temps'], displayAnswer: 'Temporel', hint: 'Quelle date limite ? Quels jalons intermédiaires ?' }
+        ];
+
+        const MAX_HINTS = 2;
+        
+        // --- États ---
+        let inputs = { S: '', M: '', A: '', R: '', T: '' };
+        let hintsUsed = [];
+        let validation = { S: null, M: null, A: null, R: null, T: null };
+        let isCompleted = false;
+        let isPerfect = null;
+        let isFullscreen = false;
+        let tutorialActive = false;
+
+        // Utilitaires
+        const normalizeText = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const getHintsRemaining = () => MAX_HINTS - hintsUsed.length;
+
+        // --- Initialisation du DOM ---
+        function init() {
+            const container = document.getElementById('smart-rows-container');
+            container.innerHTML = '';
+
+            smartData.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "group flex flex-col sm:flex-row gap-4 items-start sm:items-center p-2 rounded-2xl transition-all duration-300 hover:bg-slate-50/50";
+                row.innerHTML = `
+                    <div class="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 text-white shadow-md text-2xl font-bold group-hover:bg-indigo-700 group-hover:shadow-lg transition-all duration-300">
+                        ${item.letter}
+                    </div>
+                    <div class="flex-grow w-full">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="relative flex-grow">
+                                <input 
+                                    id="input-${item.letter}" 
+                                    type="text" 
+                                    placeholder="Saisissez le terme..." 
+                                    class="w-full pl-5 pr-12 py-3.5 rounded-xl border text-base font-medium outline-none transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal border-slate-200 bg-slate-50/50 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+                                >
+                                <div id="icon-container-${item.letter}" class="absolute right-4 top-1/2 -translate-y-1/2 transition-all"></div>
+                            </div>
+                            <button id="hint-btn-${item.letter}" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-medium transition-all duration-200 sm:w-auto w-full bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/50 active:scale-[0.98] shadow-sm hover:shadow">
+                                <i data-lucide="lightbulb" class="w-4 h-4" id="hint-icon-${item.letter}"></i>
+                                <span class="sm:hidden lg:inline" id="hint-text-${item.letter}">Indice</span>
+                            </button>
+                        </div>
+                        <div id="hint-box-${item.letter}" class="mt-4 bg-amber-50/80 border border-amber-100 p-4 rounded-xl text-sm animate-fade-in flex items-start gap-3 hidden-el">
+                            <i data-lucide="lightbulb" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold text-amber-900 block mb-0.5">La bonne question</span> 
+                                <span class="text-amber-800/90 italic">« ${item.hint} »</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+
+                // Event Listeners for Input
+                const inputEl = document.getElementById(`input-${item.letter}`);
+                inputEl.addEventListener('input', (e) => handleInputChange(item.letter, e.target.value));
+                inputEl.addEventListener('blur', () => handleBlur(item.letter));
+                inputEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        inputEl.blur();
+                    }
+                });
+
+                // Event Listener for Hint Button
+                const hintBtn = document.getElementById(`hint-btn-${item.letter}`);
+                hintBtn.addEventListener('click', () => useHint(item.letter));
+            });
+
+            lucide.createIcons();
+            updateUI();
+
+            // Auto-start tutorial
+            if (!localStorage.getItem('smart-tutorial-seen')) {
+                setTimeout(startTutorial, 500);
+                localStorage.setItem('smart-tutorial-seen', 'true');
+            }
+        }
+
+        // --- Logique Métier ---
+        function handleInputChange(letter, value) {
+            inputs[letter] = value;
+            if (validation[letter] !== null) {
+                validation[letter] = null;
+                updateUI();
+            }
+        }
+
+        function handleBlur(letter) {
+            if (!inputs[letter].trim()) return;
+            const item = smartData.find(d => d.letter === letter);
+            const isCorrect = item.validAnswers.includes(normalizeText(inputs[letter]));
+            
+            validation[letter] = isCorrect;
+            
+            const allCorrect = smartData.every(d => d.letter === letter ? isCorrect : validation[d.letter] === true);
+            if (allCorrect) {
+                isPerfect = true;
+                isCompleted = true;
+            }
+            updateUI();
+        }
+
+        function useHint(letter) {
+            if (getHintsRemaining() > 0 && !hintsUsed.includes(letter)) {
+                hintsUsed.push(letter);
+                updateUI();
+            }
+        }
+
+        function checkAnswers() {
+            let allCorrectInitially = true;
+            smartData.forEach(item => {
+                const isCorrect = item.validAnswers.includes(normalizeText(inputs[item.letter] || ''));
+                if (!isCorrect) {
+                    allCorrectInitially = false;
+                    inputs[item.letter] = item.displayAnswer;
+                    validation[item.letter] = 'revealed';
+                } else {
+                    validation[item.letter] = true;
+                }
+            });
+            isPerfect = allCorrectInitially;
+            isCompleted = true;
+            updateUI();
+        }
+
+        function resetActivity() {
+            inputs = { S: '', M: '', A: '', R: '', T: '' };
+            hintsUsed = [];
+            validation = { S: null, M: null, A: null, R: null, T: null };
+            isCompleted = false;
+            isPerfect = null;
+            updateUI();
+        }
+
+        // --- Mise à jour de l'UI ---
+        function updateUI() {
+            const remHints = getHintsRemaining();
+            
+            // Header Hint Counter
+            document.getElementById('hints-remaining').textContent = remHints;
+            const counterContainer = document.getElementById('hint-counter-container');
+            const pulse = document.getElementById('hint-pulse');
+            const hintText = document.getElementById('hint-text');
+
+            if (remHints === 0) {
+                counterContainer.className = "group relative mt-8 inline-flex items-center gap-3 border shadow-sm rounded-full px-5 py-2 transition-colors duration-300 cursor-help bg-rose-50 border-rose-200";
+                pulse.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
+                hintText.className = "text-sm font-medium text-rose-700";
+            } else {
+                counterContainer.className = "group relative mt-8 inline-flex items-center gap-3 border shadow-sm rounded-full px-5 py-2 transition-colors duration-300 cursor-help bg-white border-slate-200";
+                pulse.className = "w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)] animate-pulse";
+                hintText.className = "text-sm font-medium text-slate-600";
+            }
+
+            // Rows Update
+            smartData.forEach(item => {
+                const letter = item.letter;
+                const status = validation[letter];
+                const isHintUsed = hintsUsed.includes(letter);
+                
+                const inputEl = document.getElementById(`input-${letter}`);
+                const iconContainer = document.getElementById(`icon-container-${letter}`);
+                const hintBtn = document.getElementById(`hint-btn-${letter}`);
+                const hintBtnText = document.getElementById(`hint-text-${letter}`);
+                const hintIcon = document.getElementById(`hint-icon-${letter}`);
+                const hintBox = document.getElementById(`hint-box-${letter}`);
+
+                // Input State & Style
+                inputEl.value = inputs[letter];
+                inputEl.disabled = isCompleted;
+                
+                let inputClasses = "w-full pl-5 pr-12 py-3.5 rounded-xl border text-base font-medium outline-none transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal ";
+                if (status === true) inputClasses += "border-emerald-300 bg-emerald-50/30 text-emerald-800";
+                else if (status === 'revealed') inputClasses += "border-slate-200 bg-slate-50 text-slate-500 italic";
+                else if (status === false) inputClasses += "border-rose-300 bg-rose-50/30 text-rose-800 focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10";
+                else inputClasses += "border-slate-200 bg-slate-50/50 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10";
+                if (isCompleted) inputClasses += " opacity-70 cursor-not-allowed";
+                inputEl.className = inputClasses;
+
+                // Validation Icon
+                iconContainer.innerHTML = '';
+                if (status === true) iconContainer.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>';
+                else if (status === 'revealed') iconContainer.innerHTML = '<i data-lucide="info" class="w-5 h-5 text-slate-400"></i>';
+                else if (status === false) iconContainer.innerHTML = '<i data-lucide="x-circle" class="w-5 h-5 text-rose-400"></i>';
+
+                // Hint Button State
+                hintBtn.disabled = isHintUsed || remHints === 0 || isCompleted;
+                let btnClasses = "flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-medium transition-all duration-200 sm:w-auto w-full ";
+                if (isHintUsed) {
+                    btnClasses += "bg-amber-50/50 text-amber-700 border border-amber-200/50 cursor-default";
+                    hintBtnText.textContent = "Dévoilé";
+                    hintIcon.classList.add("text-amber-500");
+                } else if (remHints > 0 && !isCompleted) {
+                    btnClasses += "bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/50 active:scale-[0.98] shadow-sm hover:shadow";
+                    hintBtnText.textContent = "Indice";
+                    hintIcon.classList.remove("text-amber-500");
+                } else {
+                    btnClasses += "bg-slate-50 text-slate-400 border border-slate-100 cursor-not-allowed";
+                    hintBtnText.textContent = "Indice";
+                    hintIcon.classList.remove("text-amber-500");
+                }
+                hintBtn.className = btnClasses;
+
+                // Hint Box
+                if (isHintUsed) hintBox.classList.remove('hidden-el');
+                else hintBox.classList.add('hidden-el');
+            });
+
+            // Action Area
+            const verifyBtn = document.getElementById('verify-btn');
+            const completionMsg = document.getElementById('completion-message');
+            const replayBtn = document.getElementById('replay-tutorial-btn');
+
+            if (!isCompleted) {
+                verifyBtn.classList.remove('hidden-el');
+                completionMsg.classList.add('hidden-el');
+                replayBtn.classList.remove('hidden-el');
+            } else {
+                verifyBtn.classList.add('hidden-el');
+                completionMsg.classList.remove('hidden-el');
+                replayBtn.classList.add('hidden-el');
+
+                const cIconContainer = document.getElementById('completion-icon-container');
+                const cIcon = document.getElementById('completion-icon');
+                const cTitle = document.getElementById('completion-title');
+                const cSub = document.getElementById('completion-subtitle');
+
+                if (isPerfect) {
+                    cIconContainer.className = "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5 bg-emerald-50 border-8 border-emerald-50/50";
+                    cIcon.className = "w-10 h-10 text-emerald-500";
+                    cTitle.textContent = "Parfait !";
+                    cSub.textContent = "Vous maîtrisez les 5 critères de la méthode SMART.";
+                } else {
+                    cIconContainer.className = "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5 bg-indigo-50 border-8 border-indigo-50/50";
+                    cIcon.className = "w-10 h-10 text-indigo-500";
+                    cTitle.textContent = "Exercice terminé !";
+                    cSub.textContent = "Voici à quoi correspondent les acronymes de la méthode SMART.";
+                }
+            }
+
+            // Reparse added icons
+            lucide.createIcons();
+        }
+
+        // --- Plein Écran ---
+        const appContainer = document.getElementById('app-container');
+        async function toggleFullscreen() {
+            try {
+                if (!document.fullscreenElement) {
+                    if (appContainer.requestFullscreen) {
+                        await appContainer.requestFullscreen();
+                    } else if (appContainer.webkitRequestFullscreen) { /* Safari */
+                        await appContainer.webkitRequestFullscreen();
+                    } else if (appContainer.msRequestFullscreen) { /* IE11 */
+                        await appContainer.msRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) { /* Safari */
+                        await document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) { /* IE11 */
+                        await document.msExitFullscreen();
+                    }
+                }
+            } catch (err) {
+                console.warn("Le plein écran n'est pas supporté ou a été bloqué.", err);
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            isFullscreen = !!document.fullscreenElement;
+            appContainer.className = `bg-[#F8FAFC] font-sans text-slate-800 relative w-full overflow-x-hidden overflow-y-auto ${isFullscreen ? 'h-screen' : 'min-h-screen'}`;
+            
+            const fsIconContainer = document.getElementById('fs-icon').parentNode;
+            document.getElementById('fs-text').textContent = isFullscreen ? 'Quitter' : 'Plein écran';
+            
+            // Swap icon properly
+            fsIconContainer.innerHTML = `<i data-lucide="${isFullscreen ? 'minimize' : 'maximize'}" class="w-5 h-5" id="fs-icon"></i> <span class="hidden sm:inline" id="fs-text">${isFullscreen ? 'Quitter' : 'Plein écran'}</span>`;
+            lucide.createIcons();
+            
+            updateSpotlight(); // Recalculate if active
+        });
+
+        // --- Spotlight Tutoriel ---
+        function startTutorial() {
+            tutorialActive = true;
+            document.getElementById('spotlight-overlay').classList.remove('hidden-el');
+            updateSpotlight();
+        }
+
+        function endTutorial() {
+            tutorialActive = false;
+            document.getElementById('spotlight-overlay').classList.add('hidden-el');
+        }
+
+        function updateSpotlight() {
+            if (!tutorialActive) return;
+            const targetEl = document.getElementById('fullscreen-btn');
+            if (!targetEl) return;
+
+            const rect = targetEl.getBoundingClientRect();
+            const pad = 12;
+            const targetRect = {
+                top: rect.top - pad,
+                left: rect.left - pad,
+                width: rect.width + pad * 2,
+                height: rect.height + pad * 2,
+                bottom: rect.bottom + pad,
+                right: rect.right + pad,
+            };
+
+            // Masques
+            document.getElementById('mask-top').style.height = `${targetRect.top}px`;
+            document.getElementById('mask-bottom').style.top = `${targetRect.bottom}px`;
+            
+            const maskLeft = document.getElementById('mask-left');
+            maskLeft.style.top = `${targetRect.top}px`;
+            maskLeft.style.height = `${targetRect.height}px`;
+            maskLeft.style.width = `${targetRect.left}px`;
+            
+            const maskRight = document.getElementById('mask-right');
+            maskRight.style.top = `${targetRect.top}px`;
+            maskRight.style.height = `${targetRect.height}px`;
+            maskRight.style.left = `${targetRect.right}px`;
+
+            // Tooltip Position
+            const tooltip = document.getElementById('spotlight-tooltip');
+            let leftPos = targetRect.left;
+            if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 340;
+            if (leftPos < 16) leftPos = 16;
+            
+            tooltip.style.left = `${leftPos}px`;
+            tooltip.style.top = `${targetRect.bottom + 16}px`; // position='bottom'
+            tooltip.style.opacity = '1';
+
+            // Arrow Position
+            const arrow = document.getElementById('tooltip-arrow');
+            arrow.className = "absolute w-4 h-4 bg-white border-slate-200 rotate-45 -top-2 border-l border-t left-6";
+        }
+
+        window.addEventListener('resize', updateSpotlight);
+        window.addEventListener('scroll', updateSpotlight, true);
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>

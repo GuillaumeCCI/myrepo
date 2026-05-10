@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Esperoo — Simulation Planning</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } } };
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; margin:0; padding:0; }
+  select { appearance: auto; }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+  @keyframes scaleIn  { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+  @keyframes msgSlide { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes badgePop { 0%{opacity:0;transform:scale(0.6) rotate(-8deg);}70%{transform:scale(1.1) rotate(2deg);}100%{opacity:1;transform:scale(1) rotate(0);} }
+  @keyframes deltaFade{ 0%{opacity:0;transform:translateY(5px);}15%{opacity:1;transform:translateY(0);}75%{opacity:1;}100%{opacity:0;transform:translateY(-5px);} }
+  @keyframes transIn  { from{opacity:0;transform:scale(0.97);}to{opacity:1;transform:scale(1);} }
+  .anim-fadeInUp { animation: fadeInUp .35s ease both; }
+  .anim-fadeIn   { animation: fadeIn .25s ease both; }
+  .anim-scaleIn  { animation: scaleIn .3s ease both; }
+  .anim-msg      { animation: msgSlide .4s ease both; }
+  .anim-badge    { animation: badgePop .5s cubic-bezier(.34,1.56,.64,1) both; }
+  .anim-delta    { animation: deltaFade 2.8s ease both; }
+  .anim-trans    { animation: transIn .5s ease both; }
+  .conf-bar      { transition: width .6s cubic-bezier(.34,1.56,.64,1), background-color .5s ease; }
+  .custom-scrollbar::-webkit-scrollbar { width:4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:10px; }
+</style>
+</head>
+<body class="bg-slate-100">
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── Icons (SVG inline) ─────────────────────────────────────────────────────
+function svgWrap(paths, { poly=false }={}) {
+  return function Icon({ size=16, className="" }) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {paths.map(function(p, i) {
+          return poly ? <polyline key={i} points={p}/> : <path key={i} d={p}/>;
+        })}
+      </svg>
+    );
+  };
+}
+
+const CheckCircle    = svgWrap(["M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z","m9 12 2 2 4-4"]);
+const Users          = svgWrap(["M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2","M23 21v-2a4 4 0 0 0-3-3.87","M16 3.13a4 4 0 0 1 0 7.75","M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"]);
+const MessageSquare  = svgWrap(["M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"]);
+const AlertTriangle  = svgWrap(["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z","M12 9v4","M12 17h.01"]);
+const FileSpreadsheet= svgWrap(["M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z","M14 2v6h6","M8 13h2","M8 17h2","M14 13h2","M14 17h2"]);
+const MailWarning    = svgWrap(["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","M22 6l-10 7L2 6","M12 12v4","M12 18h.01"]);
+const StickyNote     = svgWrap(["M15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9z","M15 3v6h6"]);
+const Activity       = svgWrap(["M22 12h-4l-3 9L9 3l-3 9H2"]);
+const ChevronRight   = svgWrap(["9 18 15 12 9 6"],{poly:true});
+const XCircle        = svgWrap(["M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z","m15 9-6 6","m9 9 6 6"]);
+const Info           = svgWrap(["M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z","M12 16v-4","M12 8h.01"]);
+const Target         = svgWrap(["M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z","M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z","M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"]);
+const Mic            = svgWrap(["M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z","M19 10v2a7 7 0 0 1-14 0v-2","M12 19v4","M8 23h8"]);
+const Send           = svgWrap(["m22 2-7 20-4-9-9-4 20-7z","M22 2 11 13"]);
+const Award          = svgWrap(["M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z","M8.21 13.89 7 23l5-3 5 3-1.21-9.12"]);
+const RotateCcw      = svgWrap(["M1 4v6h6","M3.51 15a9 9 0 1 0 .49-4.44"]);
+const BookOpen       = svgWrap(["M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z","M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"]);
+const Maximize       = svgWrap(["M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"]);
+const Minimize       = svgWrap(["M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"]);
+
+// ── Sound engine (même architecture que simulateur-handicap) ───────────────
+let _audioCtx = null;
+const getCtx = () => {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+};
+const playSound = (type) => {
+  try {
+    const ctx = getCtx();
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 0.02);
+    master.connect(ctx.destination);
+    const note = (freq, start, dur) => {
+      const osc = ctx.createOscillator();
+      const g   = ctx.createGain();
+      osc.connect(g); g.connect(master);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+      g.gain.setValueAtTime(1, ctx.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    };
+    if (type === 'success') {
+      note(330, 0, .35); note(415, .1, .30); note(494, .22, .40);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .75);
+    } else if (type === 'neutral') {
+      note(370, 0, .30);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .45);
+    } else if (type === 'fail') {
+      note(370, 0, .28); note(294, .18, .35);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .60);
+    } else if (type === 'badge') {
+      note(523, 0, .30); note(659, .08, .28); note(784, .16, .30); note(1047, .26, .40);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .80);
+    } else if (type === 'msg') {
+      master.gain.linearRampToValueAtTime(0.07, ctx.currentTime + .01);
+      note(620, 0, .12);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .18);
+    } else if (type === 'click') {
+      master.gain.linearRampToValueAtTime(0.06, ctx.currentTime + .005);
+      note(520, 0, .08);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .12);
+    } else if (type === 'sms_alert') {
+      note(440, 0, .15); note(554, .18, .15); note(440, .36, .15);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .60);
+    } else if (type === 'conf_up') {
+      note(440, 0, .40); note(554, .20, .45);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .80);
+    } else if (type === 'conf_down') {
+      note(349, 0, .40); note(277, .22, .45);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .80);
+    } else if (type === 'validate') {
+      note(440, 0, .20); note(523, .15, .25); note(659, .32, .35);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .70);
+    } else if (type === 'step') {
+      master.gain.linearRampToValueAtTime(0.08, ctx.currentTime + .01);
+      note(480, 0, .10); note(560, .10, .12);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .26);
+    }
+  } catch(e) {}
+};
+
+// ── Logo ───────────────────────────────────────────────────────────────────
+const EsperooLogo = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-blue-600">
+    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// ── Données ────────────────────────────────────────────────────────────────
+const COMPETENCES = [
+  { id:"planning",      label:"Planification conforme au droit du travail" },
+  { id:"anticipation",  label:"Anticipation des contraintes opérationnelles" },
+  { id:"casting",       label:"Affectation des ressources selon les compétences" },
+  { id:"communication", label:"Communication managériale efficace (brief)" },
+  { id:"imprevu",       label:"Gestion des imprévus dans le respect légal" },
+];
+
+const SCENARIO_POOL = [
+  { id:"epiphanie_a",  label:"Semaine Épiphanie (S01) — Config A",   baseCA:15, produit:"Galettes",     absent:"maxime", absenceJours:["LUNDI","MARDI"],     commande:{jour:"JEUDI",   desc:"200 galettes à livrer à 6h00 précises."},          teamVariant:"standard" },
+  { id:"chandeleur_b", label:"Semaine Chandeleur (S05) — Config B",  baseCA:20, produit:"Crêpes",       absent:"maxime", absenceJours:["MERCREDI","JEUDI"],  commande:{jour:"MARDI",   desc:"150 crêpes-party à livrer à 7h00."},               teamVariant:"junior_fort" },
+  { id:"noel_c",       label:"Semaine Noël (S52) — Config C",        baseCA:25, produit:"Bûches",       absent:"noe",    absenceJours:["JEUDI","VENDREDI"],  commande:{jour:"LUNDI",   desc:"80 bûches commandées à livrer à 8h."},             teamVariant:"alternant_avance" },
+  { id:"paques_d",     label:"Semaine Pâques (S15) — Config D",      baseCA:18, produit:"Viennoiseries",absent:"sylvie", absenceJours:["LUNDI","MERCREDI"], commande:{jour:"VENDREDI",desc:"120 paniers garnis à livrer à 7h30."},           teamVariant:"sans_senior" },
+];
+
+const TEAM_VARIANTS = {
+  standard: {
+    sylvie:{contexte:"Habituellement sur les horaires du soir. Bascule cette semaine sur des horaires matinaux.",competences:["Vente conseil","Maîtrise cuisson","Gestion flux client"]},
+    theo:  {contexte:"Objectif ce trimestre : améliorer son taux de vente additionnelle.",competences:["Vente additionnelle (en progression)","Bonne énergie client"]},
+    noe:   {contexte:"Arrivé il y a 3 semaines. Ne maîtrise pas encore les produits.",competences:["Encaissement","Réassort vitrine"]},
+    maxime:{contexte:"Pilier de la boutique sur la deuxième partie de journée.",competences:["Fermeture boutique","Gestion fin de journée","Comptage caisse"]},
+  },
+  junior_fort: {
+    sylvie:{contexte:"En formation management. Souhaite progresser sur la gestion de peak.",competences:["Vente conseil","Maîtrise cuisson"]},
+    theo:  {contexte:"Récemment certifié sur la vente additionnelle — performant sur ce point.",competences:["Vente additionnelle (confirmé)","Technique cuisson de base"]},
+    noe:   {contexte:"Mois 2. Maîtrise l'encaissement, commence à connaître les produits.",competences:["Encaissement","Connaissance produits (en cours)"]},
+    maxime:{contexte:"Pilier de la boutique sur la deuxième partie de journée.",competences:["Fermeture boutique","Gestion fin de journée","Comptage caisse"]},
+  },
+  alternant_avance: {
+    sylvie:{contexte:"Habituellement sur les horaires du soir. Bascule cette semaine sur des horaires matinaux.",competences:["Vente conseil","Maîtrise cuisson","Gestion flux client"]},
+    theo:  {contexte:"Objectif ce trimestre : améliorer son taux de vente additionnelle.",competences:["Vente additionnelle (en progression)","Bonne énergie client"]},
+    noe:   {contexte:"Mois 4. Autonome en caisse, bonne connaissance produits, vente simple maîtrisée.",competences:["Encaissement","Connaissance produits","Vente simple"]},
+    maxime:{contexte:"Pilier de la boutique sur la deuxième partie de journée.",competences:["Fermeture boutique","Gestion fin de journée","Comptage caisse"]},
+  },
+  sans_senior: {
+    sylvie:{contexte:"Absente cette semaine. Ses horaires de fermeture doivent être couverts.",competences:[]},
+    theo:  {contexte:"Par défaut le plus expérimenté présent. Connaît les produits et la caisse.",competences:["Caisse","Produits","Vente additionnelle (en progression)"]},
+    noe:   {contexte:"Mois 3. Peut tenir la caisse rapide. Pas encore autonome sur le conseil.",competences:["Encaissement","Réassort vitrine"]},
+    maxime:{contexte:"Pilier de la boutique sur la deuxième partie de journée.",competences:["Fermeture boutique","Gestion fin de journée","Comptage caisse"]},
+  },
+};
+
+const BASE_PROFILES = {
+  sylvie:{id:"sylvie",name:"Sylvie",role:"Vendeuse Sénior", borderColor:"border-l-indigo-500",bgColor:"bg-indigo-50", textColor:"text-indigo-700"},
+  theo:  {id:"theo",  name:"Théo",  role:"Vendeur Junior",  borderColor:"border-l-emerald-500",bgColor:"bg-emerald-50",textColor:"text-emerald-700"},
+  noe:   {id:"noe",   name:"Noé",   role:"Alternant",       borderColor:"border-l-amber-500",  bgColor:"bg-amber-50",  textColor:"text-amber-700"},
+  maxime:{id:"maxime",name:"Maxime",role:"Resp. Fermeture", borderColor:"border-l-red-500",    bgColor:"bg-red-50",    textColor:"text-red-700"},
+};
+
+const AUDIO_DATA = {
+  epiphanie_a: {
+    audio:"Bonjour, c'est Laurent, directeur de zone. Deux points importants avant votre planning de l'Épiphanie.\nPoint 1 : Maxime est en arrêt maladie. Il ne sera pas là lundi ni mardi — ce sont ses jours de fermeture habituels.\nPoint 2 : commande exceptionnelle de la mairie — 200 galettes à livrer jeudi matin à 6h précises. Quelqu'un doit être en poste très tôt jeudi. Bonne semaine.",
+    keywords:{
+      absence: {required:["maxime","lundi","mardi","fermeture"],synonyms:{maxime:["max","responsable"],lundi:["lun","debut"],mardi:["mar"],fermeture:["fermer","soir","20h"]},label:"Absence et couverture",hint:"Qui est absent, quels jours, quel poste ?"},
+      commande:{required:["jeudi","galettes","livraison"],synonyms:{jeudi:["jeu"],galettes:["galette","200","mairie","commande"],livraison:["livrer","6h","six heures","production"]},label:"Commande exceptionnelle",hint:"Quel jour, quoi livrer, à quelle heure ?"},
+    },
+  },
+  chandeleur_b: {
+    audio:"Bonjour, c'est Laurent. Deux points avant le planning de la Chandeleur.\nPoint 1 : Maxime a un impératif familial mercredi et jeudi — ses jours de fermeture habituels sont à couvrir.\nPoint 2 : commande d'un comité d'entreprise — 150 crêpes-party à livrer mardi matin à 7h. Bonne organisation.",
+    keywords:{
+      absence: {required:["maxime","mercredi","jeudi","fermeture"],synonyms:{maxime:["max"],mercredi:["mer"],jeudi:["jeu"],fermeture:["fermer","soir"]},label:"Absence et couverture",hint:"Qui est absent, quels jours, quel poste ?"},
+      commande:{required:["mardi","crêpes","livraison"],synonyms:{mardi:["mar"],"crêpes":["crepe","150","comité","commande"],livraison:["livrer","7h","sept heures"]},label:"Commande exceptionnelle",hint:"Quel jour, quoi livrer, à quelle heure ?"},
+    },
+  },
+  noel_c: {
+    audio:"Bonjour, c'est Laurent. Quelques points avant le planning de Noël.\nPoint 1 : Noé a posé des congés jeudi et vendredi — ses jours habituels en fermeture sont à couvrir.\nPoint 2 : 80 bûches de Noël à livrer lundi matin à 8h. Quelqu'un doit être en poste très tôt lundi. Bon courage.",
+    keywords:{
+      absence: {required:["noé","jeudi","vendredi","fermeture"],synonyms:{"noé":["noe","alternant"],jeudi:["jeu"],vendredi:["ven"],fermeture:["fermer","soir"]},label:"Absence et couverture",hint:"Qui est absent, quels jours, quel poste ?"},
+      commande:{required:["lundi","bûches","livraison"],synonyms:{lundi:["lun"],"bûches":["buche","80","noël","commande"],livraison:["livrer","8h","huit heures"]},label:"Commande exceptionnelle",hint:"Quel jour, quoi livrer, à quelle heure ?"},
+    },
+  },
+  paques_d: {
+    audio:"Bonjour, c'est Laurent. Planning de Pâques — deux points.\nPoint 1 : Sylvie a un empêchement lundi et mercredi — ses jours habituels de fermeture. Prévoir une couverture.\nPoint 2 : 120 paniers garnis à livrer vendredi matin à 7h30. La production devra être finalisée tôt. Bon courage.",
+    keywords:{
+      absence: {required:["sylvie","lundi","mercredi","fermeture"],synonyms:{sylvie:["syl","senior"],lundi:["lun"],mercredi:["mer"],fermeture:["fermer","soir"]},label:"Absence et couverture",hint:"Qui est absent, quels jours, quel poste ?"},
+      commande:{required:["vendredi","paniers","livraison"],synonyms:{vendredi:["ven"],paniers:["panier","120","garnis","commande"],livraison:["livrer","7h30","sept heures"]},label:"Commande exceptionnelle",hint:"Quel jour, quoi livrer, à quelle heure ?"},
+    },
+  },
+};
+
+function analyzeResponse(text, kw) {
+  const n = text.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"").replace(/[^a-z0-9\s]/g," ");
+  const hits = kw.required.map(k => {
+    const kn = k.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
+    if (n.includes(kn)) return true;
+    return (kw.synonyms[k]||[]).some(s => n.includes(s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"")));
+  });
+  const r = hits.filter(Boolean).length / kw.required.length;
+  return r >= 0.75 ? "complete" : r >= 0.4 ? "partial" : "missing";
+}
+
+const SHIFTS = {
+  "":   {label:"Sélectionner...",start:"-",    end:"-",    hours:0,type:"none"},
+  repos:{label:"Repos",          start:"REPOS",end:"REPOS",hours:0,type:"repos"},
+  ouv:  {label:"Ouverture",      start:"04:00",end:"11:00",hours:7,type:"ouv"},
+  mat:  {label:"Matin",          start:"06:00",end:"13:00",hours:7,type:"mat"},
+  fer:  {label:"Fermeture",      start:"13:30",end:"20:30",hours:7,type:"fer"},
+};
+
+const POSTES_DEF = [
+  { id:"caisse",  title:"Caisse Rapide",   reqDesc:"Encaisser sans erreurs un flux client élevé.",        competencesCles:["Encaissement","Caisse"],
+    profils:{ noe:{score:3,feedback:"Compétence principale de Noé. Mission adaptée à son niveau.",type:"Bonne pratique"},theo:{score:2,feedback:"Peut tenir la caisse, mais ses forces en vente additionnelle sont sous-exploitées ici.",type:"Correct"},sylvie:{score:1,feedback:"Surdimensionnée. Ses compétences de vente conseil sont perdues en caisse rapide.",type:"Sous-optimal"},maxime:{score:0,feedback:"Sa valeur est en fermeture et gestion de fin de journée, pas en caisse rush.",type:"Inadapté"} }},
+  { id:"conseil", title:"Vente Conseil",   reqDesc:"Accueillir et faire de la vente additionnelle ciblée.",competencesCles:["Vente additionnelle","Vente conseil"],
+    profils:{ theo:{score:3,feedback:"Objectif de développement direct. Poste aligné sur sa progression trimestrielle.",type:"Bonne pratique"},sylvie:{score:2,feedback:"Très compétente, mais Théo doit progresser sur ce poste.",type:"Correct"},noe:{score:0,feedback:"Pas encore autonome sur les produits ni l'argumentaire de vente.",type:"Inadapté"},maxime:{score:0,feedback:"Pas dans ses compétences cœur. Risque de performance insuffisante.",type:"Inadapté"} }},
+  { id:"cuisson", title:"Gestion Cuisson", reqDesc:"Piloter les fours en flux tendu, zéro rupture.",       competencesCles:["Maîtrise cuisson","Technique cuisson"],
+    profils:{ sylvie:{score:3,feedback:"Maîtrise technique confirmée. Son domaine d'excellence.",type:"Bonne pratique"},theo:{score:1,feedback:"Connaissance de base. Peut dépanner mais pas piloter en autonomie totale.",type:"Risqué"},noe:{score:0,feedback:"Pas encore formé à la cuisson. Risque opérationnel élevé.",type:"Inadapté"},maxime:{score:0,feedback:"Compétences orientées fin de journée, pas production.",type:"Inadapté"} }},
+];
+
+function scoreComposite(assignments, justifications) {
+  let score = 0; const details = {};
+  POSTES_DEF.forEach(p => {
+    const pid = assignments[p.id]; const justif = justifications[p.id];
+    if (!pid) return;
+    const pd = p.profils[pid]; if (!pd) return;
+    let pts = pd.score;
+    if (justif && justif.length > 15) {
+      const nj = justif.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
+      if (p.competencesCles.some(c => nj.includes(c.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"")))) pts = Math.min(pts+1,4);
+    }
+    score += pts; details[p.id] = { pts, feedback:pd.feedback, type:pd.type };
+  });
+  return { score, details };
+}
+
+const BRIEF_OPTS = {
+  ouverture:{ label:"Comment ouvrez-vous le brief ?", options:[
+    {id:"merci",   text:"Merci d'avoir accepté de remplacer au pied levé.",            score:2,q:"good",type:"Bonne pratique"},
+    {id:"neutre",  text:"L'absent(e) est indisponible, tu prends son poste samedi.",   score:0,q:"poor",type:"Neutre"},
+    {id:"pression",text:"J'ai besoin de toi, c'est notre journée la plus importante.", score:1,q:"ok",  type:"Pression excessive"},
+  ]},
+  objectif:{ label:"Quel objectif lui communiquez-vous ?", options:[
+    {id:"ca",   text:"Notre objectif collectif sur le CA est critique cette semaine.",  score:2,q:"good",type:"Bonne pratique"},
+    {id:"vague",text:"Fais de ton mieux, c'est une journée chargée.",              score:0,q:"poor",type:"Vague"},
+    {id:"perso",text:"C'est une opportunité pour toi de progresser en vente conseil.", score:2,q:"good",type:"Bonne pratique"},
+  ]},
+  mission:{ label:"Comment décrivez-vous sa mission ?", options:[
+    {id:"lien",   text:"Chaque produit phare vendu en plus = +3€ CA. Propose-le systématiquement.", score:3,q:"good",type:"Bonne pratique"},
+    {id:"general",text:"Tu t'occupes du stand dédié et tu sers les clients.",                       score:0,q:"poor",type:"Trop vague"},
+    {id:"partiel",text:"Essaie de proposer des formules quand tu peux.",                             score:1,q:"ok",  type:"Insuffisant"},
+  ]},
+};
+
+const REMEDIATION = {
+  preavis:      {titre:"Délai de prévenance",        ressource:"Fiche pratique : Le délai de prévenance de 7 jours ouvrés (art. L.3121-47 C. trav.)"},
+  casting:      {titre:"Casting et compétences",      ressource:"Fiche méthodo : Lire une fiche de poste et la croiser avec les compétences individuelles"},
+  communication:{titre:"Brief managérial",            ressource:"Vidéo : Les 3 composantes d'un brief efficace en 5 minutes"},
+  imprevu:      {titre:"Gestion des imprévus légaux", ressource:"Fiche pratique : Recueillir un accord exprès — art. L.3121-47 C. trav."},
+};
+
+const SMS_TPL = {
+  heures:    {exp:"Service RH — Alerte", h:"08:12",sev:"error",  msg:"Planning reçu. Total : {total}h — contrat 35h. Merci de corriger avant validation."},
+  repos:     {exp:"Service RH — Alerte", h:"08:14",sev:"error",  msg:"Alerte repos légal : {from}→{to} insuffisant ({hours}h). Minimum légal : 11h. Planning invalide."},
+  ouvertures:{exp:"DRH — Pénibilité",    h:"08:16",sev:"warning",msg:"{count} ouvertures planifiées. Seuil pénibilité dépassé (max 3). Risque RPS."},
+  absence:   {exp:"Direction Boutique",  h:"08:18",sev:"error",  msg:"Les fermetures de {absent} ({jours}) ne sont pas couvertes. Boutique sans responsable en soirée."},
+  commande:  {exp:"Logistique",          h:"08:20",sev:"error",  msg:"Commande exceptionnelle le {jour} : pas d'ouverture planifiée. Production non couverte. Livraison en risque."},
+  samedi:    {exp:"Direction Boutique",  h:"08:22",sev:"warning",msg:"Samedi non couvert. Journée de forte affluence sans le collaborateur. Effectif insuffisant."},
+};
+
+const INFO_DATA = {
+  maxime:    {title:"Couverture absences",    text:"L'absence doit être couverte sur les horaires habituels de l'équipier absent."},
+  commande:  {title:"Anticipation production",text:"Une grosse commande nécessite d'être en poste plusieurs heures avant la livraison."},
+  samedi:    {title:"Pic d'activité",         text:"Le Samedi demande un effectif complet. Ne pas planifier de repos ce jour-là."},
+  heures:    {title:"Contrat 35h",            text:"Respecter le quota exact : ni sous-emploi ni heures supplémentaires non autorisées."},
+  repos:     {title:"Repos légal (11h)",       text:"Art. L.3131-1 C. trav. : 11h de repos consécutives entre deux jours de travail."},
+  penibilite:{title:"Pénibilité",             text:"Basculer d'un rythme soir vers des ouvertures à 4h est biologiquement très contraignant. Max 3 ouvertures par semaine."},
+};
+
+// ── Type badge colors ──────────────────────────────────────────────────────
+const TYPE_COLORS = {
+  "Bonne pratique":    "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "Correct":           "bg-blue-100 text-blue-700 border-blue-200",
+  "Correct / légal":   "bg-blue-100 text-blue-700 border-blue-200",
+  "Sous-optimal":      "bg-amber-100 text-amber-700 border-amber-200",
+  "Risqué":            "bg-orange-100 text-orange-700 border-orange-200",
+  "Inadapté":          "bg-red-100 text-red-700 border-red-200",
+  "Neutre":            "bg-slate-100 text-slate-600 border-slate-200",
+  "Pression excessive":"bg-amber-100 text-amber-700 border-amber-200",
+  "Vague":             "bg-slate-100 text-slate-500 border-slate-200",
+  "Insuffisant":       "bg-amber-100 text-amber-700 border-amber-200",
+  "Trop vague":        "bg-slate-100 text-slate-500 border-slate-200",
+  "Hors cadre légal":  "bg-red-100 text-red-700 border-red-200",
+};
+
+// ── Feedback explanations for key decisions ────────────────────────────────
+const DECISION_FEEDBACK = {
+  preavis_error:  {type:"Hors cadre légal",  text:"Modifier le planning d'un salarié sans respecter le délai de prévenance de 7 jours ouvrés constitue une infraction à l'art. L.3121-47 C. trav. Le salarié peut refuser la modification et a droit à une contrepartie s'il l'accepte."},
+  preavis_ok:     {type:"Bonne pratique",    text:"Le délai de prévenance (7 jours ouvrés minimum) protège le salarié et l'employeur. Le respecter préserve le climat de confiance et évite un risque juridique."},
+  imprevu_error:  {type:"Hors cadre légal",  text:"Modifier unilatéralement le planning sans recueillir l'accord exprès du salarié est une infraction. Théo peut refuser et l'employeur s'expose à une sanction. L'accord doit être oral ou écrit, mais toujours préalable."},
+  imprevu_ok:     {type:"Bonne pratique",    text:"Recueillir l'accord exprès avant toute modification protège les deux parties. Théo est informé, son engagement est volontaire — son efficacité le lendemain en dépend directement."},
+};
+
+// ── Badges ─────────────────────────────────────────────────────────────────
+const BADGE_DEFS = [
+  {id:"legal_master", label:"Cadre légal maîtrisé", desc:"Valider un planning conforme du premier coup.",
+   check:(s)=> s.planValidatedClean },
+  {id:"casting_pro",  label:"Casting optimal",       desc:"Obtenir le score d'affectation maximum (9+ pts).",
+   check:(s)=> s.castingScore >= 9 },
+  {id:"brief_top",    label:"Brief percutant",        desc:"Obtenir 6+ points au brief managérial.",
+   check:(s)=> s.briefScore >= 6 },
+];
+
+const BADGE_ICONS = {
+  legal_master: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  casting_pro:  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>,
+  brief_top:    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h8"/><path d="M8 14h5"/></svg>,
+};
+
+// ── Narration entre étapes ─────────────────────────────────────────────────
+const STEP_NARRATIONS = {
+  1: "C'est lundi matin. Votre téléphone sonne avant même l'ouverture.",
+  2: "Vous avez pris note des informations. Place au planning.",
+  3: "Planning posé. Avant de valider, une décision de fond s'impose.",
+  4: "Samedi. 10h. Le fournil tourne à plein régime.",
+  5: "Jeudi soir, 20h45. Un SMS s'affiche sur votre téléphone.",
+  6: "Théo a accepté. Samedi, 7h55, avant l'ouverture.",
+};
+
+// ── Indicator (tooltip) ────────────────────────────────────────────────────
+const Indicator = ({ valid, label, subtext, mk }) => {
+  const [h, setH] = useState(false);
+  const info = INFO_DATA[mk];
+  return (
+    <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
+      className="relative flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-md cursor-help hover:border-slate-300 transition-colors">
+      <div>
+        <div className="text-xs font-semibold text-slate-700">{label}</div>
+        <div className="text-[10px] text-slate-400 mt-0.5">{subtext}</div>
+      </div>
+      <div>{valid ? <CheckCircle size={14} className="text-emerald-500"/> : <Info size={14} className="text-slate-300"/>}</div>
+      {h && info && (
+        <div className="absolute z-50 w-56 bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-slate-900 text-white text-xs rounded-lg shadow-xl pointer-events-none">
+          <div className="font-semibold mb-1">{info.title}</div>
+          <div className="text-slate-300 leading-relaxed">{info.text}</div>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-900"/>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── FeedbackBox (remplace CBox — inclut type + explication) ───────────────
+const FeedbackBox = ({ title, caImpact, desc, feedbackKey, children }) => {
+  const fd = feedbackKey ? DECISION_FEEDBACK[feedbackKey] : null;
+  const isGood = caImpact === 0;
+  return (
+    <div className={`p-4 rounded-xl border text-sm mt-4 ${isGood ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-red-50 border-red-200 text-red-900"}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <Activity size={14}/>
+        <h4 className="font-bold">{title}</h4>
+        {fd && (
+          <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded border ${TYPE_COLORS[fd.type]||"bg-slate-100 text-slate-500 border-slate-200"}`}>
+            {fd.type}
+          </span>
+        )}
+      </div>
+      <p className="mb-2 leading-relaxed opacity-90">{desc}</p>
+      {fd && (
+        <div className={`text-xs p-2.5 rounded-lg border leading-relaxed mb-3 ${isGood?"bg-emerald-100/60 border-emerald-200 text-emerald-800":"bg-red-100/60 border-red-200 text-red-800"}`}>
+          {fd.text}
+        </div>
+      )}
+      <div className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-bold border ${isGood ? "bg-emerald-100 border-emerald-300 text-emerald-800" : "bg-red-100 border-red-300 text-red-800"}`}>
+        Impact CA : {isGood ? "Aucun — objectif maintenu" : `${caImpact}%`}
+      </div>
+      {children && <div className="mt-4">{children}</div>}
+    </div>
+  );
+};
+
+// ── NarrationMsg : bulle narrative entre étapes ───────────────────────────
+const NarrationMsg = ({ text }) => (
+  <div className="flex justify-center my-2 anim-msg">
+    <div className="max-w-lg bg-slate-100 text-slate-500 px-5 py-3 rounded-2xl border border-slate-200 text-sm italic text-center leading-relaxed">
+      {text}
+    </div>
+  </div>
+);
+
+// ── CA chart ───────────────────────────────────────────────────────────────
+const CAChart = ({ history, baseCA }) => {
+  if (history.length < 1) return null;
+  const pts = [{ label:'Départ', v:baseCA }];
+  let cur = baseCA;
+  history.forEach(h => { cur += h.impact; pts.push({ label:h.title, v:cur, impact:h.impact }); });
+  const W=380,H=70,PX=20,PY=8,IW=W-PX*2,IH=H-PY*2,n=pts.length;
+  const toX = i => PX + (i/(n-1))*IW;
+  const toY = v => PY + IH - ((v/baseCA)*IH);
+  const lp  = pts.map((p,i) => `${i===0?'M':'L'}${toX(i).toFixed(1)},${toY(Math.max(0,p.v)).toFixed(1)}`).join(' ');
+  const ap  = `${lp} L${toX(n-1).toFixed(1)},${H-PY} L${PX},${H-PY} Z`;
+  const col = cur >= baseCA ? '#10b981' : cur > baseCA/2 ? '#f59e0b' : '#ef4444';
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} className="overflow-visible">
+      <defs><linearGradient id="cag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={col} stopOpacity=".2"/><stop offset="100%" stopColor={col} stopOpacity="0"/></linearGradient></defs>
+      <line x1={PX} y1={toY(baseCA)} x2={W-PX} y2={toY(baseCA)} stroke="#d1d5db" strokeWidth="1" strokeDasharray="4,3"/>
+      <path d={ap} fill="url(#cag)"/>
+      <path d={lp} fill="none" stroke={col} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {pts.map((p,i) => <circle key={i} cx={toX(i)} cy={toY(Math.max(0,p.v))} r="3" fill="white" stroke={col} strokeWidth="1.5"/>)}
+    </svg>
+  );
+};
+
+// ── AudioStep ──────────────────────────────────────────────────────────────
+function AudioStep({ sc, ad, onDone }) {
+  const [phase, setPhase] = useState("listen");
+  const [inp,   setInp]   = useState({ absence:"", commande:"" });
+  const [res,   setRes]   = useState({ absence:null, commande:null });
+  const [att,   setAtt]   = useState({ absence:0, commande:0 });
+  const MAX = 3;
+
+  const submit = (key) => {
+    const r  = analyzeResponse(inp[key], ad.keywords[key]);
+    const na = { ...att, [key]: att[key]+1 };
+    setAtt(na);
+    if (r === "complete" || na[key] >= MAX) {
+      const nr = { ...res, [key]: r };
+      setRes(nr);
+    } else {
+      setRes(p => ({ ...p, [key]: r }));
+    }
+  };
+
+  const bothDone = res.absence !== null && res.commande !== null;
+
+  useEffect(() => {
+    if (bothDone) playSound('validate');
+  }, [bothDone]);
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden anim-fadeInUp">
+      <div className="bg-blue-600 px-5 py-3 flex items-center gap-2">
+        <Mic size={15} className="text-blue-200"/>
+        <h2 className="font-semibold text-white text-sm">Messagerie Vocale — Écoute active</h2>
+        <span className="ml-auto text-[10px] text-blue-300 uppercase tracking-wider">Laurent Garnier · Dir. Zone</span>
+      </div>
+      <div className="p-6">
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 leading-relaxed whitespace-pre-line mb-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200">
+            <Mic size={12} className="text-blue-500"/>
+            <span className="font-semibold text-slate-500 text-xs">Transcript — Dir. Zone</span>
+          </div>
+          {ad?.audio}
+        </div>
+        {phase !== "listen" && (
+          <div className="max-w-2xl space-y-5">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+              <strong>Exercice :</strong> Synthétisez les deux informations clés du message. Soyez précis sur les noms, les jours et les horaires.
+            </div>
+            {["absence","commande"].map(key => {
+              const kd = ad.keywords[key];
+              const r  = res[key];
+              const a  = att[key];
+              const locked = r === "complete" || a >= MAX;
+              return (
+                <div key={key} className="border border-slate-200 rounded-xl p-4">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
+                    {kd.label} <span className="text-slate-400 font-normal normal-case">— {kd.hint}</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input type="text" value={inp[key]}
+                      onChange={e => !locked && setInp(p=>({...p,[key]:e.target.value}))}
+                      onKeyDown={e => e.key==="Enter" && !locked && submit(key)}
+                      disabled={locked}
+                      placeholder="Votre synthèse..."
+                      className={`flex-1 p-2.5 text-sm border rounded-lg focus:outline-none transition-colors ${locked?"bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200":"bg-white focus:border-blue-500 border-slate-300"}`}/>
+                    {!locked && (
+                      <button onClick={()=>{playSound('click');submit(key);}} className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 flex items-center gap-1.5">
+                        <Send size={13}/>Valider
+                      </button>
+                    )}
+                  </div>
+                  {r && (
+                    <div className={`mt-2 text-xs p-2.5 rounded-lg border flex items-start gap-2 ${r==="complete"?"bg-emerald-50 border-emerald-200 text-emerald-800":r==="partial"?"bg-amber-50 border-amber-200 text-amber-800":"bg-red-50 border-red-200 text-red-800"}`}>
+                      {r==="complete" && <CheckCircle size={12} className="shrink-0 mt-0.5"/>}
+                      {r==="partial"  && <AlertTriangle size={12} className="shrink-0 mt-0.5"/>}
+                      {r==="missing"  && <XCircle size={12} className="shrink-0 mt-0.5"/>}
+                      <span>
+                        {r==="complete" && "Bonne identification. Éléments clés couverts."}
+                        {r==="partial"  && `Incomplet — tentative ${a}/${MAX}. ${a<MAX?"Précisez : "+kd.hint:"Maximum atteint."}`}
+                        {r==="missing"  && `Éléments manquants — tentative ${a}/${MAX}. ${a<MAX?"Réessayez en précisant : "+kd.hint:"Passez à la suite."}`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {bothDone && (
+              <div className="flex justify-end pt-2 border-t border-slate-100">
+                <button onClick={()=>{playSound('step');onDone();}} className="px-5 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-md hover:bg-blue-700 flex items-center gap-2">
+                  Accéder au planning <ChevronRight size={15}/>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        {phase === "listen" && (
+          <button onClick={()=>{playSound('click');setPhase("input");}} className="px-5 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-md hover:bg-blue-700 flex items-center gap-2">
+            Message lu — Synthétiser les informations clés <ChevronRight size={15}/>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── App principale ─────────────────────────────────────────────────────────
+function App() {
+  const [sc] = useState(() => SCENARIO_POOL[Math.floor(Math.random() * SCENARIO_POOL.length)]);
+  const [step, setStep]         = useState(-1);  // -1 = intro, 0 = "comment ça marche", puis 1..6
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const absentId = sc.absent;
+  const abP      = BASE_PROFILES[absentId];
+  const vt       = TEAM_VARIANTS[sc.teamVariant];
+  const team     = Object.entries(BASE_PROFILES).map(([id,b]) => ({ ...b, ...vt[id], isAbsent:id===absentId }));
+
+  // Décisions
+  const [sylvieNotice,  setSN] = useState(null);
+  const [assignResult,  setAR] = useState(null);
+  const [imprevuAction, setIA] = useState(null);
+  const [briefChoices,  setBC] = useState({ ouverture:null, objectif:null, mission:null });
+  const [briefDone,     setBD] = useState(false);
+
+  // Badges
+  const [unlockedBadges, setUnlocked] = useState([]);
+  const [newBadge,       setNewBadge] = useState(null);
+  const [planValidatedClean, setPVC]  = useState(false);
+  const [castingScore,   setCS]       = useState(0);
+
+  const bScore = Object.entries(briefChoices).reduce((s,[k,id]) => {
+    if (!id) return s;
+    const o = BRIEF_OPTS[k].options.find(x=>x.id===id);
+    return s + (o?.score||0);
+  }, 0);
+
+  const getCA = () => {
+    let ca = sc.baseCA; const logs = [];
+    if (sylvieNotice) {
+      if (sylvieNotice==="error") { ca-=2; logs.push({comp:"preavis",title:"Prévenance planning",impact:-2,desc:"Absence de délai légal. Baisse de motivation."}); }
+      else { logs.push({comp:null,title:"Prévenance planning",impact:0,desc:"Cadre légal respecté. Climat de confiance préservé."}); }
+    }
+    if (assignResult) {
+      if (assignResult.score>=9) { logs.push({comp:null,title:"Casting équipe",impact:0,desc:"Ressources optimisées. Boutique performante."}); }
+      else if (assignResult.score>=5) { ca-=3; logs.push({comp:"casting",title:"Casting équipe",impact:-3,desc:"Affectation perfectible. Perte d'efficacité."}); }
+      else { ca-=6; logs.push({comp:"casting",title:"Casting équipe",impact:-6,desc:"Erreurs de casting. Boutique paralysée pendant le rush."}); }
+    }
+    if (imprevuAction) {
+      if (imprevuAction==="error") { ca-=2; logs.push({comp:"imprevu",title:"Gestion imprévu",impact:-2,desc:"Forçage de planning illégal. Tensions créées."}); }
+      else { logs.push({comp:null,title:"Gestion imprévu",impact:0,desc:"Accord recueilli dans les règles. Salarié engagé."}); }
+    }
+    if (briefDone) {
+      if (bScore>=6) { logs.push({comp:null,title:"Qualité du brief",impact:0,desc:"Brief percutant. Collaborateur performant sur les ventes."}); }
+      else if (bScore>=3) { ca-=2; logs.push({comp:"communication",title:"Qualité du brief",impact:-2,desc:"Brief incomplet. Ventes additionnelles ratées."}); }
+      else { ca-=4; logs.push({comp:"communication",title:"Qualité du brief",impact:-4,desc:"Brief insuffisant. Objectifs commerciaux non atteints."}); }
+    }
+    return { ca, logs };
+  };
+  const { ca:finalCA, logs } = getCA();
+
+  // Vérif badges à chaque changement d'état
+  useEffect(() => {
+    const state = { planValidatedClean, castingScore, briefScore:bScore };
+    const newOnes = BADGE_DEFS.filter(b => !unlockedBadges.includes(b.id) && b.check(state));
+    if (newOnes.length > 0) {
+      setUnlocked(prev => [...prev, ...newOnes.map(b=>b.id)]);
+      setNewBadge(newOnes[0]);
+      playSound('badge');
+      setTimeout(() => setNewBadge(null), 3500);
+    }
+  }, [planValidatedClean, castingScore, bScore]);
+
+  useEffect(() => {
+    const h = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', h);
+    return () => document.removeEventListener('fullscreenchange', h);
+  }, []);
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+    else document.exitFullscreen();
+  };
+
+  const DAYS = [
+    {id:0,day:"LUNDI",date:"02/01"},{id:1,day:"MARDI",date:"03/01"},{id:2,day:"MERCREDI",date:"04/01"},
+    {id:3,day:"JEUDI",date:"05/01"},{id:4,day:"VENDREDI",date:"06/01"},{id:5,day:"SAMEDI",date:"07/01"},{id:6,day:"DIMANCHE",date:"08/01"},
+  ];
+  const [plan, setPlan]   = useState(DAYS.map(d => ({...d, sk:d.day==="DIMANCHE"?"repos":""})));
+  const [legal, setLegal] = useState(false);
+  const [smsA,  setSmsA]  = useState([]);
+  const [p2phase, setP2]  = useState("grid");
+  const [rules, setRules] = useState({hoursOk:false,total:0,ouvOk:false,ouvCount:0,restOk:false,restErrors:[],samediOk:false,absOk:false,cmdOk:false,filled:false});
+
+  useEffect(() => {
+    let total=0,ouv=0,restErr=[],filled=0,sam=false,abs=false,cmd=false;
+    plan.forEach((d,i) => {
+      const sh = SHIFTS[d.sk];
+      if (d.sk!=="") filled++;
+      if (sh && sh.type!=="none" && sh.type!=="repos") {
+        total+=sh.hours; if(sh.type==="ouv") ouv++; if(d.day==="SAMEDI") sam=true;
+      }
+      if (i<6) {
+        const c=SHIFTS[d.sk],nx=SHIFTS[plan[i+1].sk];
+        if(c&&nx&&c.type!=="repos"&&c.type!=="none"&&nx.type!=="repos"&&nx.type!=="none"){
+          const eh=parseInt(c.end.split(":")[0])+parseInt(c.end.split(":")[1])/60;
+          const sh2=parseInt(nx.start.split(":")[0])+parseInt(nx.start.split(":")[1])/60;
+          const r=(24-eh)+sh2;
+          if(r<11) restErr.push(`${d.day}→${plan[i+1].day} (${r}h)`);
+        }
+      }
+    });
+    abs = sc.absenceJours.every(j=>{ const d=plan.find(r=>r.day===j); return d&&d.sk==="fer"; });
+    const ci = plan.findIndex(d=>d.day===sc.commande.jour);
+    if(ci>=0&&plan[ci].sk==="ouv") cmd=true;
+    setRules({hoursOk:total===35,total,ouvOk:ouv<=3,ouvCount:ouv,restOk:restErr.length===0,restErrors:restErr,samediOk:sam,absOk:abs,cmdOk:cmd,filled:filled===7});
+  }, [plan, sc]);
+
+  const chSh = (id,k) => { const p=[...plan]; p[id].sk=k; setPlan(p); setLegal(false); setSmsA([]); };
+
+  const validate = () => {
+    const a=[];
+    if(!rules.hoursOk) a.push({type:"heures",data:{total:rules.total}});
+    rules.restErrors.forEach(e=>{ const m=e.match(/(\w+)→(\w+) \((.+)\)/); if(m) a.push({type:"repos",data:{from:m[1],to:m[2],hours:m[3]}}); });
+    if(!rules.ouvOk)    a.push({type:"ouvertures",data:{count:rules.ouvCount}});
+    if(!rules.absOk)    a.push({type:"absence",data:{}});
+    if(!rules.cmdOk)    a.push({type:"commande",data:{}});
+    if(!rules.samediOk) a.push({type:"samedi",data:{}});
+    setSmsA(a); setLegal(true);
+    if (a.length===0) { playSound('validate'); setPVC(true); }
+    else { playSound('sms_alert'); }
+  };
+
+  const [asgn,     setAsgn]     = useState({caisse:null,conseil:null,cuisson:null});
+  const [just,     setJust]     = useState({caisse:"",conseil:"",cuisson:""});
+  const [asgnDone, setAsgnDone] = useState(false);
+  const tfa    = team.filter(p=>!p.isAbsent);
+  const step3ok = POSTES_DEF.every(p=>asgn[p.id]&&just[p.id]?.length>5);
+
+  const doAsgn = (pid,tid) => {
+    if (asgnDone) return;
+    setAsgn(prev => {
+      const n={...prev};
+      if(n[pid]===tid){n[pid]=null;return n;}
+      Object.keys(n).forEach(k=>{if(n[k]===tid)n[k]=null;});
+      n[pid]=tid; return n;
+    });
+    playSound('click');
+  };
+
+  const goStep = (n) => { playSound('step'); setStep(n); };
+
+  const renderSMS = (a,i) => {
+    const t=SMS_TPL[a.type]; if(!t) return null;
+    let msg=t.msg.replace("{total}",a.data?.total||"").replace("{from}",a.data?.from||"").replace("{to}",a.data?.to||"")
+      .replace("{hours}",a.data?.hours||"").replace("{count}",a.data?.count||"").replace("{absent}",abP?.name||"")
+      .replace("{jours}",sc.absenceJours?.join(", ")||"").replace("{jour}",sc.commande?.jour||"");
+    const err=t.sev==="error";
+    return (
+      <div key={i} className={`border rounded-lg p-3 text-xs ${err?"bg-red-50 border-red-200":"bg-amber-50 border-amber-200"}`}>
+        <div className="flex items-center gap-2 mb-1">
+          <div className={`w-1.5 h-1.5 rounded-full ${err?"bg-red-500":"bg-amber-500"}`}/>
+          <span className={`font-bold text-[10px] uppercase tracking-wider ${err?"text-red-700":"text-amber-700"}`}>{t.exp}</span>
+          <span className="text-slate-400 ml-auto">{t.h}</span>
+        </div>
+        <p className={err?"text-red-800":"text-amber-800"}>{msg}</p>
+      </div>
+    );
+  };
+
+  // ── Badge toast ────────────────────────────────────────────────────────────
+  const BadgeToast = () => {
+    if (!newBadge) return null;
+    const bd = BADGE_DEFS.find(b=>b.id===newBadge.id);
+    if (!bd) return null;
+    return (
+      <div className="fixed bottom-6 right-6 z-50 bg-white border border-amber-200 rounded-2xl shadow-2xl p-4 flex items-start gap-3 anim-badge max-w-xs">
+        <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">{BADGE_ICONS[newBadge.id]}</div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-0.5">Badge débloqué</p>
+          <p className="text-sm font-semibold text-slate-800">{bd.label}</p>
+          <p className="text-xs text-slate-500 mt-0.5">{bd.desc}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // ── CA KPI header ──────────────────────────────────────────────────────────
+  const caColor = finalCA >= sc.baseCA ? "text-emerald-600" : finalCA > 5 ? "text-amber-600" : "text-red-600";
+
+  // ── INTRO SCREEN ──────────────────────────────────────────────────────────
+  if (step === -1) return (
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+      <div className="fixed top-4 right-4 z-50">
+        <button onClick={toggleFullscreen} className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 transition-all">
+          {isFullscreen ? <Minimize size={16}/> : <Maximize size={16}/>}{isFullscreen?"Quitter":"Plein écran"}
+        </button>
+      </div>
+      <div className="max-w-2xl w-full bg-white rounded-md shadow-sm overflow-hidden border border-slate-200 anim-fadeInUp">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-10 text-white">
+          <div className="flex items-center gap-3 mb-4">
+            <EsperooLogo/>
+            <span className="text-blue-200 text-sm uppercase tracking-widest font-semibold">Esperoo Workspace</span>
+          </div>
+          <h1 className="text-3xl font-bold mb-2">Planifier avec méthode</h1>
+          <p className="text-blue-200 text-sm">Boutique Marie Blachère · {sc.label}</p>
+        </div>
+        <div className="p-10 space-y-6">
+          <div className="space-y-3">
+            <h2 className="text-base font-semibold text-slate-800">Votre rôle</h2>
+            <p className="text-slate-600 leading-relaxed text-sm">
+              Vous êtes <strong>responsable de boutique</strong> chez Marie Blachère. Ce lundi matin, avant même l'ouverture, le directeur de zone vous laisse un message vocal.
+              <br/><br/>
+              Vous avez <strong>une semaine de planification à boucler</strong> : une absence à couvrir, une commande exceptionnelle à anticiper, une équipe à affecter sur les postes et un imprévu de dernière minute à gérer dans les règles.
+            </p>
+          </div>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800 leading-relaxed">
+            <strong>Objectif :</strong> chaque décision a un impact direct sur le CA projeté. Les erreurs de planification ou de management se traduisent en perte commerciale mesurable.
+          </div>
+          <button onClick={()=>{playSound('click');setStep(0);}} className="w-full py-3 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+            Commencer <ChevronRight size={18}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── "COMMENT ÇA MARCHE" SCREEN ─────────────────────────────────────────
+  if (step === 0) return (
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+      <div className="fixed top-4 right-4 z-50">
+        <button onClick={toggleFullscreen} className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 transition-all">
+          {isFullscreen ? <Minimize size={16}/> : <Maximize size={16}/>}{isFullscreen?"Quitter":"Plein écran"}
+        </button>
+      </div>
+      <div className="max-w-2xl w-full bg-white rounded-md shadow-sm overflow-hidden border border-slate-200 anim-fadeInUp">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 px-10 pt-8 pb-7 text-white">
+          <h1 className="text-2xl font-bold mb-1">Comment fonctionne cette simulation ?</h1>
+          <p className="text-blue-200 text-sm">6 situations managériales · Semaine complète</p>
+        </div>
+        <div className="p-10 space-y-4 text-slate-700 leading-relaxed text-sm">
+          <p>Vous traversez <strong>6 situations managériales</strong> liées à la même semaine de planning. L'ordre est imposé — chaque décision conditionne la suivante.</p>
+          <p>Un indicateur évolue en permanence : le <strong>CA projeté</strong>, visible en haut à droite. Une erreur de planification ou de communication se traduit immédiatement en perte de performance commerciale.</p>
+          <p>À chaque étape clé, un <strong>feedback typé</strong> vous explique pourquoi votre choix est juste, perfectible ou hors cadre légal.</p>
+          <p className="font-medium text-slate-900">En fin de parcours : bilan complet de vos décisions, trajectoire du CA et badges débloqués.</p>
+          <div className="grid grid-cols-3 gap-3 pt-2">
+            {COMPETENCES.slice(0,3).map((c,i) => (
+              <div key={c.id} className="p-3 border border-blue-100 rounded-md bg-blue-50 text-center">
+                <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mx-auto mb-1.5">{i+1}</div>
+                <p className="text-xs text-slate-600 leading-snug">{c.label}</p>
+              </div>
+            ))}
+          </div>
+          <button onClick={()=>{playSound('step');setStep(1);}} className="w-full py-3 mt-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+            Écouter le message <ChevronRight size={18}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── GAME SCREENS (steps 1-6) ───────────────────────────────────────────
+  const stepLabels = ["","Message vocal","Équipe","Planning","Affectation","Imprévu","Brief & Bilan"];
+  const progressPct = Math.round((Math.max(0,step-1)/5)*100);
+
+  // ── FINISHED ──────────────────────────────────────────────────────────────
+  if (step === 7) {
+    const earnedBadges = BADGE_DEFS.filter(b=>unlockedBadges.includes(b.id));
+    const pathColor = finalCA>=sc.baseCA ? "bg-emerald-800" : finalCA>sc.baseCA/2 ? "bg-amber-800" : "bg-red-900";
+    const pathEmoji = finalCA>=sc.baseCA ? "🏆" : finalCA>sc.baseCA/2 ? "🔄" : "⚠️";
+    const pathLabel = finalCA>=sc.baseCA ? "Objectif atteint" : finalCA>sc.baseCA/2 ? "Objectif partiel" : "Objectif manqué";
+    const decisionHistory = [
+      sylvieNotice!==null && { label:"Prévenance planning",     chosen:sylvieNotice==="error"?"Modification sans préavis":"Prévenance respectée (7 jours)", type:sylvieNotice==="error"?"Hors cadre légal":"Bonne pratique", impact:sylvieNotice==="error"?-2:0 },
+      assignResult!==null && { label:"Casting équipe",          chosen:`Score : ${assignResult.score}/12`, type:assignResult.score>=9?"Bonne pratique":assignResult.score>=5?"Correct":"Inadapté", impact:assignResult.score>=9?0:assignResult.score>=5?-3:-6 },
+      imprevuAction!==null && { label:"Gestion imprévu (Théo)", chosen:imprevuAction==="error"?"Planning modifié sans accord":"Accord recueilli", type:imprevuAction==="error"?"Hors cadre légal":"Bonne pratique", impact:imprevuAction==="error"?-2:0 },
+      briefDone && { label:"Qualité du brief",        chosen:`Score brief : ${bScore}/7`, type:bScore>=6?"Bonne pratique":bScore>=3?"Correct":"Insuffisant", impact:bScore>=6?0:bScore>=3?-2:-4 },
+    ].filter(Boolean);
+
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        <div className="fixed top-4 right-4 z-50">
+          <button onClick={toggleFullscreen} className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 transition-all">
+            {isFullscreen?<Minimize size={16}/>:<Maximize size={16}/>}{isFullscreen?"Quitter":"Plein écran"}
+          </button>
+        </div>
+        <div className="max-w-4xl w-full bg-white rounded-md shadow-sm overflow-hidden border border-slate-200 anim-scaleIn">
+          <div className={`p-10 text-white text-center ${pathColor}`}>
+            <div className="text-4xl mb-4">{pathEmoji}</div>
+            <h2 className="text-3xl font-bold mb-1">Simulation Terminée</h2>
+            <p className="text-white/60 text-sm">{pathLabel} — {sc.label.split("(")[0].trim()}</p>
+          </div>
+
+          {/* CA chart */}
+          {logs.length >= 1 && (
+            <div className="px-8 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Trajectoire du CA projeté</p>
+              <CAChart history={logs} baseCA={sc.baseCA}/>
+              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                <span>Départ : +{sc.baseCA}%</span><span>Final : +{finalCA}%</span>
+              </div>
+            </div>
+          )}
+
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="space-y-6">
+              {/* Score CA */}
+              <div className="text-center bg-slate-50 py-8 rounded-2xl border border-slate-100">
+                <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">CA final atteint</div>
+                <div className={`text-6xl font-extrabold tracking-tighter ${caColor}`}>+{finalCA}%</div>
+                <div className="text-sm text-slate-400 mt-2">sur les ventes de {sc.produit}</div>
+                <div className="mt-4 mx-auto max-w-xs">
+                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-1000 ${finalCA>=sc.baseCA?"bg-emerald-500":finalCA>5?"bg-amber-500":"bg-red-500"}`}
+                      style={{width:`${Math.min(100,Math.max(0,(finalCA/sc.baseCA)*100))}%`}}/>
+                  </div>
+                  <div className="text-xs text-slate-400 mt-1">{Math.round((finalCA/sc.baseCA)*100)}% de l'objectif atteint</div>
+                </div>
+              </div>
+
+              {/* Badges */}
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Badges</p>
+                <div className="space-y-2">
+                  {BADGE_DEFS.map((badge,i) => {
+                    const earned = unlockedBadges.includes(badge.id);
+                    return (
+                      <div key={badge.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${earned?"bg-amber-50 border-amber-200 anim-badge":"bg-slate-50 border-slate-100 opacity-40"}`}
+                        style={earned?{animationDelay:`${i*.12}s`}:{}}>
+                        <span className="shrink-0 mt-0.5">{BADGE_ICONS[badge.id]}</span>
+                        <div><p className={`text-sm font-semibold ${earned?"text-amber-900":"text-slate-500"}`}>{badge.label}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">{badge.desc}</p></div>
+                        {earned && <CheckCircle size={16} className="text-amber-500 shrink-0 mt-0.5 ml-auto"/>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Remédiation */}
+              {logs.filter(l=>l.impact<0&&l.comp).length>0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><BookOpen size={12}/>Axes de progression</h3>
+                  <div className="space-y-2">
+                    {logs.filter(l=>l.impact<0&&l.comp).map((l,i) => {
+                      const r=REMEDIATION[l.comp]; if(!r) return null;
+                      return (
+                        <div key={i} className="border border-amber-200 bg-amber-50 rounded-xl p-3.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div><div className="text-xs font-bold text-amber-800 uppercase tracking-wide mb-1">{r.titre}</div>
+                              <div className="text-xs text-amber-900 leading-relaxed">{r.ressource}</div></div>
+                            <Award size={16} className="text-amber-500 shrink-0"/>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <button onClick={()=>window.location.reload()} className="w-full py-3 border-2 border-blue-600 text-blue-600 rounded-md font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-sm">
+                <RotateCcw size={16}/> Rejouer un autre scénario
+              </button>
+            </div>
+
+            {/* Détail décisions */}
+            <div className="space-y-3 overflow-y-auto max-h-[640px] pr-3 custom-scrollbar">
+              <h3 className="font-semibold text-slate-800 sticky top-0 bg-white py-2 text-sm">Détail par décision</h3>
+              {decisionHistory.map((item,idx) => (
+                <div key={idx} className="p-3.5 border-b border-slate-100 last:border-0">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">D{idx+1}</span>
+                    <span className={`text-xs font-bold ${item.impact>=0?"text-emerald-600":"text-red-500"}`}>
+                      {item.impact===0?"0%":`${item.impact}%`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-800 font-medium mb-1">{item.label}</p>
+                  <p className="text-xs text-slate-500 italic mb-1.5">«&nbsp;{item.chosen}&nbsp;»</p>
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${TYPE_COLORS[item.type]||"bg-slate-100 text-slate-500 border-slate-200"}`}>{item.type}</span>
+                </div>
+              ))}
+              {decisionHistory.length===0 && <p className="text-xs text-slate-400 italic">Aucune décision enregistrée.</p>}
+              <div className="p-4 mt-4 bg-slate-50 rounded-xl border border-slate-200">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Références légales</p>
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  {[["Art. L.3121-47 C. trav.","Délai de prévenance — modification du planning"],["Art. L.3131-1 C. trav.","Repos quotidien minimum — 11h consécutives"],["AGEFIPH / OPCO","Financement des formations et aménagements"]].map(([ref,desc])=>
+                    <div key={ref} className="flex gap-2"><span className="text-emerald-400">●</span><span><strong>{ref}</strong> — {desc}</span></div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="px-8 pb-6 text-center">
+            <p className="text-xs text-slate-400">Esperoo Workspace — Formation management opérationnel — Marie Blachère</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-800 pb-20">
+      <BadgeToast/>
+
+      {/* HEADER */}
+      <header className="bg-white border-b border-slate-200 px-5 py-3 flex justify-between items-center sticky top-0 z-40 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-blue-600 rounded-md flex items-center justify-center"><EsperooLogo/></div>
+          <div>
+            <h1 className="text-sm font-bold tracking-widest uppercase text-slate-900">Esperoo Workspace</h1>
+            <p className="text-slate-400 text-[11px]">Marie Blachère · {sc.label}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Barre de progression */}
+          <div className="hidden md:flex flex-col items-end gap-1">
+            <span className="text-[9px] text-slate-400 uppercase font-semibold tracking-wider">{stepLabels[step]||""}</span>
+            <div className="flex items-center gap-1">
+              {[1,2,3,4,5,6].map(s => (
+                <div key={s} className={`h-1.5 rounded-sm transition-all ${s<step?"w-6 bg-blue-400":s===step?"w-8 bg-blue-600":"w-4 bg-slate-200"}`}/>
+              ))}
+            </div>
+          </div>
+          {/* CA */}
+          <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-right">
+            <span className="block text-[9px] uppercase font-bold text-slate-400">CA Projeté</span>
+            <span className={`block text-sm font-bold ${caColor}`}>+{finalCA}% <span className="text-slate-300 font-normal text-[10px]">({sc.produit})</span></span>
+          </div>
+          <button onClick={toggleFullscreen} className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors">
+            {isFullscreen?<Minimize size={18}/>:<Maximize size={18}/>}
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-5xl mx-auto flex flex-col gap-6 p-4 mt-4">
+
+        {/* ÉTAPE 1 — Message vocal */}
+        {step===1 && (
+          <div className="flex flex-col gap-4">
+            <NarrationMsg text={STEP_NARRATIONS[1]}/>
+            <AudioStep sc={sc} ad={AUDIO_DATA[sc.id]} onDone={()=>goStep(2)}/>
+          </div>
+        )}
+
+        {/* ÉTAPE 2 — Équipe */}
+        {step===2 && (
+          <div className="flex flex-col gap-4">
+            <NarrationMsg text={STEP_NARRATIONS[2]}/>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden anim-fadeInUp">
+              <div className="bg-slate-50 border-b border-slate-200 px-5 py-3 flex items-center gap-2">
+                <Users size={16} className="text-slate-500"/>
+                <h2 className="font-semibold text-slate-800 text-sm">Équipe disponible cette semaine</h2>
+              </div>
+              <div className="p-6">
+                <p className="text-slate-500 text-sm mb-5">Étudiez les profils avant d'accéder au planning. Objectif : <strong>+{sc.baseCA}% de CA</strong> sur les ventes de {sc.produit}.</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {team.map(p => (
+                    <div key={p.id} className={`flex bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm ${p.isAbsent?"opacity-55 grayscale":""}`}>
+                      <div className={`w-1.5 shrink-0 border-l-4 ${p.borderColor}`}/>
+                      <div className="flex-1 p-4 flex gap-3">
+                        <div className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center font-bold text-sm ${p.bgColor} ${p.textColor}`}>{p.name.substring(0,2).toUpperCase()}</div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <h4 className="font-bold text-slate-800 text-sm">{p.name}</h4>
+                            <span className="text-[10px] font-semibold uppercase text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{p.role}</span>
+                            {p.isAbsent && <span className="text-[10px] font-bold bg-red-50 border border-red-200 text-red-600 px-1.5 py-0.5 rounded">Absent</span>}
+                          </div>
+                          {p.isAbsent
+                            ? <p className="text-xs text-slate-400 italic">Ses horaires de fermeture doivent être couverts.</p>
+                            : <div>
+                                <p className="text-xs text-slate-700"><strong>Compétences :</strong> {p.competences.join(", ")}</p>
+                                <p className="text-xs text-slate-500 mt-0.5"><strong>Contexte :</strong> {p.contexte}</p>
+                              </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100">
+                  <button onClick={()=>goStep(3)} className="px-5 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    Accéder au planning <ChevronRight size={16}/>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ÉTAPE 3 — Planning + SMS */}
+        {step===3 && (
+          <div className="flex flex-col gap-5">
+            <NarrationMsg text={STEP_NARRATIONS[3]}/>
+
+            {/* Mémos */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden anim-fadeInUp">
+              <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center gap-2"><MessageSquare size={14} className="text-blue-600"/><h2 className="text-xs font-bold uppercase tracking-wide text-slate-600">Mémos & Alertes</h2></div>
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="border border-blue-200 rounded-lg bg-blue-50/50 p-3">
+                  <div className="flex gap-2 items-center mb-1.5"><MailWarning className="text-blue-600" size={13}/><span className="text-[10px] font-bold uppercase text-blue-800 tracking-wider">Email Direction</span></div>
+                  <p className="text-xs text-slate-700">{abP?.name} est absent(e) ({sc.absenceJours.join(", ")}). Merci de couvrir ses fermetures.</p>
+                </div>
+                <div className="border border-amber-200 rounded-lg bg-amber-50/50 p-3">
+                  <div className="flex gap-2 items-center mb-1.5"><StickyNote className="text-amber-600" size={13}/><span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider">Post-it Boutique</span></div>
+                  <p className="text-xs text-slate-700">Commande exceptionnelle : <strong>{sc.commande.desc}</strong> Ouverture nécessaire pour la production.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tableau planning */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden anim-fadeInUp">
+              <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center gap-2"><FileSpreadsheet size={14} className="text-blue-600"/><span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">planning_semaine.xlsx</span></div>
+              <div className="overflow-x-auto p-2">
+                <table className="w-full text-xs border-collapse border border-slate-300">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-500 uppercase text-[10px] tracking-wider">
+                      <th className="border border-slate-300 p-2">Jour</th><th className="border border-slate-300 p-2">Date</th>
+                      <th className="border border-slate-300 p-2">Affectation</th><th className="border border-slate-300 p-2 text-center">Début</th>
+                      <th className="border border-slate-300 p-2 text-center">Fin</th><th className="border border-slate-300 p-2 text-center">H</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plan.map((row,idx) => {
+                      const sh = SHIFTS[row.sk]||SHIFTS[""];
+                      return (
+                        <tr key={row.id} className="border-b border-slate-200 hover:bg-slate-50">
+                          <td className="border-r border-slate-300 p-2 font-semibold text-xs">{row.day}</td>
+                          <td className="border-r border-slate-300 p-2 text-slate-400 font-mono text-[10px]">{row.date}</td>
+                          <td className="border-r border-slate-300 p-1">
+                            {idx===6
+                              ? <div className="p-1 text-slate-400 italic text-xs">Repos fixé</div>
+                              : <select value={row.sk} onChange={e=>chSh(idx,e.target.value)} disabled={p2phase==="decision"}
+                                  className={`w-full p-1 border text-xs outline-none focus:border-blue-500 rounded ${row.sk===""?"border-slate-300 bg-white":"border-slate-200 bg-slate-50 font-semibold"}`}>
+                                  {Object.entries(SHIFTS).map(([k,s])=><option key={k} value={k}>{s.label}</option>)}
+                                </select>
+                            }
+                          </td>
+                          <td className="border-r border-slate-300 p-2 text-center font-mono text-[11px] text-slate-500">{sh.type==="repos"?"--:--":sh.start}</td>
+                          <td className="border-r border-slate-300 p-2 text-center font-mono text-[11px] text-slate-500">{sh.type==="repos"?"--:--":sh.end}</td>
+                          <td className="p-2 text-center font-semibold">{sh.hours>0?`${sh.hours}h`:"-"}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="bg-slate-100 border-t-2 border-slate-300">
+                      <td colSpan="5" className="p-2 text-right text-[10px] uppercase font-bold text-slate-500">Total :</td>
+                      <td className="p-2 text-center font-bold">{rules.total}h</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Métriques */}
+            {p2phase==="grid" && (
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 anim-fadeInUp">
+                <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                  <h3 className="text-xs font-semibold uppercase text-slate-500">Métriques & Conformité</h3>
+                  {legal && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 border ${smsA.length===0?"bg-emerald-50 text-emerald-700 border-emerald-200":"bg-red-50 text-red-700 border-red-200"}`}>
+                      {smsA.length===0?<><CheckCircle size={11}/> Conforme</>:<><AlertTriangle size={11}/> Non conforme</>}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
+                  <Indicator valid={legal?rules.absOk:false}    label="Absence"     subtext={legal?(rules.absOk?"Couvert":"Non couvert"):"Couvrir soirs"} mk="maxime"/>
+                  <Indicator valid={legal?rules.cmdOk:false}    label="Commande"    subtext={legal?(rules.cmdOk?"OK":"Non couvert"):"Prod. matin"}        mk="commande"/>
+                  <Indicator valid={legal?rules.samediOk:false} label="Affluence"   subtext={legal?(rules.samediOk?"Présente":"Absente"):"Présence Sam."} mk="samedi"/>
+                  <Indicator valid={legal?rules.hoursOk:false}  label="Contrat 35h" subtext={legal?`${rules.total}h`:"Temps plein"}                      mk="heures"/>
+                  <Indicator valid={legal?rules.restOk:false}   label="Repos 11h"   subtext={legal?(rules.restOk?"OK":"Violation"):"Entre shifts"}        mk="repos"/>
+                  <Indicator valid={legal?rules.ouvOk:false}    label="Pénibilité"  subtext={legal?`${rules.ouvCount}/3`:"Max 3 ouv."}                    mk="penibilite"/>
+                </div>
+                {legal && smsA.length>0 && (
+                  <div className="mb-4 space-y-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/>
+                      <span className="text-xs font-semibold text-slate-700">Notifications — correction requise avant de continuer</span>
+                    </div>
+                    {smsA.map((a,i)=>renderSMS(a,i))}
+                    <button onClick={()=>{setLegal(false);setSmsA([]);}} className="text-xs font-semibold text-blue-600 hover:text-blue-800 mt-1">← Revenir au tableau pour corriger</button>
+                  </div>
+                )}
+                {legal && smsA.length===0
+                  ? <div>
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 mb-3 flex items-center gap-2">
+                        <CheckCircle size={13} className="text-emerald-600"/>Planning conforme. Toutes les contraintes légales et opérationnelles sont respectées.
+                      </div>
+                      <div className="flex justify-end">
+                        <button onClick={()=>{playSound('step');setP2("decision");}} className="px-5 py-2 bg-blue-600 text-white font-semibold text-sm rounded-md hover:bg-blue-700 transition-colors">
+                          Étape suivante — Décision de cycle
+                        </button>
+                      </div>
+                    </div>
+                  : !legal && (
+                      <div className="flex justify-end">
+                        <button onClick={validate} disabled={!rules.filled} className={`px-5 py-2 rounded-md text-sm font-semibold transition-colors ${rules.filled?"bg-blue-600 text-white hover:bg-blue-700":"bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"}`}>
+                          Analyser la conformité
+                        </button>
+                      </div>
+                    )
+                }
+              </div>
+            )}
+
+            {/* Décision de cycle */}
+            {p2phase==="decision" && (
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 anim-fadeInUp">
+                <div className="flex items-center gap-2 mb-3"><MessageSquare size={15} className="text-blue-600"/><h3 className="text-sm font-semibold">Action managériale : modification de cycle</h3></div>
+                <p className="text-sm text-slate-600 mb-4 leading-relaxed">Planning validé. Vous avez imposé une <strong>Ouverture</strong> le <strong>{sc.commande.jour}</strong>, dérogeant au cycle habituel de Sylvie. Si ce changement devait se pérenniser, quelle démarche adopteriez-vous ?</p>
+                {sylvieNotice===null
+                  ? <div className="space-y-2">
+                      <button onClick={()=>{playSound('fail');setSN("error");}} className="w-full text-left p-3 text-sm border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-slate-700">
+                        <strong className="mr-2">A.</strong>Je modifie son planning de fond d'une semaine sur l'autre, selon les besoins.
+                      </button>
+                      <button onClick={()=>{playSound('success');setSN("correct");}} className="w-full text-left p-3 text-sm border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-slate-700">
+                        <strong className="mr-2">B.</strong>Je la préviens formellement aujourd'hui — modification effective dans 2 semaines (délai légal 7 jours ouvrés).
+                      </button>
+                    </div>
+                  : <FeedbackBox
+                      title="Conséquence"
+                      caImpact={sylvieNotice==="correct"?0:-2}
+                      feedbackKey={sylvieNotice==="correct"?"preavis_ok":"preavis_error"}
+                      desc={sylvieNotice==="correct"?"Délai de prévenance respecté. Sylvie reste engagée et performante.":"Modification sans préavis = violation du délai légal. Sylvie démotivée, efficacité en baisse."}>
+                      <button onClick={()=>goStep(4)} className="px-5 py-2.5 rounded-md text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors">Passer à l'affectation</button>
+                    </FeedbackBox>
+                }
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ÉTAPE 4 — Affectation */}
+        {step===4 && (
+          <div className="flex flex-col gap-4">
+            <NarrationMsg text={STEP_NARRATIONS[4]}/>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row overflow-hidden anim-fadeInUp">
+              {/* Sidebar équipe */}
+              <div className="bg-slate-50 md:w-60 border-r border-slate-200 p-4">
+                <h2 className="text-sm font-semibold text-slate-800 mb-1">Équipe disponible</h2>
+                <p className="text-[11px] text-slate-400 mb-4 leading-relaxed">Sélectionnez un équipier par poste et justifiez en précisant la compétence mobilisée.</p>
+                <div className="space-y-3">
+                  {tfa.map(p => {
+                    const isA = Object.values(asgn).includes(p.id);
+                    return (
+                      <div key={p.id} className={`p-2.5 border rounded-lg transition-opacity ${isA?"opacity-35 border-slate-200 bg-slate-100":"border-slate-300 bg-white"}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] ${p.bgColor} ${p.textColor}`}>{p.name.substring(0,2).toUpperCase()}</div>
+                          <div><div className="font-semibold text-slate-800 text-xs">{p.name}</div><div className="text-[10px] text-slate-400">{p.role}</div></div>
+                        </div>
+                        <p className="text-[10px] text-slate-500">{p.competences.join(", ")}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Grille */}
+              <div className="flex-1 p-4 flex flex-col gap-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-800 mb-1">Grille d'affectation — Samedi</h2>
+                  <p className="text-[11px] text-slate-400">Pour chaque poste : choisissez l'équipier <strong>ET</strong> justifiez en mentionnant la compétence mobilisée.</p>
+                </div>
+                {POSTES_DEF.map(poste => (
+                  <div key={poste.id} className="p-4 border border-slate-200 rounded-xl bg-white">
+                    <div className="mb-2">
+                      <div className="font-semibold text-slate-800 text-sm">{poste.title}</div>
+                      <div className="text-[11px] text-slate-400">{poste.reqDesc}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {tfa.map(t => {
+                        const h = asgn[poste.id]===t.id;
+                        const e = Object.values(asgn).includes(t.id) && !h;
+                        return (
+                          <button key={t.id} onClick={()=>doAsgn(poste.id,t.id)} disabled={asgnDone}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${h?"bg-blue-50 border-blue-500 text-blue-800 font-semibold":"bg-white border-slate-200 text-slate-600 hover:border-slate-400"} ${e?"opacity-25 grayscale":""}`}>
+                            <div className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[8px] ${h?"bg-blue-200 text-blue-900":"bg-slate-100 text-slate-500"}`}>{t.name[0]}</div>{t.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider block mb-1">Justification — compétence mobilisée :</label>
+                      <input type="text"
+                        placeholder={`Pourquoi ${asgn[poste.id]?tfa.find(t=>t.id===asgn[poste.id])?.name||"...":"..."} sur ce poste ?`}
+                        value={just[poste.id]}
+                        onChange={e=>!asgnDone&&setJust(p=>({...p,[poste.id]:e.target.value}))}
+                        disabled={asgnDone}
+                        className="w-full p-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 bg-slate-50 focus:bg-white"/>
+                      {asgnDone && assignResult?.details?.[poste.id] && (
+                        <div className={`mt-2 text-xs p-2.5 rounded-lg border flex items-start gap-2 ${assignResult.details[poste.id].pts>=3?"bg-emerald-50 border-emerald-200 text-emerald-800":assignResult.details[poste.id].pts>=2?"bg-amber-50 border-amber-200 text-amber-800":"bg-red-50 border-red-200 text-red-800"}`}>
+                          <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded border ${TYPE_COLORS[assignResult.details[poste.id].type]||""}`}>{assignResult.details[poste.id].type}</span>
+                          {assignResult.details[poste.id].feedback}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {!asgnDone
+                  ? <div className="flex justify-end pt-2 border-t border-slate-100">
+                      <button onClick={()=>{
+                        const r=scoreComposite(asgn,just);
+                        setAR(r); setCS(r.score); setAsgnDone(true);
+                        playSound(r.score>=9?'success':r.score>=5?'neutral':'fail');
+                      }} disabled={!step3ok} className={`px-5 py-2.5 rounded-md text-sm font-semibold transition-colors ${step3ok?"bg-blue-600 text-white hover:bg-blue-700":"bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"}`}>
+                        Valider la grille d'affectation
+                      </button>
+                    </div>
+                  : <FeedbackBox
+                      title="Résultat de l'affectation"
+                      caImpact={assignResult.score>=9?0:assignResult.score>=5?-3:-6}
+                      desc={assignResult.score>=9?"Casting optimal. Chaque équipier est positionné sur le poste qui valorise ses forces.":assignResult.score>=5?"Casting perfectible. Certains écarts réduisent la fluidité du service.":"Erreurs de casting. Boutique sous-performante pendant le rush."}>
+                      <button onClick={()=>goStep(5)} className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors">Gérer l'imprévu et préparer le brief</button>
+                    </FeedbackBox>
+                }
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ÉTAPE 5 — Imprévu */}
+        {step===5 && (
+          <div className="flex flex-col gap-4">
+            <NarrationMsg text={STEP_NARRATIONS[5]}/>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Alerte */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden anim-fadeInUp">
+                <div className="bg-slate-50 border-b border-slate-200 p-3.5 flex items-center gap-2"><AlertTriangle size={15} className="text-slate-500"/><h2 className="text-sm font-semibold">Alerte Opérationnelle</h2></div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-[10px] uppercase font-bold text-slate-400">SMS · Jeu. 20:45</span></div>
+                    <p className="text-sm font-medium mb-2">"Empêchement familial urgent. Je serai absente Samedi." — Sylvie</p>
+                    <div className="bg-slate-50 border border-slate-100 p-2 rounded-lg text-xs text-slate-500 flex justify-between">
+                      <span>Prévenance légale : 7 jours</span><span className="text-red-600 font-semibold">Réel : 2 jours</span>
+                    </div>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">Décision managériale</p>
+                  {imprevuAction===null
+                    ? <div className="space-y-2">
+                        <button onClick={()=>{playSound('fail');setIA("error");}} className="w-full text-left p-3 text-sm border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                          <strong className="mr-2">A.</strong>Modifier le planning de Théo ce soir (il constatera demain matin).
+                        </button>
+                        <button onClick={()=>{playSound('success');setIA("correct");}} className="w-full text-left p-3 text-sm border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                          <strong className="mr-2">B.</strong>Appeler Théo maintenant pour lui exposer la situation et recueillir son accord exprès.
+                        </button>
+                      </div>
+                    : <FeedbackBox
+                        title="Conséquence"
+                        caImpact={imprevuAction==="correct"?0:-2}
+                        feedbackKey={imprevuAction==="correct"?"imprevu_ok":"imprevu_error"}
+                        desc={imprevuAction==="correct"?"Accord recueilli dans les règles. Théo arrive motivé Samedi.":"Forçage du planning : infraction au Code du Travail (L.3121-47). Théo vient à reculons."}>
+                        <p className="text-xs text-slate-400 italic">Poursuivez sur le brief (à droite).</p>
+                      </FeedbackBox>
+                  }
+                </div>
+              </div>
+
+              {/* Brief */}
+              <div className={`bg-white rounded-xl shadow-sm border flex flex-col transition-opacity duration-500 ${imprevuAction===null?"opacity-35 pointer-events-none border-slate-200":"border-slate-300 anim-fadeInUp"}`}>
+                <div className="bg-slate-50 border-b border-slate-200 p-3.5 flex items-center gap-2"><MessageSquare size={15} className="text-slate-500"/><h2 className="text-sm font-semibold">Construction du Brief — Théo</h2></div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <NarrationMsg text={STEP_NARRATIONS[6]}/>
+                  <p className="text-sm text-slate-500 mb-4">Théo a accepté. Construisez votre "Brief 5 minutes" :</p>
+                  <div className="space-y-4 flex-1">
+                    {Object.entries(BRIEF_OPTS).map(([key,comp]) => (
+                      <div key={key}>
+                        <div className="text-xs font-semibold text-slate-700 mb-2">{comp.label}</div>
+                        <div className="space-y-1.5">
+                          {comp.options.map(opt => {
+                            const ch = briefChoices[key]===opt.id;
+                            const sf = briefDone && ch;
+                            return (
+                              <button key={opt.id} onClick={()=>{if(!briefDone){playSound('click');setBC(p=>({...p,[key]:opt.id}));}}}
+                                className={`w-full text-left p-2.5 text-sm border rounded-lg transition-colors relative
+                                  ${ch&&!sf?"border-blue-500 bg-blue-50 text-blue-900":""}
+                                  ${sf&&opt.q==="good"?"border-emerald-300 bg-emerald-50 text-emerald-900":""}
+                                  ${sf&&opt.q==="ok"?"border-amber-300 bg-amber-50 text-amber-900":""}
+                                  ${sf&&opt.q==="poor"?"border-red-200 bg-red-50 text-red-900":""}
+                                  ${!ch?"border-slate-200 bg-white text-slate-600 hover:border-slate-300":""}`}>
+                                {opt.text}
+                                {sf && (
+                                  <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded border ${TYPE_COLORS[opt.type]||""}`}>{opt.type}</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {!briefDone
+                    ? <div className="mt-4 pt-4 border-t border-slate-100">
+                        <button onClick={()=>{
+                          setBD(true);
+                          playSound(bScore>=6?'success':bScore>=3?'neutral':'fail');
+                        }} disabled={!Object.values(briefChoices).every(Boolean)}
+                          className={`w-full py-2.5 rounded-md text-sm font-semibold transition-colors ${Object.values(briefChoices).every(Boolean)?"bg-blue-600 text-white hover:bg-blue-700":"bg-slate-100 text-slate-400 cursor-not-allowed"}`}>
+                          Délivrer le Brief
+                        </button>
+                      </div>
+                    : <FeedbackBox
+                        title="Résultat du brief"
+                        caImpact={bScore>=6?0:bScore>=3?-2:-4}
+                        desc={bScore>=6?"Brief percutant. Théo a un objectif précis et du sens dans sa mission.":bScore>=3?"Brief moyen. Théo rate des opportunités par manque de guidage.":"Brief insuffisant. Théo est en mode présence passive."}>
+                        <button onClick={()=>goStep(7)} className="mt-2 w-full py-2.5 rounded-md text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                          Consulter le bilan <Target size={15}/>
+                        </button>
+                      </FeedbackBox>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>

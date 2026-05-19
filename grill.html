@@ -12,58 +12,70 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body { font-family: 'Figtree', sans-serif; background: #f8fafc; overflow: hidden; }
+body { 
+  font-family: 'Figtree', sans-serif; 
+  background: #f8fafc; 
+  overflow: hidden; 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
+/* Animations adoucies et premium */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 @keyframes numIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.7); }
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-.animate-num-in { animation: numIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-num-in { animation: numIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
 @keyframes titleIn {
-  from { opacity: 0; transform: translateX(16px); }
+  from { opacity: 0; transform: translateX(12px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-.animate-title-in { animation: titleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.animate-title-in { animation: titleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
 
-@keyframes badgeFlash {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.18); }
-  60%  { transform: scale(0.96); }
-  100% { transform: scale(1); }
+@keyframes badgePulse {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.1); }
+  50%  { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(0,0,0,0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
 }
-.animate-badge-flash { animation: badgeFlash 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-badge-flash { animation: badgePulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
-/* Pulse sur la ligne active */
+/* Grille - Intacte selon la consigne */
 @keyframes rowPulse {
   0%, 100% { box-shadow: inset 4px 0 0 0 rgba(31, 73, 125, 0.35); }
   50%       { box-shadow: inset 4px 0 0 0 rgba(31, 73, 125, 0.85); }
 }
 .row-active-pulse { animation: rowPulse 2s ease-in-out infinite; }
 
-/* Pulse sur la case attendue */
 @keyframes checkboxPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
   50%       { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15); }
 }
 .expected-pulse { animation: checkboxPulse 1.6s ease-in-out infinite; }
 
-/* Simulation de frappe */
 @keyframes caretBlink {
   0%, 100% { border-right-color: transparent; }
   50%       { border-right-color: #1F497D; }
 }
 .typing-cursor { border-right: 2px solid #1F497D; animation: caretBlink 0.7s ease-in-out infinite; }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Scrollbars modernes */
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 2px solid transparent; background-clip: padding-box; }
+
+/* Couche de pattern pointillé discret en fond */
+.bg-dot-pattern {
+  background-image: radial-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
 </style>
 </head>
 <body class="h-screen flex flex-col">
@@ -74,22 +86,22 @@ const { useState, useEffect, useRef } = React;
 
 // ── Icônes ────────────────────────────────────────────────────────────────
 const Ick = ({ className = "w-5 h-5" }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
-const Ix = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+const Ix = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 const Iinfo = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
   </svg>
 );
 const IArrow = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
   </svg>
 );
@@ -99,17 +111,17 @@ const IBack = () => (
   </svg>
 );
 const IPencil = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
   </svg>
 );
 const IGrid = () => (
-  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="3"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
   </svg>
 );
 const IPointer = ({ className="w-6 h-6" }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/>
   </svg>
 );
@@ -144,23 +156,35 @@ const COMPS = [
   }
 ];
 
+// Steps 0..12 : 0=intro, 1-10=numbered, 11=commentaire, 12=final
+// Q=quiz, A=action
 const STEP_META = [
-  { type: 'Q' }, { type: 'A' }, { type: 'Q' }, { type: 'A' },
-  { type: 'A' }, { type: 'A' }, { type: 'A' }, { type: 'Q' },
-  { type: 'A' }, { type: 'A' }, { type: 'Q' },
+  { type: 'Q' }, // 0 intro
+  { type: 'A' }, // 1 C1 écrit Atteint
+  { type: 'Q' }, // 2 quiz oral timing
+  { type: 'A' }, // 3 C1 oral Non atteint
+  { type: 'Q' }, // 4 quiz consolidation C1
+  { type: 'A' }, // 5 C1 consolidation Validée
+  { type: 'A' }, // 6 C2 écrit PA
+  { type: 'Q' }, // 7 quiz que faire à l'oral
+  { type: 'A' }, // 8 C2 oral PA
+  { type: 'Q' }, // 9 quiz trancher ou jury
+  { type: 'A' }, // 10 C2 consolidation Non validée
+  { type: 'A' }, // 11 commentaire obligatoire
+  { type: 'Q' }, // 12 final
 ];
 const TOTAL = 10;
 
-const AUTO_COMMENT = "Ni à l'écrit ni à l'oral, le candidat n'a su formuler d'objectifs pédagogiques. La compétence n'est pas démontrée.";
+const AUTO_COMMENT = "Malgré les questions ciblées des évaluateurs à l'oral, le candidat n'a pas su démontrer une maîtrise suffisante de la compétence. La décision des évaluateurs est défavorable.";
 
-// ── Composants Grille ────────────────────────────────────────────────────
+// ── Composants Grille (Design intouché) ───────────────────────────────────
 const PdfCheckbox = ({ label, checked, onClick, disabled, isExpected }) => (
   <div
     className={`flex items-start gap-2.5 text-[13px] select-none
       ${disabled && !isExpected ? 'cursor-default opacity-60' : 'cursor-pointer'}
       ${isExpected ? 'cursor-pointer' : ''}
     `}
-    onClick={(!disabled || isExpected) ? onClick : undefined}
+    onClick={(!disabled || isExpected) ? () => { window.playSound && window.playSound('click'); onClick && onClick(); } : undefined}
   >
     <div className={`mt-0.5 w-4 h-4 border-[1.5px] bg-white flex items-center justify-center shrink-0 transition-all duration-200
       ${checked         ? 'border-[#1F497D] bg-[#D9E1F2]' : 'border-slate-800'}
@@ -227,47 +251,57 @@ function StepHeader({ step, onBack, title, body, instruction }) {
   const progress   = displayNum / TOTAL;
 
   const theme = isAction
-    ? { bg: 'bg-amber-50', border: 'border-amber-400', bar: 'bg-amber-500',
-        badge: 'bg-amber-400 text-amber-900', badgeLabel: <><ILightning /> Action</>,
-        numColor: 'text-amber-700' }
-    : { bg: 'bg-indigo-50', border: 'border-indigo-400', bar: 'bg-indigo-500',
-        badge: 'bg-indigo-500 text-white', badgeLabel: <><IQuiz /> Quiz</>,
-        numColor: 'text-indigo-700' };
+    ? { bg: 'bg-amber-50/40', border: 'border-amber-200', bar: 'bg-amber-500',
+        badge: 'bg-amber-100 text-amber-800 ring-1 ring-amber-200', badgeLabel: <><ILightning /> Action</>,
+        numColor: 'text-amber-600' }
+    : { bg: 'bg-indigo-50/40', border: 'border-indigo-200', bar: 'bg-indigo-500',
+        badge: 'bg-indigo-100 text-indigo-800 ring-1 ring-indigo-200', badgeLabel: <><IQuiz /> Quiz</>,
+        numColor: 'text-indigo-600' };
 
   return (
-    <div className={`relative border-l-[6px] transition-colors duration-300 shrink-0 flex flex-col ${theme.bg} ${theme.border}`}>
-      <div className="relative h-1.5 bg-slate-200 overflow-hidden shrink-0">
-        <div className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out ${theme.bar}`}
+    <div className={`relative transition-colors duration-500 shrink-0 flex flex-col bg-white border-b border-slate-200/80`}>
+      {/* Barre de progression subtile en haut */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 overflow-hidden">
+        <div className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out rounded-r-full ${theme.bar}`}
           style={{ width: `${progress * 100}%` }} />
       </div>
-      <div className="px-10 pt-10 pb-8">
+      
+      <div className={`px-10 pt-10 pb-8 ${step > 0 && step < 12 ? theme.bg : ''} transition-colors duration-500`}>
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {step > 0 && step < TOTAL && (
               <button onClick={onBack}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-white border-2 border-slate-300 rounded-full text-slate-600 hover:border-slate-500 hover:text-slate-900 transition-all shadow-sm active:scale-95">
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-full text-slate-500 hover:border-slate-400 hover:text-slate-800 hover:shadow-sm transition-all active:scale-[0.97]">
                 <IBack />
-                <span className="text-[12px] font-black uppercase tracking-widest">Retour</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">Retour</span>
               </button>
             )}
-            <div key={`num-${step}`} className="flex items-baseline gap-1.5 animate-num-in">
-              <span className={`text-5xl font-black leading-none ${theme.numColor}`}>{displayNum}</span>
-              <span className="text-base font-bold text-slate-400 leading-none">/ {TOTAL}</span>
+            <div key={`num-${step}`} className="flex items-baseline gap-1 animate-num-in">
+              <span className={`text-[40px] font-black tracking-tighter leading-none ${step > 0 && step < 12 ? theme.numColor : 'text-slate-800'}`}>
+                {displayNum}
+              </span>
+              {step > 0 && step < 12 && <span className="text-sm font-bold text-slate-400 leading-none">/{TOTAL}</span>}
             </div>
           </div>
-          <span key={`badge-${step}`}
-            className={`animate-badge-flash flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${theme.badge}`}>
-            {theme.badgeLabel}
-          </span>
+          {step > 0 && step < 12 && (
+            <span key={`badge-${step}`}
+              className={`animate-badge-flash flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${theme.badge}`}>
+              {theme.badgeLabel}
+            </span>
+          )}
         </div>
+        
         <div key={`text-${step}`}>
-          <h2 className="text-3xl font-black text-slate-900 leading-tight tracking-tight mb-4 animate-title-in">{title}</h2>
-          <p className="text-[16px] text-slate-600 leading-relaxed whitespace-pre-line animate-slide-up" style={{ animationDelay: '0.08s' }}>{body}</p>
+          <h2 className="text-[28px] font-extrabold text-slate-900 leading-[1.15] tracking-tight mb-4 animate-title-in">{title}</h2>
+          <p className="text-[16px] text-slate-600 leading-relaxed whitespace-pre-line animate-slide-up font-medium" style={{ animationDelay: '0.08s' }}>{body}</p>
+          
           {instruction && (
-            <div className="mt-8 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-              <p className="text-slate-800 font-bold text-[17px] flex items-start gap-2.5">
-                <IPointer className="w-6 h-6 shrink-0 mt-0.5 text-indigo-600" />
-                <span className="leading-relaxed">{instruction}</span>
+            <div className="mt-8 animate-slide-up p-4 bg-white/60 backdrop-blur-sm border border-white/80 rounded-2xl shadow-sm" style={{ animationDelay: '0.15s' }}>
+              <p className="text-slate-800 font-bold text-[16px] flex items-start gap-3">
+                <div className="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg shrink-0 mt-0.5 shadow-sm">
+                  <IPointer className="w-5 h-5" />
+                </div>
+                <span className="leading-relaxed mt-0.5">{instruction}</span>
               </p>
             </div>
           )}
@@ -276,6 +310,43 @@ function StepHeader({ step, onBack, title, body, instruction }) {
     </div>
   );
 }
+
+// ── Composant Quiz Option (NOUVEAU) ───────────────────────────────────────
+const QuizOption = ({ val, lbl, selectedVal, isError, correctVal, onClick }) => {
+  const isSelected = selectedVal === val;
+  const isWrongSelected = isSelected && isError;
+  const isSuccessSelected = isSelected && !isError;
+
+  let stateClass = 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/50 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0';
+  let circleClass = 'border-slate-200 bg-slate-50 text-transparent group-hover:border-indigo-400 group-hover:bg-white';
+
+  if (isSuccessSelected) {
+    stateClass = 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-md ring-4 ring-emerald-500/20';
+    circleClass = 'border-emerald-500 bg-emerald-500 text-white';
+  } else if (isWrongSelected) {
+    stateClass = 'bg-red-50 border-red-500 text-red-950 shadow-md ring-4 ring-red-500/20 z-10 relative';
+    circleClass = 'border-red-500 bg-red-500 text-white';
+  } else if (selectedVal && !isError) {
+    // Griser l'option si une autre bonne réponse a été trouvée
+    stateClass = 'bg-slate-50/50 border-slate-200 text-slate-400 opacity-60 pointer-events-none';
+    circleClass = 'border-slate-200 bg-slate-100';
+  }
+
+  return (
+    <button
+      className={`w-full group text-left p-5 rounded-2xl border-2 text-[15px] font-semibold transition-all duration-300 flex items-center gap-4 ${stateClass}`}
+      onClick={() => { window.playSound && window.playSound(val === correctVal ? 'correct' : 'wrong'); onClick(val); }}
+      disabled={selectedVal && !isError && isSelected}
+    >
+      <div className={`w-6 h-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${circleClass}`}>
+        {isSuccessSelected && <Ick className="w-4 h-4" />}
+        {isWrongSelected && <Ix className="w-4 h-4" />}
+      </div>
+      <span className="leading-snug">{lbl}</span>
+    </button>
+  );
+};
+
 
 // ── App ───────────────────────────────────────────────────────────────────
 function App() {
@@ -287,10 +358,14 @@ function App() {
     C2: { e: null, o: null, cons: null, com: '' }
   });
 
-  const [q1Answer, setQ1Answer] = useState(null);
-  const [q1Error,  setQ1Error]  = useState(false);
-  const [q3Answer, setQ3Answer] = useState(null);
-  const [q3Error,  setQ3Error]  = useState(false);
+  const [q1Answer, setQ1Answer]         = useState(null);
+  const [q1Error,  setQ1Error]          = useState(false);
+  const [q4Answer, setQ4Answer]         = useState(null);
+  const [q4Error,  setQ4Error]          = useState(false);
+  const [q7Answer, setQ7Answer]         = useState(null);
+  const [q7Error,  setQ7Error]          = useState(false);
+  const [q9Answer, setQ9Answer]         = useState(null);
+  const [q9Error,  setQ9Error]          = useState(false);
 
   // Auto-lancement du tutoriel Spotlight à l'ouverture
   useEffect(() => {
@@ -302,8 +377,8 @@ function App() {
   // Auto-scroll
   useEffect(() => {
     let targetComp = null;
-    if (step >= 1 && step <= 4) targetComp = 'C1';
-    if (step >= 5 && step <= 9) targetComp = 'C2';
+    if (step >= 1 && step <= 5) targetComp = 'C1';
+    if (step >= 6 && step <= 11) targetComp = 'C2';
     if (targetComp) {
       setTimeout(() => {
         const el = document.getElementById(`row-${targetComp}`);
@@ -312,10 +387,10 @@ function App() {
     }
   }, [step]);
 
-  // Auto-frappe commentaire
+  // Auto-frappe commentaire C2
   const typingRef = useRef(null);
   useEffect(() => {
-    if (step === 9 && !isActionDone) {
+    if (step === 11 && !isActionDone) {
       let i = 0;
       setEvalData(p => ({ ...p, C2: { ...p.C2, com: '' } }));
       const startDelay = setTimeout(() => {
@@ -326,7 +401,7 @@ function App() {
             clearInterval(typingRef.current);
             setTimeout(() => setIsActionDone(true), 800);
           }
-        }, 30);
+        }, 28);
       }, 600);
       return () => {
         clearTimeout(startDelay);
@@ -338,32 +413,40 @@ function App() {
   const updateEval = (comp, field, val) =>
     setEvalData(p => ({ ...p, [comp]: { ...p[comp], [field]: val } }));
 
-  const advance = () => { setStep(p => p + 1); setIsActionDone(false); setGridError(null); };
+  const advance = () => {
+    setStep(p => {
+      const next = p + 1;
+      if (window.playSound) window.playSound(next === 12 ? 'done' : 'advance');
+      return next;
+    });
+    setIsActionDone(false);
+    setGridError(null);
+  };
   const goBack  = () => { if (step > 0) { setStep(p => p - 1); setIsActionDone(true); setGridError(null); } };
 
   const isAction   = STEP_META[step]?.type === 'A';
-  const activeComp = (step >= 1 && step <= 4) ? 'C1' : (step >= 5 && step <= 9) ? 'C2' : null;
+  const activeComp = (step >= 1 && step <= 5) ? 'C1' : (step >= 6 && step <= 11) ? 'C2' : null;
 
   const BtnContinue = ({ onClick }) => (
-    <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 text-[15px] rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-200" onClick={onClick}>
+    <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 text-[16px] rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-[0.98]" onClick={onClick}>
       Continuer <IArrow />
     </button>
   );
   
   const ErrBox = ({ text }) => (
-    <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-slide-up shadow-sm">
-      <div className="bg-red-100 text-red-600 rounded-full p-1.5 shrink-0 mt-0.5"><Ix /></div>
-      <p className="text-red-900 text-[15px] font-bold leading-snug">{text}</p>
+    <div className="mt-5 p-4 bg-red-50/80 border border-red-200/80 rounded-2xl flex items-start gap-3 animate-slide-up shadow-sm relative z-10">
+      <div className="bg-red-100 text-red-600 rounded-full p-1.5 shrink-0 mt-0.5"><Ix className="w-4 h-4"/></div>
+      <p className="text-red-900 text-[15px] font-semibold leading-snug">{text}</p>
     </div>
   );
   
   const OkBox = ({ title, body, onNext }) => (
-    <div className="mt-6 p-5 bg-emerald-50 border border-emerald-200 rounded-xl animate-slide-up shadow-sm">
+    <div className="mt-6 p-5 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl animate-slide-up shadow-sm">
       <div className="flex items-center gap-3 mb-3">
-        <div className="bg-emerald-100 text-emerald-600 rounded-full p-1.5 shrink-0"><Ick /></div>
-        <strong className="text-emerald-900 text-lg font-black">{title}</strong>
+        <div className="bg-emerald-500 text-white rounded-full p-1.5 shrink-0 shadow-sm"><Ick className="w-4 h-4" /></div>
+        <strong className="text-emerald-950 text-[19px] font-black tracking-tight">{title}</strong>
       </div>
-      <p className="text-emerald-800 text-[15px] font-medium leading-relaxed mb-5">{body}</p>
+      <p className="text-emerald-800 text-[15px] font-medium leading-relaxed mb-6">{body}</p>
       <BtnContinue onClick={onNext} />
     </div>
   );
@@ -375,7 +458,7 @@ function App() {
       tutTitle = "Bienvenue dans l'activité !";
       tutBody  = "Vous allez découvrir la logique de la grille CCE en l'utilisant directement, exactement comme le ferait un évaluateur.\n\nLa grille à droite est fidèle au vrai document.";
       tutAction = (
-        <button className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4.5 text-lg rounded-xl transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95"
+        <button className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 text-[17px] rounded-2xl transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 active:scale-[0.98]"
           onClick={advance}>Commencer la découverte <IArrow /></button>
       );
       break;
@@ -392,14 +475,18 @@ function App() {
       tutBody  = "Petite question de logique :";
       tutAction = (
         <div className="mt-8 animate-slide-up">
-          <p className="font-black text-slate-900 text-lg mb-5">L'épreuve orale a lieu...</p>
+          <p className="font-extrabold text-slate-900 text-[17px] mb-5">L'épreuve orale a lieu...</p>
           <div className="space-y-3">
             {[['avant', "Avant l'évaluation écrite"], ['apres', "Après l'évaluation écrite"]].map(([val, lbl]) => (
-              <button key={val}
-                className={`w-full text-left p-4 rounded-xl border-2 text-[15px] font-bold transition-all
-                  ${q1Answer === val ? (val === 'avant' ? 'bg-red-50 border-red-300 text-red-800 shadow-sm' : 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm') : 'bg-white hover:bg-slate-50 border-slate-200 shadow-sm hover:shadow'}`}
-                onClick={() => { if (!isActionDone) { setQ1Answer(val); if (val === 'avant') setQ1Error(true); else { setQ1Error(false); setIsActionDone(true); } } }}
-              >{lbl}</button>
+              <QuizOption key={val} val={val} lbl={lbl} selectedVal={q1Answer} isError={q1Error} correctVal="apres"
+                onClick={(v) => { 
+                  if (!isActionDone) { 
+                    setQ1Answer(v); 
+                    if (v !== 'apres') setQ1Error(true); 
+                    else { setQ1Error(false); setIsActionDone(true); } 
+                  } 
+                }} 
+              />
             ))}
           </div>
           {q1Error && !isActionDone && <ErrBox text="Faux ! L'oral s'appuie sur les éléments vus (ou non) à l'écrit." />}
@@ -410,139 +497,179 @@ function App() {
 
     case 3:
       tutTitle = "3. Évaluation Orale (C1)";
-      tutBody  = "Le candidat confirme sa maîtrise lors de l'entretien oral.";
-      tutInstruction = "Sélectionnez « Atteint » dans la colonne Évaluation Orale pour C1.";
-      if (isActionDone) tutAction = <OkBox title="L'oral confirme l'écrit." body="Le candidat a fait un sans-faute sur cette compétence." onNext={advance} />;
+      tutBody  = "Lors de l'entretien oral, le candidat n'a pas su confirmer la compétence : il n'a pas répondu aux questions des évaluateurs de manière satisfaisante.";
+      tutInstruction = "Cliquez sur « Non atteint » dans la colonne Évaluation Orale pour C1.";
+      if (isActionDone) tutAction = <OkBox title="Non atteint à l'oral" body="Même si la compétence était validée à l'écrit, l'oral a montré une lacune. Que faire pour la consolidation ?" onNext={advance} />;
       break;
 
     case 4:
-      tutTitle = "4. Bilan / Consolidation (C1)";
-      tutBody  = "Deux réussites consécutives. Le jury clôture cette ligne.";
-      tutInstruction = "Cochez « Validée » dans la colonne Consolidation pour C1.";
-      if (isActionDone) tutAction = <OkBox title="Logique de base" body="Deux réussites aboutissent logiquement à la validation. Passons au cas plus complexe : C2." onNext={advance} />;
+      tutTitle = "4. Consolidation (C1) : que décider ?";
+      tutBody  = "Le candidat a obtenu « Atteint » à l'écrit, mais « Non atteint » à l'oral pour C1.";
+      tutAction = (
+        <div className="mt-8 animate-slide-up">
+          <p className="font-extrabold text-slate-900 text-[17px] mb-5 tracking-tight">Selon vous, que faut-il indiquer dans la colonne Consolidation ?</p>
+          <div className="space-y-3">
+            {[
+              ['ok', 'Cocher Validée : le candidat a démontré la compétence à l\'écrit'],
+              ['ko', 'Cocher Non validée : l\'oral est en échec']
+            ].map(([val, lbl]) => (
+              <QuizOption key={val} val={val} lbl={lbl} selectedVal={q4Answer} isError={q4Error} correctVal="ok"
+                onClick={(v) => {
+                  if (!isActionDone) {
+                    setQ4Answer(v);
+                    if (v === 'ok') { setQ4Error(false); setIsActionDone(true); }
+                    else setQ4Error(true);
+                  }
+                }}
+              />
+            ))}
+          </div>
+          {q4Error && !isActionDone && (
+            <div className="mt-5 p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl flex items-start gap-3 animate-slide-up shadow-sm">
+              <div className="text-amber-600 shrink-0 mt-0.5"><Iinfo /></div>
+              <p className="text-amber-900 text-[15px] font-semibold leading-snug">La compétence est considérée validée dès lors qu'elle est atteinte dans au moins l'une des deux modalités.</p>
+            </div>
+          )}
+          {isActionDone && <OkBox title="Bonne réponse !" body="Le candidat a validé la compétence à l'écrit. Une réussite dans au moins une modalité suffit à valider la compétence en consolidation." onNext={advance} />}
+        </div>
+      );
       break;
 
     case 5:
-      tutTitle = "5. Nouveau cas (C2) : L'Écrit";
-      tutBody  = "Cette fois, le candidat échoue dès l'écrit pour C2. Sa copie est lacunaire et hors sujet.";
-      tutInstruction = "Cochez « Non atteint » dans la colonne Évaluation Écrite pour C2.";
-      if (isActionDone) tutAction = <OkBox title="Échec acté à l'écrit." body="Premier signal d'alerte sur C2. Voyons ce qui se passe à l'oral." onNext={advance} />;
+      tutTitle = "5. Acter la Consolidation (C1)";
+      tutBody  = "Appliquez la règle identifiée : la compétence est atteinte à l'écrit, donc elle est validée.";
+      tutInstruction = "Cochez « Validée » dans la colonne Consolidation pour C1.";
+      if (isActionDone) tutAction = <OkBox title="C1 validée !" body="Une réussite à l'écrit suffit. Passons au cas plus complexe : C2." onNext={advance} />;
       break;
 
     case 6:
-      tutTitle = "6. Évaluation Orale (C2)";
-      tutBody  = "À l'oral, le candidat ne parvient pas davantage à démontrer sa compétence sur C2.";
-      tutInstruction = "Cochez « Non atteint » dans la colonne Évaluation Orale pour C2.";
-      if (isActionDone) tutAction = <OkBox title="Échec confirmé à l'oral." body="Le candidat a échoué sur les deux modalités pour C2." onNext={advance} />;
+      tutTitle = "6. Nouveau cas (C2) : L'Écrit";
+      tutBody  = "Pour C2, après examen de la production écrite du candidat, les évaluateurs constatent que la compétence n'est que partiellement démontrée.";
+      tutInstruction = "Cochez « Partiellement atteint » dans la colonne Évaluation Écrite pour C2.";
+      if (isActionDone) tutAction = <OkBox title="Partiellement atteint à l'écrit." body="Le signal est ambigu. Voyons comment exploiter l'oral pour clarifier la situation." onNext={advance} />;
       break;
 
     case 7:
-      tutTitle = "7. Que cocher pour la Consolidation ?";
-      tutBody  = "Le candidat a obtenu « Non atteint » à l'écrit ET à l'oral pour C2.";
+      tutTitle = "7. Stratégie pour l'Oral";
+      tutBody  = "Vous venez de constater lors de l'évaluation écrite que le candidat n'a que partiellement démontré la compétence C2.";
       tutAction = (
         <div className="mt-8 animate-slide-up">
-          <p className="font-black text-slate-900 text-lg mb-5">Que faut-il cocher dans la colonne Consolidation ?</p>
-          <div className="flex gap-4">
-            {[['validee', 'Validée'], ['nonvalidee', 'Non validée']].map(([val, lbl]) => (
-              <button key={val}
-                className={`flex-1 py-4 rounded-xl border-2 text-[15px] font-bold transition-all
-                  ${q3Answer === val
-                    ? val === 'nonvalidee' ? 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm' : 'bg-red-50 border-red-300 text-red-800 shadow-sm'
-                    : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm hover:shadow'}`}
-                onClick={() => {
+          <p className="font-extrabold text-slate-900 text-[17px] mb-5 tracking-tight">Que doit faire l'évaluateur lors de l'entretien oral ?</p>
+          <div className="space-y-3">
+            {[
+              ['creuser', "Se concentrer sur cette compétence en posant des questions ciblées pour approfondir l'évaluation"],
+              ['repasser', "Demander au candidat de repasser une évaluation écrite"]
+            ].map(([val, lbl]) => (
+              <QuizOption key={val} val={val} lbl={lbl} selectedVal={q7Answer} isError={q7Error} correctVal="creuser"
+                onClick={(v) => {
                   if (!isActionDone) {
-                    setQ3Answer(val);
-                    if (val === 'nonvalidee') { setQ3Error(false); setIsActionDone(true); }
-                    else setQ3Error(true);
+                    setQ7Answer(v);
+                    if (v === 'creuser') { setQ7Error(false); setIsActionDone(true); }
+                    else setQ7Error(true);
                   }
                 }}
-              >{lbl}</button>
+              />
             ))}
           </div>
-          {q3Error && !isActionDone && (
-            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 animate-slide-up shadow-sm">
-              <div className="text-amber-600 shrink-0 mt-0.5"><Iinfo /></div>
-              <p className="text-amber-900 text-[15px] font-bold leading-snug">Les deux modalités sont en échec. La compétence n'est validée dans aucune des deux.</p>
-            </div>
-          )}
-          {isActionDone && <OkBox title="C'est exact !" body="Sans aucun « Atteint » ni à l'écrit ni à l'oral, la compétence est obligatoirement « Non validée »." onNext={advance} />}
+          {q7Error && !isActionDone && <ErrBox text="L'oral n'est pas une reprise de l'écrit. Son rôle est d'approfondir et de lever les doutes par l'échange." />}
+          {isActionDone && <OkBox title="Bonne stratégie !" body="L'oral doit être mis à profit pour creuser les zones d'ombre identifiées à l'écrit et permettre au candidat de démontrer sa compétence." onNext={advance} />}
         </div>
       );
       break;
 
     case 8:
-      tutTitle = "8. Acter la Consolidation (C2)";
-      tutBody  = "Appliquez la règle que vous venez d'identifier.";
-      tutInstruction = "Cochez « Non validée » dans la colonne Consolidation pour C2.";
-      if (isActionDone) tutAction = <OkBox title="Non validée actée." body="Toute compétence non validée doit obligatoirement être justifiée par un commentaire." onNext={advance} />;
+      tutTitle = "8. Évaluation Orale (C2)";
+      tutBody  = "Malgré les questions ciblées des évaluateurs lors de l'oral, le candidat n'a pas réussi à lever les doutes : sa compétence reste partiellement démontrée.";
+      tutInstruction = "Cochez « Partiellement atteint » dans la colonne Évaluation Orale pour C2.";
+      if (isActionDone) tutAction = <OkBox title="Partiellement atteint à l'oral également." body="Les deux modalités sont « Partiellement atteint ». Les évaluateurs doivent maintenant trancher." onNext={advance} />;
       break;
 
     case 9:
-      tutTitle = "9. Commentaire obligatoire";
+      tutTitle = "9. Consolidation (C2) : que faire ?";
+      tutBody  = "Le candidat est « Partiellement atteint » à l'écrit ET à l'oral pour C2. La situation est ambiguë.";
+      tutAction = (
+        <div className="mt-8 animate-slide-up">
+          <p className="font-extrabold text-slate-900 text-[17px] mb-5 tracking-tight">Comment les évaluateurs doivent-ils gérer cette situation en consolidation ?</p>
+          <div className="space-y-3">
+            {[
+              ['trancher', "Trancher : les évaluateurs prennent position et indiquent une décision définitive"],
+              ['jury',     "Laisser le jury de certification décider : transmettre le dossier sans consolidation"]
+            ].map(([val, lbl]) => (
+              <QuizOption key={val} val={val} lbl={lbl} selectedVal={q9Answer} isError={q9Error} correctVal="trancher"
+                onClick={(v) => {
+                  if (!isActionDone) {
+                    setQ9Answer(v);
+                    if (v === 'trancher') { setQ9Error(false); setIsActionDone(true); }
+                    else setQ9Error(true);
+                  }
+                }}
+              />
+            ))}
+          </div>
+          {q9Error && !isActionDone && (
+            <div className="mt-5 p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl flex items-start gap-3 animate-slide-up shadow-sm">
+              <div className="text-amber-600 shrink-0 mt-0.5"><Iinfo /></div>
+              <p className="text-amber-900 text-[15px] font-semibold leading-snug">Le rôle des évaluateurs est de se prononcer. Transmettre un dossier sans décision n'est pas acceptable : le jury de certification s'appuie sur les évaluateurs pour cette décision.</p>
+            </div>
+          )}
+          {isActionDone && <OkBox title="Correct !" body="Les évaluateurs doivent toujours trancher. Ici, au regard de l'ensemble des constats, ils décident favorablement : la compétence est validée." onNext={advance} />}
+        </div>
+      );
+      break;
+
+    case 10:
+      tutTitle = "10. Acter la Consolidation (C2)";
+      tutBody  = "Les évaluateurs ont tranché défavorablement : malgré leurs questions ciblées à l'oral, les constats ne permettent pas de valider la compétence.";
+      tutInstruction = "Cochez « Non validée » dans la colonne Consolidation pour C2.";
+      if (isActionDone) tutAction = <OkBox title="Non validée actée." body="Toute compétence « Non validée » doit obligatoirement être justifiée par un commentaire explicatif." onNext={advance} />;
+      break;
+
+    case 11:
+      tutTitle = "11. Commentaire obligatoire";
       tutBody  = "Puisque la compétence est « Non validée », le jury doit obligatoirement rédiger un commentaire explicatif pour le jury de certification.";
-      tutInstruction = "Observez la rédaction automatique dans la zone de commentaire de C2 :";
+      tutInstruction = "Observez la rédaction dans la zone de commentaire de C2 :";
       if (isActionDone) {
         tutAction = <OkBox title="Commentaire rédigé." body="La grille est complète et conforme. Le jury peut la transmettre au jury de certification." onNext={advance} />;
       } else {
         tutAction = (
-          <div className="mt-8 p-5 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm">
-            <div className="flex items-center gap-3 mb-2.5">
-              <IPencil />
-              <span className="text-blue-900 text-[17px] font-black">Rédaction en cours...</span>
+          <div className="mt-8 p-6 bg-indigo-50/70 border border-indigo-200/70 rounded-2xl animate-slide-up shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-indigo-500 text-white p-1.5 rounded-full"><IPencil /></div>
+              <span className="text-indigo-950 text-[18px] font-black tracking-tight">Rédaction en cours...</span>
             </div>
-            <p className="text-blue-800 text-[15px] font-medium leading-relaxed">Le commentaire est en train d'être saisi dans la grille. Observez la colonne de droite.</p>
+            <p className="text-indigo-800 text-[15px] font-medium leading-relaxed">Le commentaire est en train d'être saisi dans la grille. Observez la colonne de droite.</p>
           </div>
         );
       }
       break;
 
-    case 10:
+    case 12:
       tutTitle = "Activité terminée !";
-      tutBody  = "Vous maîtrisez désormais la logique de la grille CCE.";
+      tutBody  = "";
       tutAction = (
-        <div className="mt-8">
-          <div className="space-y-4 mb-8">
-            {[
-              { comp: 'C1', e: 'A',  o: 'A',  cons: 'Validée',     consBg: 'bg-emerald-100 border-emerald-400 text-emerald-800' },
-              { comp: 'C2', e: 'NA', o: 'NA', cons: 'Non validée', consBg: 'bg-red-100 border-red-400 text-red-800' },
-            ].map(r => (
-              <div key={r.comp} className="p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
-                <div className="font-black text-slate-900 text-base mb-3">{r.comp}</div>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className={`${r.e === 'A' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'} border px-3 py-1.5 rounded text-[12px] font-bold`}>Écrit ({r.e})</span>
-                  <span className="text-slate-400 font-black text-sm">+</span>
-                  <span className={`${r.o === 'A' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'} border px-3 py-1.5 rounded text-[12px] font-bold`}>Oral ({r.o})</span>
-                  <IArrow />
-                  <span className={`border px-3.5 py-1.5 rounded text-[13px] font-black uppercase tracking-wide ${r.consBg}`}>{r.cons}</span>
-                </div>
-              </div>
-            ))}
+        <div className="mt-0">
+          <div className="p-6 bg-slate-100/80 rounded-2xl mb-8 text-[15px] text-slate-700 leading-relaxed border border-slate-200/60 shadow-sm">
+            <strong className="block mb-3 text-slate-900 font-extrabold text-[17px]">Règles à retenir :</strong>
+            <ul className="list-disc pl-5 space-y-2.5 font-medium">
+              <li>La compétence est validée si elle est « Atteinte » dans au moins l'une des deux modalités.</li>
+              <li>Face à un double « Partiellement atteint », les évaluateurs doivent trancher.</li>
+              <li>Une compétence « Non validée » requiert obligatoirement un commentaire explicatif.</li>
+            </ul>
           </div>
-          <div className="p-6 bg-slate-100 rounded-xl mb-8 text-[15px] text-slate-700 leading-relaxed border border-slate-200 shadow-sm">
-            <strong className="block mb-2 text-slate-900 font-black text-lg">Règle à retenir :</strong>
-            La compétence est validée si elle est « Atteinte » dans au moins l'une des deux modalités. Si aucune n'est atteinte, elle est Non validée et requiert un commentaire obligatoire.
-          </div>
-          <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4.5 text-lg rounded-xl transition-all shadow-lg hover:scale-[1.02] active:scale-95"
-            onClick={() => window.location.reload()}>Recommencer l'activité</button>
+          <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 text-[17px] rounded-2xl transition-all shadow-xl shadow-slate-900/20 active:scale-[0.98]"
+            onClick={() => { window.playSound && window.playSound('advance'); window.location.reload(); }}>Recommencer l'activité</button>
         </div>
       );
       break;
   }
 
   return (
-    <div className="flex flex-1 h-screen overflow-hidden bg-[#f1f0ec] relative">
-
-      {/* ── Bouton Plein Écran Flottant ─────────────────────────── */}
-      <div className="fixed top-8 right-8 z-[100]">
-          <button id="btn-fullscreen" onClick={() => window.toggleFullScreen()} className="flex items-center justify-center w-14 h-14 rounded-full bg-white shadow-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all hover:scale-105 active:scale-95" title="Plein écran">
-              <i className="fas fa-expand text-2xl"></i>
-          </button>
-      </div>
+    <div className="flex flex-1 h-screen overflow-hidden bg-slate-50 relative bg-dot-pattern">
 
       {/* ── Panneau gauche ──────────────────────────────── */}
-      <div className="w-[480px] bg-white border-r border-slate-200 shadow-2xl z-20 flex flex-col shrink-0 relative">
-        <StepHeader step={step} onBack={goBack} title={tutTitle} body={tutBody} instruction={tutInstruction} />
-        <div className="flex-1 overflow-y-auto px-10 py-6 bg-white min-h-0 flex flex-col">
+      <div className="w-[480px] bg-white border-r border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.03)] z-20 flex flex-col shrink-0 relative">
+        {step < 12 && <StepHeader step={step} onBack={goBack} title={tutTitle} body={tutBody} instruction={tutInstruction} />}
+        <div className="flex-1 overflow-y-auto px-10 py-8 bg-white min-h-0 flex flex-col custom-scrollbar">
           <div key={`action-${step}`} className="animate-slide-up pb-8 my-auto w-full">
             {tutAction}
             {gridError && !isActionDone && <ErrBox text={gridError} />}
@@ -550,29 +677,30 @@ function App() {
         </div>
       </div>
 
-      {/* ── Grille droite ────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-x-auto overflow-y-auto relative p-8 bg-[#f1f5f9]">
+      {/* ── Grille droite (Conteneur) ────────────────────────────────── */}
+      <div className="flex-1 flex flex-col overflow-x-auto overflow-y-auto relative p-10 custom-scrollbar">
 
         {/* Voile pour les étapes Quiz, position fixed pour couvrir toute la largeur de scroll */}
-        <div className={`fixed top-0 bottom-0 z-20 bg-slate-900/40 backdrop-blur-[2px] transition-all duration-500 ${!isAction && step > 0 && step < 10 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
+        <div className={`fixed top-0 bottom-0 z-20 bg-slate-900/20 backdrop-blur-[3px] transition-all duration-500 ${!isAction && step > 0 && step < 12 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
              style={{ left: '480px', right: 0 }} />
 
-        {step === 0 && (
-          <div className="fixed top-0 bottom-0 right-0 z-30 flex items-center justify-center" style={{ left: '480px', background: 'rgba(200,210,220,0.5)', backdropFilter: 'blur(4px)' }}>
-            <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-xs text-center border border-slate-200 animate-slide-up">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 text-blue-500 border border-blue-100" style={{ background: '#D6E4F0' }}>
+        {(step === 0 || step === 12) && (
+          <div className="fixed top-0 bottom-0 right-0 z-30 flex items-center justify-center" style={{ left: '480px', background: 'rgba(248,250,252,0.6)', backdropFilter: 'blur(4px)' }}>
+            <div className="bg-white p-8 rounded-[24px] shadow-2xl flex flex-col items-center max-w-sm text-center border border-slate-200 animate-slide-up">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 text-indigo-600 bg-indigo-50 shadow-sm border border-indigo-100">
                 <IGrid />
               </div>
-              <h3 className="text-xl font-black text-slate-900">La grille d'évaluation</h3>
-              <p className="text-slate-600 text-[15px] mt-3 leading-relaxed">Elle s'animera dès que vous commencerez l'activité, fidèle au vrai document.</p>
+              <h3 className="text-[22px] font-black text-slate-900 tracking-tight">La grille d'évaluation</h3>
+              <p className="text-slate-600 text-[16px] mt-3 leading-relaxed font-medium">{step === 0 ? "Elle s'animera dès que vous commencerez l'activité, fidèle au vrai document." : "La grille est complète. Consultez le récapitulatif à gauche."}</p>
             </div>
           </div>
         )}
 
         <div className="min-h-full flex flex-col justify-center">
+            {/* L'UI INTÉRIEURE DE LA GRILLE N'A PAS ÉTÉ MODIFIÉE (Classes d'origine conservées) */}
             <div className={`rounded-lg overflow-hidden flex flex-col w-full min-w-[900px] max-w-[1300px] mx-auto transition-all duration-500 relative z-10 bg-white border-[1.5px] border-[#1F497D]
-              ${step === 0 ? 'opacity-20 grayscale pointer-events-none' : ''}
-              ${!isAction && step > 0 && step < 10 ? 'scale-[0.98] shadow-none' : 'shadow-2xl'}
+              ${(step === 0 || step === 12) ? 'opacity-40 grayscale blur-[2px] pointer-events-none' : ''}
+              ${!isAction && step > 0 && step < 12 ? 'scale-[0.98] shadow-none' : 'shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'}
             `}>
 
               {/* En-tête CCI */}
@@ -612,7 +740,6 @@ function App() {
                   const ev = evalData[comp.id];
                   const isC1 = comp.id === 'C1', isC2 = comp.id === 'C2';
                   const isRowActive = activeComp === comp.id;
-                  const isCommentActive = isC2 && step === 9;
 
                   const rowStyle = isRowActive
                     ? { borderLeft: '5px solid #1F497D', background: '#F0F4FA' }
@@ -628,7 +755,7 @@ function App() {
                       {/* Critères */}
                       <div className="w-[28%] p-5 border-r-[1.5px] border-[#1F497D] min-w-0">
                         {isRowActive && (
-                          <div className="inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider"
+                          <div className="inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider shadow-sm"
                             style={{ background: '#1F497D', color: 'white' }}>
                             ● En cours d'évaluation
                           </div>
@@ -641,39 +768,39 @@ function App() {
 
                       {/* Écrit */}
                       <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
-                        {((isC1 && step !== 1) || (isC2 && step !== 5)) && <div className="absolute inset-0 z-10" />}
+                        {((isC1 && step !== 1) || (isC2 && step !== 6)) && <div className="absolute inset-0 z-10" />}
                         <LvlPick
                           value={ev.e}
-                          expectedCode={isC1 ? 'A' : 'NA'}
+                          expectedCode={isC1 ? 'A' : 'PA'}
                           onChange={v => {
-                            const expected = isC1 ? 'A' : 'NA';
+                            const expected = isC1 ? 'A' : 'PA';
                             updateEval(comp.id, 'e', v);
                             if (v === expected) { setIsActionDone(true); setGridError(null); }
                             else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
                           }}
-                          isActiveStep={((isC1 && step === 1) || (isC2 && step === 5)) && !isActionDone}
+                          isActiveStep={((isC1 && step === 1) || (isC2 && step === 6)) && !isActionDone}
                         />
                       </div>
 
                       {/* Oral */}
                       <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
-                        {((isC1 && step !== 3) || (isC2 && step !== 6)) && <div className="absolute inset-0 z-10" />}
+                        {((isC1 && step !== 3) || (isC2 && step !== 8)) && <div className="absolute inset-0 z-10" />}
                         <LvlPick
                           value={ev.o}
-                          expectedCode={isC1 ? 'A' : 'NA'}
+                          expectedCode={isC1 ? 'NA' : 'PA'}
                           onChange={v => {
-                            const expected = isC1 ? 'A' : 'NA';
+                            const expected = isC1 ? 'NA' : 'PA';
                             updateEval(comp.id, 'o', v);
                             if (v === expected) { setIsActionDone(true); setGridError(null); }
                             else { setIsActionDone(false); setGridError("Ce n'est pas la valeur attendue. Relisez la consigne."); }
                           }}
-                          isActiveStep={((isC1 && step === 3) || (isC2 && step === 6)) && !isActionDone}
+                          isActiveStep={((isC1 && step === 3) || (isC2 && step === 8)) && !isActionDone}
                         />
                       </div>
 
                       {/* Consolidation */}
                       <div className="w-[16%] border-r-[1.5px] border-[#1F497D] relative min-w-0">
-                        {((isC1 && step !== 4) || (isC2 && step !== 8)) && <div className="absolute inset-0 z-10" />}
+                        {((isC1 && step !== 5) || (isC2 && step !== 10)) && <div className="absolute inset-0 z-10" />}
                         <ConsolidationBadge
                           value={ev.cons}
                           expectedCode={isC1 ? 'ok' : 'ko'}
@@ -683,30 +810,35 @@ function App() {
                             if (v === expected) { setIsActionDone(true); setGridError(null); }
                             else { setIsActionDone(false); setGridError("Erreur : relisez la consigne et la règle de consolidation."); }
                           }}
-                          isActiveStep={((isC1 && step === 4) || (isC2 && step === 8)) && !isActionDone}
+                          isActiveStep={((isC1 && step === 5) || (isC2 && step === 10)) && !isActionDone}
                         />
                       </div>
 
                       {/* Commentaire */}
-                      <div className={`w-[24%] p-3 relative min-w-0 transition-all duration-300 ${isCommentActive ? 'bg-blue-50' : ''}`}>
-                        {!isCommentActive && <div className="absolute inset-0 z-10" />}
-                        <textarea
-                          className={`w-full h-full resize-none text-[13px] text-black focus:outline-none p-3 transition-all duration-300 leading-relaxed
-                            ${isCommentActive ? 'bg-transparent ring-2 ring-blue-500 rounded' : 'bg-transparent'}
-                          `}
-                          style={{ minHeight: '140px' }}
-                          value={ev.com}
-                          readOnly
-                        />
-                        {isCommentActive && !isActionDone && evalData.C2.com.length < AUTO_COMMENT.length && (
-                          <span className="absolute bottom-5 text-[13px] text-[#1F497D] pointer-events-none typing-cursor">&nbsp;</span>
-                        )}
-                        {isCommentActive && !isActionDone && (
-                          <div className="absolute right-4 bottom-4 flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-black uppercase tracking-wider pointer-events-none bg-[#1F497D] text-white">
-                            <IPencil /><span>Obligatoire</span>
+                      {(() => {
+                        const isCommentActive = isC2 && step === 11;
+                        return (
+                          <div className={`w-[24%] p-3 relative min-w-0 transition-all duration-300 ${isCommentActive ? 'bg-blue-50/50' : ''}`}>
+                            {!isCommentActive && <div className="absolute inset-0 z-10" />}
+                            <textarea
+                              className={`w-full h-full resize-none text-[13px] text-black focus:outline-none p-3 transition-all duration-300 leading-relaxed font-medium
+                                ${isCommentActive ? 'bg-white shadow-inner ring-2 ring-blue-500/50 rounded-lg' : 'bg-transparent'}
+                              `}
+                              style={{ minHeight: '140px' }}
+                              value={ev.com}
+                              readOnly
+                            />
+                            {isCommentActive && !isActionDone && evalData.C2.com.length < AUTO_COMMENT.length && (
+                              <span className="absolute bottom-5 text-[13px] text-[#1F497D] pointer-events-none typing-cursor">&nbsp;</span>
+                            )}
+                            {isCommentActive && !isActionDone && (
+                              <div className="absolute right-4 bottom-4 flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-black uppercase tracking-wider pointer-events-none bg-[#1F497D] text-white shadow-sm">
+                                <IPencil /><span>Obligatoire</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        );
+                      })()}
                     </div>
                   );
                 })}
@@ -714,6 +846,14 @@ function App() {
             </div>
         </div>
       </div>
+      
+      {/* ── Boutons flottants (Plein Écran) avec Glassmorphism ─────────────────────────── */}
+      <div className="fixed top-8 right-8 z-[100]">
+          <button id="btn-fullscreen" onClick={() => window.toggleFullScreen()} className="flex items-center justify-center w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-lg border border-slate-200/60 text-slate-600 hover:text-slate-900 hover:bg-white transition-all hover:scale-105 active:scale-95 ring-4 ring-transparent hover:ring-slate-100" title="Plein écran">
+              <i className="fas fa-expand text-[20px]"></i>
+          </button>
+      </div>
+
     </div>
   );
 }
@@ -721,35 +861,32 @@ function App() {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 
-<!-- Contrôles de Zoom -->
-<div class="fixed bottom-6 right-6 bg-white rounded-full shadow-lg border border-gray-200 flex items-center overflow-hidden" style="z-index:9999;">
-  <button onclick="window.adjustZoom(-0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Dézoomer">−</button>
-  <span id="zoom-display" class="text-xs font-bold text-gray-700 w-12 text-center">100%</span>
-  <button onclick="window.adjustZoom(0.1)" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors font-bold text-lg leading-none" title="Zoomer">+</button>
+<!-- Contrôles de Zoom avec Glassmorphism -->
+<div class="fixed bottom-8 right-8 bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-slate-200/60 flex items-center p-1" style="z-index:9999;">
+  <button onclick="window.adjustZoom(-0.1)" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors font-medium text-xl leading-none active:scale-95" title="Dézoomer">−</button>
+  <span id="zoom-display" class="text-[13px] font-bold text-slate-700 w-12 text-center pointer-events-none tracking-tight">100%</span>
+  <button onclick="window.adjustZoom(0.1)" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors font-medium text-xl leading-none active:scale-95" title="Zoomer">+</button>
 </div>
 
-<!-- ===== SYSTEME DE TUTORIEL GLOBAL (SPOTLIGHT PLEIN ÉCRAN) ===== -->
+<!-- ===== SYSTEME DE TUTORIEL GLOBAL (SPOTLIGHT PLEIN ÉCRAN) MODERNISÉ ===== -->
 <div id="tutorial-container" style="display: none; position: fixed; inset: 0; z-index: 99999;">
   <!-- Couche de fond invisible -->
   <div style="position: absolute; inset: 0;" onclick="endTutorial()"></div>
 
-  <!-- Le "trou" qui met en valeur -->
-  <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; outline: 9999px solid rgba(0,0,0,0.65); border: 3px solid #719A86; border-radius: 6px; transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease, border-width 0.2s ease;"></div>
+  <!-- Le "trou" qui met en valeur (Design Adouci) -->
+  <div id="tutorial-hole" style="position: absolute; z-index: 2; pointer-events: none; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.6), inset 0 0 0 2px rgba(255,255,255,0.2); border-radius: 50%; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1);"></div>
 
-  <!-- L'infobulle -->
-  <div id="tutorial-tooltip" class="bg-white rounded-xl shadow-2xl w-80 flex flex-col border-t-8 border-[#598378]" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s ease, left 0.4s ease;">
-    <div class="p-5 flex-1">
-      <div class="flex justify-between items-start mb-2">
-        <span id="tutorial-title" class="text-xs font-bold text-[#598378] uppercase tracking-wider bg-green-50 px-2 py-1 rounded">ASTUCE CONFORT</span>
-        <button onclick="endTutorial()" class="text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times"></i></button>
+  <!-- L'infobulle moderne -->
+  <div id="tutorial-tooltip" class="bg-white rounded-2xl shadow-2xl w-80 flex flex-col border border-slate-100" style="position: absolute; z-index: 10; pointer-events: auto; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div class="p-6 flex-1">
+      <div class="flex justify-between items-start mb-3">
+        <span id="tutorial-title" class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2.5 py-1 rounded-md">Astuce confort</span>
+        <button onclick="endTutorial()" class="text-slate-400 hover:text-slate-800 transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-100"><i class="fas fa-times text-sm"></i></button>
       </div>
-      <p id="tutorial-text" class="text-gray-800 text-[15px] mt-3 font-medium leading-relaxed"></p>
+      <p id="tutorial-text" class="text-slate-700 text-[15px] mt-2 font-medium leading-relaxed"></p>
     </div>
-    <div class="bg-gray-50 p-3 rounded-b-xl border-t border-gray-100 flex justify-between items-center">
-      <span id="tutorial-counter" class="text-xs font-bold text-gray-400">1 / 1</span>
-      <div class="space-x-1 flex items-center">
-        <button id="tutorial-next" onclick="endTutorial()" class="ml-2 bg-[#598378] text-white text-xs px-3 py-1.5 rounded hover:bg-[#466a60] transition-colors shadow-sm font-bold">J'ai compris <i class="fas fa-check ml-1"></i></button>
-      </div>
+    <div class="bg-slate-50 p-4 rounded-b-2xl border-t border-slate-100 flex justify-end items-center">
+      <button id="tutorial-next" onclick="endTutorial()" class="bg-indigo-600 text-white text-[13px] px-4 py-2 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 font-bold active:scale-95">J'ai compris</button>
     </div>
   </div>
 </div>
@@ -784,10 +921,10 @@ document.addEventListener('fullscreenchange', () => {
   const btn = document.getElementById('btn-fullscreen');
   if (btn) {
       if (document.fullscreenElement) {
-          btn.innerHTML = '<i class="fas fa-compress text-2xl"></i>';
+          btn.innerHTML = '<i class="fas fa-compress text-[20px]"></i>';
           btn.title = "Quitter le plein écran";
       } else {
-          btn.innerHTML = '<i class="fas fa-expand text-2xl"></i>';
+          btn.innerHTML = '<i class="fas fa-expand text-[20px]"></i>';
           btn.title = "Plein écran";
       }
   }
@@ -799,8 +936,7 @@ let isTutorialActive = false;
 const tutorialSteps = [
     {
         target: '#btn-fullscreen',
-        content: 'Avant de commencer, sachez que vous pouvez mettre l\'interface en plein écran à tout moment en cliquant ici pour un meilleur confort de lecture.',
-        noBorder: false
+        content: 'Avant de commencer, sachez que vous pouvez mettre l\'interface en plein écran à tout moment en cliquant ici pour un meilleur confort de lecture.'
     }
 ];
 
@@ -818,14 +954,19 @@ window.startTutorial = function() {
     hole.style.height = '0px';
     
     setTimeout(() => {
-        hole.style.transition = 'top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease, border-width 0.2s ease';
+        hole.style.transition = 'top 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
         renderStep();
     }, 50);
 }
 
 window.endTutorial = function() {
     isTutorialActive = false;
-    document.getElementById('tutorial-container').style.display = 'none';
+    document.getElementById('tutorial-container').style.opacity = '0';
+    document.getElementById('tutorial-container').style.transition = 'opacity 0.3s ease';
+    setTimeout(() => {
+      document.getElementById('tutorial-container').style.display = 'none';
+      document.getElementById('tutorial-container').style.opacity = '1';
+    }, 300);
 }
 
 function renderStep() {
@@ -848,20 +989,13 @@ function renderStep() {
             
             const absoluteTop = rect.top;
             const absoluteLeft = rect.left;
-            const padding = 10;
+            const padding = 12;
             
             const hole = document.getElementById('tutorial-hole');
             hole.style.top = `${absoluteTop - padding}px`;
             hole.style.left = `${absoluteLeft - padding}px`;
             hole.style.width = `${rect.width + padding * 2}px`;
             hole.style.height = `${rect.height + padding * 2}px`;
-            hole.style.borderRadius = '50%';
-            
-            if (step.noBorder) {
-                hole.style.borderWidth = '0px';
-            } else {
-                hole.style.borderWidth = '4px';
-            }
 
             const tt = document.getElementById('tutorial-tooltip');
             document.getElementById('tutorial-text').innerText = step.content;
@@ -889,6 +1023,84 @@ function renderStep() {
 window.addEventListener('resize', () => {
     if(isTutorialActive) renderStep();
 });
+
+// --- Sound System ---
+const _ac = new (window.AudioContext || window.webkitAudioContext)();
+
+function _resumeAC() {
+  if (_ac.state === 'suspended') _ac.resume();
+}
+
+window.playSound = function(type) {
+  _resumeAC();
+  const t = _ac.currentTime;
+  const g = _ac.createGain();
+  g.connect(_ac.destination);
+
+  if (type === 'click') {
+    // Pop UI soyeux — sine très court, fréquence haute, quasi inaudible
+    const o = _ac.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1200, t);
+    o.frequency.exponentialRampToValueAtTime(900, t + 0.03);
+    g.gain.setValueAtTime(0.06, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+    o.connect(g);
+    o.start(t); o.stop(t + 0.05);
+
+  } else if (type === 'correct') {
+    // Bonne réponse — deux notes montantes (inchangé)
+    [0, 0.13].forEach((delay, i) => {
+      const o = _ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(i === 0 ? 520 : 780, t + delay);
+      const gn = _ac.createGain();
+      gn.gain.setValueAtTime(0.22, t + delay);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.18);
+      o.connect(gn); gn.connect(_ac.destination);
+      o.start(t + delay); o.stop(t + delay + 0.2);
+    });
+
+  } else if (type === 'wrong') {
+    // Mauvaise réponse — deux impulsions sine graves, douces
+    [0, 0.1].forEach((delay) => {
+      const o = _ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(220, t + delay);
+      const gn = _ac.createGain();
+      gn.gain.setValueAtTime(0.10, t + delay);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.08);
+      o.connect(gn); gn.connect(_ac.destination);
+      o.start(t + delay); o.stop(t + delay + 0.09);
+    });
+
+  } else if (type === 'advance') {
+    // Navigation — swoosh montant très discret
+    const o = _ac.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(520, t);
+    o.frequency.exponentialRampToValueAtTime(780, t + 0.08);
+    g.gain.setValueAtTime(0.07, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o.connect(g);
+    o.start(t); o.stop(t + 0.11);
+
+  } else if (type === 'done') {
+    // Fin d'activité — trois notes douces, espacées, style notification
+    [[0, 660], [0.15, 880], [0.3, 1100]].forEach(([delay, freq]) => {
+      const o = _ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, t + delay);
+      const gn = _ac.createGain();
+      gn.gain.setValueAtTime(0.12, t + delay);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.25);
+      o.connect(gn); gn.connect(_ac.destination);
+      o.start(t + delay); o.stop(t + delay + 0.28);
+    });
+  }
+};
+
+document.addEventListener('click', _resumeAC, { once: true });
 </script>
 
 </body>

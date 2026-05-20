@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Positionnement Management</title>
+    
+    <!-- Tailwind CSS pour le style -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React et ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel pour compiler le JSX dans le navigateur -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Quelques animations personnalisées de base */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInFromRight { from { transform: translateX(1rem); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-in.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .slide-in-from-right-4 { animation: slideInFromRight 0.5s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <!-- Le conteneur où l'application React sera injectée -->
+    <div id="root"></div>
+
+    <!-- Script de l'application -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- COMPOSANTS D'ICÔNES (Remplacement de lucide-react pour la version HTML) ---
+        const IconBase = ({ className, children }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Lightbulb = ({ className }) => <IconBase className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></IconBase>;
+        const CheckCircle2 = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></IconBase>;
+        const AlertCircle = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconBase>;
+        const ChevronRight = ({ className }) => <IconBase className={className}><path d="m9 18 6-6-6-6"/></IconBase>;
+        const UserPlus = ({ className }) => <IconBase className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></IconBase>;
+        const Frown = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></IconBase>;
+        const HelpCircle = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></IconBase>;
+        const Award = ({ className }) => <IconBase className={className}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></IconBase>;
+        const RefreshCcw = ({ className }) => <IconBase className={className}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></IconBase>;
+        const Target = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
+        const BarChart3 = ({ className }) => <IconBase className={className}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></IconBase>;
+        const Maximize = ({ className }) => <IconBase className={className}><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></IconBase>;
+        const Minimize = ({ className }) => <IconBase className={className}><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></IconBase>;
+
+        // --- DATA ---
+        const questions = [
+          {
+            id: 1,
+            title: "Un nouveau collaborateur très enthousiaste rejoint votre équipe, mais il n'a jamais effectué les tâches de son poste. Spontanément, vous avez tendance à :",
+            options: [
+              { text: "Lui donner des instructions très précises, définir ses missions et planifier ses tâches.", style: "S1" },
+              { text: "Prendre le temps de lui expliquer le pourquoi des choses, l'encourager et le structurer.", style: "S2" },
+              { text: "Lui demander comment il voit les choses et co-construire son organisation avec lui.", style: "S3" },
+              { text: "Lui laisser les clés et lui faire confiance pour se débrouiller afin de préserver son enthousiasme.", style: "S4" }
+            ]
+          },
+          {
+            id: 2,
+            title: "Un de vos collaborateurs, en apprentissage sur un nouveau sujet, n'y arrive pas. Il se décourage et perd confiance. Quelle est votre réaction naturelle ?",
+            options: [
+              { text: "Je reprends le contrôle, je simplifie ses tâches et lui dis exactement comment faire étape par étape.", style: "S1" },
+              { text: "Je le rassure, je réexplique la méthode en détail et je mets en valeur ses petits progrès.", style: "S2" },
+              { text: "Je discute avec lui de ses difficultés, je l'écoute et nous cherchons ensemble des solutions.", style: "S3" },
+              { text: "Je dédramatise et je lui dis que j'ai une totale confiance en sa capacité à surmonter ça tout seul.", style: "S4" }
+            ]
+          },
+          {
+            id: 3,
+            title: "Un membre de votre équipe maîtrise parfaitement son métier, mais hésite à prendre des initiatives et sollicite souvent votre validation. Que faites-vous ?",
+            options: [
+              { text: "Je lui donne la validation attendue avec des directives claires pour qu'il avance vite.", style: "S1" },
+              { text: "Je le persuade qu'il a les bonnes idées en argumentant sur ses qualités et mes valeurs.", style: "S2" },
+              { text: "Je lui retourne la question (\"Et toi, qu'en penses-tu ?\") et l'encourage à décider lui-même.", style: "S3" },
+              { text: "Je refuse de valider à sa place et lui rappelle que c'est son périmètre de responsabilité.", style: "S4" }
+            ]
+          },
+          {
+            id: 4,
+            title: "Vous confiez une mission à fort enjeu à votre collaborateur le plus expérimenté et autonome. Comment procédez-vous ?",
+            options: [
+              { text: "Je définis des jalons de contrôle très réguliers pour sécuriser l'enjeu au maximum.", style: "S1" },
+              { text: "Je lui \"vends\" l'importance du projet et reste très présent pour l'accompagner et le motiver.", style: "S2" },
+              { text: "J'organise des points d'échange réguliers pour co-construire le suivi de la mission avec lui.", style: "S3" },
+              { text: "Nous validons ensemble l'objectif final et les moyens, puis je le laisse gérer en totale autonomie.", style: "S4" }
+            ]
+          },
+          {
+            id: 5,
+            title: "En situation d'urgence où une décision rapide et complexe est nécessaire, quel est votre réflexe ?",
+            options: [
+              { text: "Je tranche immédiatement seul et je distribue les rôles à chacun de manière directive.", style: "S1" },
+              { text: "J'explique l'urgence, je donne la direction à suivre et je m'assure que tout le monde adhère.", style: "S2" },
+              { text: "Je réunis rapidement l'équipe pour consulter les avis et trouver la meilleure option ensemble.", style: "S3" },
+              { text: "Je délègue la gestion de la situation à la personne la plus experte techniquement sur le terrain.", style: "S4" }
+            ]
+          }
+        ];
+
+        const profilesRecap = [
+          {
+            id: "S1",
+            styleName: "Management Directif (S1)",
+            managerPosture: "Vous aimez structurer, donner des instructions précises, planifier et prendre les décisions.",
+            targetProfile: "Débutant enthousiaste",
+            targetDescription: "Un collaborateur qui n'a pas les compétences requises sur la tâche, mais qui a l'envie et se sent prêt.",
+            color: "red",
+            icon: UserPlus,
+          },
+          {
+            id: "S2",
+            styleName: "Management Persuasif (S2)",
+            managerPosture: "Vous prenez le temps d'expliquer le sens, d'argumenter vos choix et d'encourager de près.",
+            targetProfile: "Apprenant découragé",
+            targetDescription: "Un collaborateur qui gagne en compétence mais traverse une phase de doute et de baisse de motivation.",
+            color: "orange",
+            icon: Frown,
+          },
+          {
+            id: "S3",
+            styleName: "Management Participatif (S3)",
+            managerPosture: "Vous êtes à l'écoute, vous encouragez la prise d'initiative et aimez prendre des décisions à deux.",
+            targetProfile: "Expert incertain",
+            targetDescription: "Un collaborateur compétent techniquement mais qui manque parfois d'assurance ou d'initiative spontanée.",
+            color: "blue",
+            icon: HelpCircle,
+          },
+          {
+            id: "S4",
+            styleName: "Management Délégatif (S4)",
+            managerPosture: "Vous donnez une grande autonomie, responsabilisez sur les résultats et faites confiance.",
+            targetProfile: "Expert autonome",
+            targetDescription: "Un collaborateur très solide sur son sujet, totalement indépendant, motivé et fier de ses décisions.",
+            color: "green",
+            icon: Award,
+          }
+        ];
+
+        // --- COMPONENTS ---
+        function App() {
+          const [stage, setStage] = useState('intro');
+          const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+          const [scores, setScores] = useState({ S1: 0, S2: 0, S3: 0, S4: 0 });
+          const [selectedAnswer, setSelectedAnswer] = useState(null);
+
+          // --- Gestion du plein écran et du spotlight ---
+          const [isFullscreen, setIsFullscreen] = useState(false);
+          const [showSpotlight, setShowSpotlight] = useState(true);
+
+          useEffect(() => {
+            const handleFullscreenChange = () => {
+              setIsFullscreen(!!document.fullscreenElement);
+            };
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+          }, []);
+
+          const toggleFullscreen = () => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch((err) => {
+                console.log(`Erreur lors du passage en plein écran : ${err.message}`);
+              });
+            } else {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              }
+            }
+            setShowSpotlight(false);
+          };
+
+          const currentQuestion = questions[currentQuestionIndex];
+
+          const handleStart = () => {
+            setStage('quiz');
+            setScores({ S1: 0, S2: 0, S3: 0, S4: 0 });
+            setCurrentQuestionIndex(0);
+            setSelectedAnswer(null);
+          };
+
+          const handleAnswer = (option) => {
+            setSelectedAnswer(option);
+          };
+
+          const handleNext = () => {
+            if (selectedAnswer) {
+              setScores(prev => ({
+                ...prev,
+                [selectedAnswer.style]: prev[selectedAnswer.style] + 1
+              }));
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+              setCurrentQuestionIndex(currentQuestionIndex + 1);
+              setSelectedAnswer(null);
+            } else {
+              setStage('results');
+            }
+          };
+
+          const handleRestart = () => {
+            setStage('intro');
+            setCurrentQuestionIndex(0);
+            setScores({ S1: 0, S2: 0, S3: 0, S4: 0 });
+            setSelectedAnswer(null);
+          };
+
+          const getColorClasses = (colorName) => {
+            const map = {
+              red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', iconBg: 'bg-red-100', bar: 'bg-red-500' },
+              orange: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', iconBg: 'bg-orange-100', bar: 'bg-orange-500' },
+              blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', iconBg: 'bg-blue-100', bar: 'bg-blue-500' },
+              green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', iconBg: 'bg-green-100', bar: 'bg-green-500' },
+            };
+            return map[colorName] || map.blue;
+          };
+
+          const getDominantStyles = () => {
+            const maxScore = Math.max(...Object.values(scores));
+            return Object.keys(scores).filter(key => scores[key] === maxScore);
+          };
+
+          return (
+            <div className="min-h-screen bg-gray-50 text-gray-800 font-sans p-4 md:p-8 flex items-center justify-center">
+              
+              {/* SPOTLIGHT OVERLAY & BOUTON PLEIN ÉCRAN */}
+              {showSpotlight && (
+                <div 
+                  className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 transition-opacity"
+                  onClick={() => setShowSpotlight(false)}
+                />
+              )}
+
+              <div className="fixed top-4 right-4 z-[60] flex items-center gap-4">
+                {showSpotlight && (
+                   <div className="relative bg-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-right-4">
+                      <span className="font-semibold text-blue-900 text-sm">Mode plein écran recommandé</span>
+                      <button 
+                        onClick={() => setShowSpotlight(false)}
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors"
+                      >
+                        OK
+                      </button>
+                      <div className="absolute right-[-6px] top-1/2 transform -translate-y-1/2 w-3 h-3 bg-white rotate-45"></div>
+                   </div>
+                )}
+
+                <button
+                  onClick={toggleFullscreen}
+                  className={`p-3 rounded-full shadow-lg transition-all flex items-center justify-center
+                    ${showSpotlight ? 'bg-blue-600 text-white ring-4 ring-blue-300 ring-opacity-50 animate-bounce' : 'bg-white text-gray-700 hover:bg-gray-100 hover:scale-105'}`}
+                  title={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
+                >
+                  {isFullscreen ? <Minimize className="w-6 h-6" /> : <Maximize className="w-6 h-6" />}
+                </button>
+              </div>
+
+              {/* SECTION INTRO */}
+              {stage === 'intro' && (
+                <div className="max-w-3xl w-full bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 text-center">
+                  <div className="flex justify-center mb-6">
+                    <div className="h-20 w-20 bg-blue-50 rounded-full flex items-center justify-center">
+                      <BarChart3 className="h-10 w-10 text-blue-600" />
+                    </div>
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">Quel est votre style de management naturel ?</h1>
+                  <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Il n'y a <strong>pas de bonnes ou de mauvaises réponses</strong>. Ce test de positionnement vise à identifier votre tendance naturelle parmi les 4 styles de management. Répondez le plus spontanément possible face à ces situations du quotidien.
+                  </p>
+                  <button 
+                    onClick={handleStart}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-full transition-colors text-lg"
+                  >
+                    Découvrir mon profil
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
+
+              {/* SECTION QUIZ */}
+              {stage === 'quiz' && (
+                <div className="max-w-2xl w-full">
+                  
+                  {/* Timeline */}
+                  <div className="mb-8 relative px-4">
+                     <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full -z-10 transform -translate-y-1/2"></div>
+                     <div className="flex justify-between w-full">
+                       {questions.map((_, idx) => (
+                         <div key={idx} className={`h-8 w-8 rounded-full border-4 flex items-center justify-center text-xs font-bold transition-colors
+                           ${idx < currentQuestionIndex ? 'bg-blue-500 border-blue-500 text-white' : 
+                             idx === currentQuestionIndex ? 'bg-white border-blue-600 text-blue-600 scale-125 shadow-md' : 'bg-white border-gray-300 text-gray-400'}`}>
+                           {idx + 1}
+                         </div>
+                       ))}
+                     </div>
+                  </div>
+
+                  {/* Question Card */}
+                  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-8">
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">
+                        {currentQuestion.title}
+                      </h2>
+                      
+                      <div className="space-y-3">
+                        {currentQuestion.options.map((option, idx) => {
+                          const isSelected = option === selectedAnswer;
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => handleAnswer(option)}
+                              className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 
+                                ${isSelected 
+                                  ? 'border-blue-500 bg-blue-50 text-blue-900 shadow-sm' 
+                                  : 'border-gray-100 hover:border-blue-300 hover:bg-gray-50 bg-white'}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                 <div className={`h-5 w-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center
+                                   ${isSelected ? 'border-blue-500' : 'border-gray-300'}`}>
+                                    {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-blue-500"></div>}
+                                 </div>
+                                 <span className="font-medium">{option.text}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Next Button */}
+                    <div className="bg-gray-50 border-t border-gray-100 p-6 flex justify-end">
+                      <button 
+                        onClick={handleNext}
+                        disabled={!selectedAnswer}
+                        className={`whitespace-nowrap inline-flex items-center gap-2 font-medium py-2.5 px-6 rounded-full transition-colors
+                          ${selectedAnswer ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                      >
+                        {currentQuestionIndex < questions.length - 1 ? 'Suivant' : 'Voir mon profil'}
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION RESULTS */}
+              {stage === 'results' && (
+                <div className="max-w-6xl w-full animate-in fade-in">
+                  
+                  <div className="text-center mb-10">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Votre Bilan de Positionnement</h1>
+                    <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
+                      Vos réponses ont permis d'identifier vos réflexes naturels en tant que manager (Styles S1 à S4). 
+                      Cependant, n'oubliez pas la règle d'or : <strong>un style n'est efficace que s'il correspond au niveau de développement de la personne en face de vous.</strong>
+                    </p>
+
+                    {/* Chart / Score representation */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 mb-10 shadow-sm border border-gray-100 max-w-3xl mx-auto text-left">
+                      <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Répartition de vos styles</h2>
+                      <div className="space-y-6">
+                        {Object.entries(scores).map(([style, count]) => {
+                          const profile = profilesRecap.find(p => p.id === style);
+                          const colors = getColorClasses(profile.color);
+                          const isDominant = getDominantStyles().includes(style);
+                          const percentage = (count / questions.length) * 100;
+                          
+                          return (
+                            <div key={style} className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold flex-shrink-0 transition-colors ${isDominant ? colors.bg + ' ' + colors.text : 'bg-gray-50 text-gray-400'}`}>
+                                {style}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between mb-2">
+                                  <span className={`font-semibold ${isDominant ? colors.text : 'text-gray-600'}`}>
+                                    {profile.styleName} <span className="font-normal text-gray-400 hidden sm:inline">- {isDominant ? "Votre tendance" : "Moins naturel pour vous"}</span>
+                                  </span>
+                                  <span className="text-gray-500 text-sm font-medium">{count} rép.</span>
+                                </div>
+                                <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full rounded-full transition-all duration-1000 ease-out ${isDominant ? colors.bar : 'bg-gray-300'}`}
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4 Columns Recap */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    {profilesRecap.map((profile) => {
+                      const colors = getColorClasses(profile.color);
+                      const Icon = profile.icon;
+                      const isDominant = getDominantStyles().includes(profile.id);
+                      
+                      return (
+                        <div key={profile.id} className={`bg-white rounded-3xl shadow-sm border p-6 flex flex-col text-center relative overflow-hidden transition-all flex-1
+                          ${isDominant ? `ring-2 ring-offset-2 ${colors.border.replace('border-', 'ring-')}` : 'border-gray-100 opacity-80 hover:opacity-100'}`}>
+                          
+                          {/* Top indicator color line */}
+                          <div className={`absolute top-0 left-0 right-0 h-1.5 ${colors.bg.replace('50', '400')}`}></div>
+                          
+                          {isDominant && (
+                            <div className={`absolute top-3 right-3 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full ${colors.bg} ${colors.text}`}>
+                              Dominant
+                            </div>
+                          )}
+
+                          <div className="flex justify-center mb-4 mt-4">
+                            <div className={`h-16 w-16 rounded-full ${colors.iconBg} flex items-center justify-center`}>
+                              <Icon className={`h-8 w-8 ${colors.text}`} />
+                            </div>
+                          </div>
+                          
+                          <h3 className={`text-lg font-bold mb-6 ${colors.text}`}>{profile.styleName}</h3>
+                          
+                          {/* Manager Posture (Bridge from questions) */}
+                          <div className="text-left mb-6 flex-grow">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Vos comportements :</span>
+                            <p className="text-sm text-gray-700 font-medium leading-relaxed">{profile.managerPosture}</p>
+                          </div>
+                          
+                          {/* Target Collaborator (The mapping) */}
+                          <div className="text-left w-full mt-auto">
+                            <div className={`${colors.bg} rounded-2xl p-4 border ${colors.border}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Target className={`h-4 w-4 flex-shrink-0 ${colors.text}`} />
+                                <span className={`text-xs font-bold uppercase ${colors.text}`}>Profil idéal cible</span>
+                              </div>
+                              <h4 className="text-sm font-bold text-gray-900 mb-1">{profile.targetProfile}</h4>
+                              <p className="text-xs text-gray-700 leading-relaxed">{profile.targetDescription}</p>
+                            </div>
+                          </div>
+
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Key Idea Banner */}
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-5">
+                    <div className="h-12 w-12 bg-white rounded-full shadow-sm flex items-center justify-center flex-shrink-0">
+                      <Lightbulb className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-blue-900 font-medium">
+                        <strong className="font-bold">À retenir :</strong> Le piège de la symétrie consiste à adopter le style qui correspond à sa propre personnalité (votre style dominant), et non à celui qui correspond au besoin actuel du collaborateur. Le meilleur manager est celui qui sait se déplacer d'un style à l'autre !
+                      </p>
+                    </div>
+                    <button 
+                      onClick={handleRestart}
+                      className="whitespace-nowrap flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-100 font-semibold py-2.5 px-5 rounded-full border border-blue-200 transition-colors"
+                    >
+                      <RefreshCcw className="h-4 w-4" />
+                      Refaire le test
+                    </button>
+                  </div>
+
+                </div>
+              )}
+
+            </div>
+          );
+        }
+
+        // --- RENDER ---
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -612,7 +612,7 @@ function App() {
               <p className="text-amber-900 text-[15px] font-semibold leading-snug">Le rôle des évaluateurs est de se prononcer. Transmettre un dossier sans décision n'est pas acceptable : le jury de certification s'appuie sur les évaluateurs pour cette décision.</p>
             </div>
           )}
-          {isActionDone && <OkBox title="Correct !" body="Les évaluateurs doivent toujours trancher. Ici, au regard de l'ensemble des constats, ils décident favorablement : la compétence est validée." onNext={advance} />}
+          {isActionDone && <OkBox title="Correct !" body="Les évaluateurs doivent toujours décider si la compétence est Validée ou Non validée. Ici, au regard de l'ensemble des constats, ils tranchent défavorablement : la compétence n'est donc pas validée." onNext={advance} />}
         </div>
       );
       break;

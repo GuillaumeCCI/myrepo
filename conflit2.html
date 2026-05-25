@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse de situations</title>
+    <!-- Chargement de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :fullscreen {
+        overflow: hidden;
+      }
+      /* Animation pour la flèche du spotlight */
+      @keyframes bounceX {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(15px); }
+      }
+      .animate-bounce-x {
+        animation: bounceX 1.5s infinite ease-in-out;
+      }
+      /* Animation d'apparition du calque sombre */
+      @keyframes fadeIn {
+        from { opacity: 0; backdrop-filter: blur(0px); }
+        to { opacity: 1; backdrop-filter: blur(4px); }
+      }
+      .spotlight-overlay {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+      /* Animation d'entrée de la carte */
+      @keyframes popIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .animate-pop-in {
+        animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Import Map -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+        }
+      }
+    </script>
+
+    <!-- Code React -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { CheckCircle, AlertTriangle, GripVertical, RefreshCw, Maximize2, Minimize2, ArrowRight, ThumbsUp, ThumbsDown, MessageCircle, Target, Users } from 'lucide-react';
+
+      // --- DONNÉES PÉDAGOGIQUES ---
+      const INITIAL_ITEMS = [
+        { id: 1, text: "« L'apprenti a fait 50 tartes au lieu de 15, car il a mal lu le tableau. » ➔ Je mets en place un cahier de commandes numérique.", category: "COMMUNICATION", explanation: "L'information a été mal transmise à cause de l'écriture. Changer le support (numérique) règle ce problème de transmission." },
+        { id: 2, text: "« La vendeuse a vendu une commande réservée car le post-it était tombé. » ➔ Nous définissons un code visuel fixe pour les réservations.", category: "COMMUNICATION", explanation: "Le canal de communication (le post-it) n'était pas fiable. Mettre en place une règle visuelle claire dissipe les malentendus futurs." },
+        { id: 3, text: "« Le boulanger a défourné trop tôt, croyant qu'on ouvrait plus vite ce matin. » ➔ Je fais un point rapide chaque matin à 6h pour valider le timing.", category: "COMMUNICATION", explanation: "C'est une pure erreur d'interprétation des horaires. Le point de synchronisation quotidien est l'approche idéale." },
+        
+        { id: 4, text: "« Le pâtissier et le boulanger veulent tous les deux le grand four à 5h. » ➔ Je planifie un roulement pour répartir l'utilisation du four.", category: "INTERETS", explanation: "Deux employés se disputent une ressource matérielle limitée (le four). Planifier et répartir est une affaire de négociation d'intérêts." },
+        { id: 5, text: "« La vendeuse veut une prime sur les gâteaux, le patron veut limiter ses charges. » ➔ Ils s'accordent sur une prime liée aux invendus sauvés.", category: "INTERETS", explanation: "On dépasse les exigences initiales opposées (prime vs économie) pour trouver un accord donnant-donnant sur un objectif commun." },
+        { id: 6, text: "« Léa et Marc veulent tous les deux leurs congés en août, mais la boutique reste ouverte. » ➔ Je leur demande de chercher un compromis sur les dates.", category: "INTERETS", explanation: "C'est un classique conflit d'allocation de ressources (le temps de repos). La solution passe par des concessions mutuelles." },
+        
+        { id: 7, text: "« L'ancienne vendeuse soupire dès que la nouvelle parle, l'ambiance est glaciale. » ➔ Je les prends à part pour qu'elles expriment leurs émotions.", category: "INTERPERSONNEL", explanation: "L'attitude et le ressenti priment ici. Offrir un espace pour verbaliser les frustrations est la première étape." },
+        { id: 8, text: "« Paul se sent humilié parce que j'ai critiqué sa vitrine devant les clients. » ➔ Je l'invite en pause pour écouter son ressenti et m'excuser.", category: "INTERPERSONNEL", explanation: "L'ego et la fierté ont été heurtés. Travailler sur l'empathie et la relation humaine est essentiel pour débloquer la situation." },
+        { id: 9, text: "« Le chef pique des colères noires et insulte les apprentis sous pression. » ➔ Je le convoque pour parler de sa façon violente de communiquer.", category: "INTERPERSONNEL", explanation: "Ici, on ne parle pas de la recette (le fond), mais bien de la forme (les valeurs de respect). C'est un sujet de relation humaine." },
+        { id: 10, text: "« Deux employés se détestent à cause d'une dispute politique hors travail. » ➔ Je leur impose de mettre leurs différends de côté dans la boutique.", category: "INTERPERSONNEL", explanation: "Un conflit de valeurs et d'opinions purement personnel qui déborde sur le professionnel. Il faut recadrer la relation au travail." }
+      ];
+
+      const shuffleArray = (array) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+
+      function App() {
+        const [items, setItems] = useState([]);
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [score, setScore] = useState(0);
+        const [feedback, setFeedback] = useState(null);
+        const [dragState, setDragState] = useState(null);
+        
+        const [isFullscreen, setIsFullscreen] = useState(false);
+        const [showSpotlight, setShowSpotlight] = useState(true);
+
+        useEffect(() => {
+          setItems(shuffleArray(INITIAL_ITEMS));
+        }, []);
+
+        useEffect(() => {
+          const handleFullscreenChange = () => {
+            const isNativeFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+            if (isNativeFull) {
+              setIsFullscreen(true);
+              setShowSpotlight(false);
+            } else {
+              setIsFullscreen(false);
+            }
+          };
+          document.addEventListener('fullscreenchange', handleFullscreenChange);
+          document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+          document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+          
+          return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+          };
+        }, []);
+
+        const toggleFullscreen = async () => {
+          setShowSpotlight(false);
+          const isNativeFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+
+          if (!isNativeFull && !isFullscreen) {
+            let nativeSuccess = false;
+            try {
+              const elem = document.documentElement;
+              if (elem.requestFullscreen) {
+                await elem.requestFullscreen();
+                nativeSuccess = true;
+              } else if (elem.webkitRequestFullscreen) {
+                await elem.webkitRequestFullscreen();
+                nativeSuccess = true;
+              } else if (elem.msRequestFullscreen) {
+                await elem.msRequestFullscreen();
+                nativeSuccess = true;
+              }
+            } catch (err) {
+              console.warn("Plein écran natif refusé, utilisation du mode fenêtré simulé.", err);
+              nativeSuccess = false;
+            }
+            if (!nativeSuccess) setIsFullscreen(true);
+          } else {
+            if (isNativeFull) {
+              try {
+                if (document.exitFullscreen) await document.exitFullscreen();
+                else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) await document.msExitFullscreen();
+              } catch (err) {
+                console.warn("Erreur en quittant le plein écran natif.", err);
+              }
+            }
+            setIsFullscreen(false);
+          }
+        };
+
+        const handleChoice = (choiceZone) => {
+          if (feedback) return;
+
+          const currentItem = items[currentIndex];
+          const isCorrect = choiceZone === currentItem.category;
+          
+          if (isCorrect) {
+            setScore(prev => prev + 1);
+          }
+
+          let message = "";
+          const categoryNames = {
+            'COMMUNICATION': 'de communication',
+            'INTERETS': "d'intérêts",
+            'INTERPERSONNEL': 'interpersonnel'
+          };
+
+          if (isCorrect) {
+            message = `Bonne analyse ! ${currentItem.explanation}`;
+          } else {
+            message = `Erreur ! Cette situation relève d'un conflit ${categoryNames[currentItem.category]}. ${currentItem.explanation}`;
+          }
+
+          setFeedback({ isCorrect, message });
+          setDragState(null);
+        };
+
+        const handleNext = () => {
+          setFeedback(null);
+          setCurrentIndex(prev => prev + 1);
+        };
+
+        const resetActivity = () => {
+          setItems(shuffleArray(INITIAL_ITEMS));
+          setCurrentIndex(0);
+          setScore(0);
+          setFeedback(null);
+          setDragState(null);
+        };
+
+        useEffect(() => {
+          if (!dragState) return;
+
+          const handlePointerMove = (e) => {
+            const dx = e.clientX - dragState.startX;
+            const dy = e.clientY - dragState.startY;
+            if (!dragState.isDragging && Math.sqrt(dx * dx + dy * dy) > 5) {
+              setDragState(prev => ({ ...prev, isDragging: true, x: e.clientX - prev.offsetX, y: e.clientY - prev.offsetY }));
+            } else if (dragState.isDragging) {
+              setDragState(prev => ({ ...prev, x: e.clientX - prev.offsetX, y: e.clientY - prev.offsetY }));
+            }
+          };
+
+          const handlePointerUp = (e) => {
+            if (dragState.isDragging) {
+              const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+              const zoneElement = dropTarget?.closest('[data-zone]');
+              if (zoneElement) {
+                const zoneId = zoneElement.getAttribute('data-zone');
+                handleChoice(zoneId);
+              }
+            }
+            setDragState(null);
+          };
+
+          window.addEventListener('pointermove', handlePointerMove);
+          window.addEventListener('pointerup', handlePointerUp);
+
+          return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+          };
+        }, [dragState, currentIndex, feedback, items]);
+
+        const handlePointerDown = (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+          if (feedback) return;
+
+          const rect = e.currentTarget.getBoundingClientRect();
+          setDragState({
+            startX: e.clientX,
+            startY: e.clientY,
+            offsetX: e.clientX - rect.left,
+            offsetY: e.clientY - rect.top,
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height,
+            isDragging: false
+          });
+        };
+
+        const isComplete = currentIndex >= items.length;
+        const currentItem = items[currentIndex];
+
+        return (
+          <div className={`font-sans bg-gray-50 flex flex-col overflow-x-hidden ${isFullscreen ? 'fixed inset-0 z-[200] overflow-y-auto p-4 sm:p-10' : 'min-h-screen p-2 sm:p-4'}`}>
+            
+            {showSpotlight && (
+              <div className="fixed inset-0 z-[100] bg-slate-900/80 spotlight-overlay flex flex-col">
+                <div className="flex-1" onClick={() => setShowSpotlight(false)}></div>
+                <div className="pb-10 flex justify-center">
+                  <button 
+                    onClick={() => setShowSpotlight(false)} 
+                    className="text-white/60 hover:text-white underline decoration-white/40 underline-offset-4 transition-colors px-6 py-2"
+                  >
+                    Continuer en mode fenêtré
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* CONTENEUR PRINCIPAL */}
+            <div className={`w-full max-w-[98%] xl:max-w-[1000px] mx-auto flex flex-col ${isFullscreen ? 'min-h-full justify-center py-8' : ''}`}>
+              
+              <header className="flex justify-between items-start mb-6">
+                <div className="flex-1">
+                  <h1 className="text-xl md:text-2xl mb-1 text-[#1a5b82] font-semibold">Analyse de situations conflictuelles</h1>
+                  <p className="text-sm md:text-base text-gray-600">
+                    Lisez la situation proposée. Quel type de conflit faut-il gérer ici ? Glissez la carte dans la bonne catégorie.
+                  </p>
+                </div>
+                
+                <div className={`ml-4 shrink-0 flex items-center gap-4 ${showSpotlight ? 'relative z-[101]' : ''}`}>
+                  {showSpotlight && (
+                    <div className="hidden sm:flex items-center gap-3 animate-bounce-x">
+                      <span className="text-white font-bold text-sm bg-blue-600 px-4 py-2 rounded-xl shadow-lg border border-white/20 whitespace-nowrap">
+                        Mettez en plein écran !
+                      </span>
+                      <ArrowRight className="text-white w-5 h-5 shrink-0" strokeWidth={3} />
+                    </div>
+                  )}
+
+                  <button 
+                    onClick={toggleFullscreen}
+                    title={isFullscreen ? "Quitter le plein écran" : "Passer en plein écran"}
+                    className={`p-2 md:p-3 rounded-xl transition-all shadow-sm shrink-0 border ${showSpotlight ? 'bg-white text-blue-600 ring-4 ring-blue-500 ring-offset-4 ring-offset-transparent border-transparent scale-110' : 'bg-white hover:bg-[#1a5b82] hover:text-white text-gray-600 border-gray-200'}`}
+                  >
+                    {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                  </button>
+                </div>
+              </header>
+
+              {!isComplete && (
+                <div className="mb-2 flex justify-between items-center text-sm font-medium text-gray-500">
+                  <span>Carte {currentIndex + 1} sur {items.length}</span>
+                  <span>Score : {score} / {currentIndex + (feedback ? 1 : 0)}</span>
+                </div>
+              )}
+
+              {/* WRAPPER POUR L'ACTIVITÉ */}
+              <div className="flex-1 flex flex-col items-center justify-start w-full gap-6 pt-4">
+                
+                {isComplete ? (
+                  <div className="w-full max-w-lg bg-white rounded-3xl shadow-lg border border-gray-200 p-8 flex flex-col items-center justify-center animate-pop-in text-center mt-10">
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+                      <CheckCircle size={32} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-[#1a5b82] mb-2">Exercice terminé !</h2>
+                    <p className="text-gray-600 mb-6">
+                      Votre score final est de <strong className="text-lg text-[#1a5b82]">{score} sur {items.length}</strong>.
+                    </p>
+                    <button 
+                      onClick={resetActivity}
+                      className="flex items-center gap-2 px-6 py-3 bg-[#1a5b82] hover:bg-[#12415d] text-white rounded-xl transition-colors shadow-sm font-semibold text-base"
+                    >
+                      <RefreshCw size={18} />
+                      Recommencer
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* LA CARTE CENTRALE (OU FEEDBACK) */}
+                    <div className="w-full flex items-center justify-center relative min-h-[160px] md:min-h-[180px] z-10">
+                      
+                      {!feedback && currentItem && (
+                        <div 
+                          key={currentItem.id}
+                          onPointerDown={handlePointerDown}
+                          className={`
+                            w-full max-w-sm h-auto py-4 md:py-5
+                            bg-white rounded-[1.5rem] shadow-xl border border-gray-200 px-4 md:px-5 flex flex-col justify-center gap-2
+                            cursor-grab active:cursor-grabbing animate-pop-in touch-none select-none
+                            ${dragState?.isDragging ? 'opacity-0' : 'opacity-100'}
+                          `}
+                        >
+                          <div className="flex justify-center text-gray-400 shrink-0">
+                            <GripVertical size={20} />
+                          </div>
+                          <div className="flex items-center justify-center">
+                            <p className="text-sm md:text-base font-medium text-center text-gray-800 leading-relaxed pointer-events-none">
+                              {currentItem.text}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {feedback && (
+                        <div className="w-full max-w-sm h-auto py-4 md:py-5 bg-white rounded-[1.5rem] shadow-xl border px-4 md:px-5 flex flex-col justify-center animate-pop-in z-20"
+                             style={{ borderColor: feedback.isCorrect ? '#10b981' : '#f43f5e' }}>
+                          <div className="flex items-center gap-2 mb-2 shrink-0">
+                            <div className={`p-1.5 rounded-full ${feedback.isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                              {feedback.isCorrect ? <ThumbsUp size={20} /> : <ThumbsDown size={20} />}
+                            </div>
+                            <h3 className={`text-lg md:text-xl font-bold ${feedback.isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
+                              {feedback.isCorrect ? "Correct !" : "Oups !"}
+                            </h3>
+                          </div>
+                          <div className="flex items-center">
+                            <p className="text-sm text-gray-700 leading-relaxed w-full">
+                              {feedback.message}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={handleNext}
+                            className="w-full py-2.5 mt-3 bg-[#1a5b82] hover:bg-[#12415d] text-white rounded-xl font-semibold text-sm transition-colors shadow-sm flex justify-center items-center gap-2 shrink-0"
+                          >
+                            Suivant <ArrowRight size={16} />
+                          </button>
+                        </div>
+                      )}
+
+                    </div>
+
+                    {/* LES 3 ZONES DE DÉPÔT */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl mx-auto">
+                      
+                      {/* ZONE COMMUNICATION */}
+                      <div 
+                        data-zone="COMMUNICATION"
+                        onClick={() => handleChoice('COMMUNICATION')}
+                        className={`rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-start p-4 transition-all duration-300 cursor-pointer min-h-[170px]
+                          ${dragState?.isDragging ? 'border-blue-300 bg-blue-50' : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 bg-white'}
+                        `}
+                      >
+                        <MessageCircle size={32} className="text-blue-500 mb-2 opacity-80 shrink-0" />
+                        <h3 className="text-base md:text-lg font-bold text-blue-700 text-center leading-tight mb-2">Pour un conflit<br/>de communication</h3>
+                        <p className="text-xs text-blue-800/80 text-center leading-tight italic px-1 mb-2 flex-1">Malentendus, manque d'informations ou interprétations erronées.</p>
+                        <p className="text-[10px] uppercase font-bold text-blue-600/40 text-center hidden md:block tracking-wider mt-auto">Glissez ici</p>
+                      </div>
+
+                      {/* ZONE INTÉRÊTS */}
+                      <div 
+                        data-zone="INTERETS"
+                        onClick={() => handleChoice('INTERETS')}
+                        className={`rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-start p-4 transition-all duration-300 cursor-pointer min-h-[170px]
+                          ${dragState?.isDragging ? 'border-purple-300 bg-purple-50' : 'border-gray-200 hover:border-purple-400 hover:bg-purple-50/50 bg-white'}
+                        `}
+                      >
+                        <Target size={32} className="text-purple-500 mb-2 opacity-80 shrink-0" />
+                        <h3 className="text-base md:text-lg font-bold text-purple-700 text-center leading-tight mb-2">Pour un conflit<br/>d'intérêts</h3>
+                        <p className="text-xs text-purple-800/80 text-center leading-tight italic px-1 mb-2 flex-1">Désaccord sur les objectifs, compétition pour des ressources ou des gains.</p>
+                        <p className="text-[10px] uppercase font-bold text-purple-600/40 text-center hidden md:block tracking-wider mt-auto">Glissez ici</p>
+                      </div>
+
+                      {/* ZONE INTERPERSONNEL */}
+                      <div 
+                        data-zone="INTERPERSONNEL"
+                        onClick={() => handleChoice('INTERPERSONNEL')}
+                        className={`rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-start p-4 transition-all duration-300 cursor-pointer min-h-[170px]
+                          ${dragState?.isDragging ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-400 hover:bg-orange-50/50 bg-white'}
+                        `}
+                      >
+                        <Users size={32} className="text-orange-500 mb-2 opacity-80 shrink-0" />
+                        <h3 className="text-base md:text-lg font-bold text-orange-700 text-center leading-tight mb-2">Pour un conflit<br/>interpersonnel</h3>
+                        <p className="text-xs text-orange-800/80 text-center leading-tight italic px-1 mb-2 flex-1">Tensions liées aux émotions, aux valeurs ou aux personnalités.</p>
+                        <p className="text-[10px] uppercase font-bold text-orange-600/40 text-center hidden md:block tracking-wider mt-auto">Glissez ici</p>
+                      </div>
+
+                    </div>
+                  </>
+                )}
+
+              </div>
+
+            </div>
+
+            {/* CALQUE FLOTTANT DU DRAG & DROP */}
+            {dragState && dragState.isDragging && currentItem && (
+              <div
+                className="fixed z-[250] bg-white rounded-[1.5rem] shadow-2xl border-2 border-[#1a5b82] px-4 md:px-5 py-4 md:py-5 flex flex-col justify-center gap-2 pointer-events-none opacity-90"
+                style={{
+                  left: dragState.x,
+                  top: dragState.y,
+                  width: dragState.width,
+                  height: dragState.height,
+                  margin: 0,
+                  transform: 'scale(1.05) rotate(-2deg)',
+                  transition: 'transform 0.1s'
+                }}
+              >
+                <div className="flex justify-center text-[#1a5b82] mb-1">
+                  <GripVertical size={20} />
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-sm md:text-base font-medium text-center text-gray-800 leading-relaxed">
+                    {currentItem.text}
+                  </p>
+                </div>
+              </div>
+            )}
+
+          </div>
+        );
+      }
+
+      const root = createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>

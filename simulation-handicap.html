@@ -261,16 +261,16 @@ const ROUNDS = [
     id: 6, rubrique: "L'appel du CFA", path:"B",
     shouldSkip: (state) => state.flags.path !== "B",
     forced: true,
-    onEnter: () => "Yasmine accepte sans répondre. Une semaine plus tard, son référent pédagogique du CFA vous contacte.",
-    characterIntro: { name:"M. Renard", role:"Formateur référent - CFA", detail:"Il assure le suivi pédagogique de Yasmine et veille à la conformité de son parcours de formation.", img:"renard.jpg" },
-    contextBefore: "Formateur CFA : « Bonjour Monsieur Karim. Yasmine m'a indiqué qu'elle n'est plus affectée au fournil depuis deux semaines. Pour valider son diplôme, elle doit justifier d'une expérience de fabrication sur l'ensemble de l'année. Si la situation reste en l'état, cela posera un problème pour la certification. Pouvons-nous trouver une solution ensemble ? »",
+    onEnter: () => "Yasmine accepte sans répondre. Une semaine plus tard, sa référente pédagogique du CFA vous contacte.",
+    characterIntro: { name:"Mme Renard", role:"Formatrice référente - CFA", detail:"Elle assure le suivi pédagogique de Yasmine et veille à la conformité de son parcours de formation.", img:"renard.jpg" },
+    contextBefore: "Formatrice CFA : « Bonjour Monsieur Karim. Yasmine m'a indiqué qu'elle n'est plus affectée au fournil depuis deux semaines. Pour valider son diplôme, elle doit justifier d'une expérience de fabrication sur l'ensemble de l'année. Si la situation reste en l'état, cela posera un problème pour la certification. Pouvons-nous trouver une solution ensemble ? »",
     question: "Un seul choix s'impose.",
     options: [
       { id:"A", text:"Reconnaître l'erreur et reprendre la démarche dans le bon ordre", narrative:true, type:ChoiceType.BONNE_PRATIQUE,
         fullText:"« Vous avez raison. J'ai voulu agir rapidement et je n'ai pas mesuré les conséquences. Je vais contacter le médecin du travail cette semaine pour organiser une visite de poste au fournil. Je recontacte également l'AGEFIPH pour identifier les équipements adaptés. Yasmine doit pouvoir terminer sa formation. »" }
     ],
     responses: {
-      A: [{ condition:()=>true, text:"Le formateur : « Très bien. Je dois être tenu informé des aménagements mis en place pour pouvoir valider la progression de Yasmine. Nous restons en contact. »", score:3, cDelta:1, setFlags:{ cfaInLoop:true }, feedback:"Dans le secteur artisanal, modifier les conditions de travail d'un apprenti en situation de handicap ne peut pas se faire unilatéralement. La médecine du travail, le CFA et l'AGEFIPH sont les trois interlocuteurs à mobiliser simultanément. Une bonne intention ne suffit pas à garantir la conformité du dispositif.",
+      A: [{ condition:()=>true, text:"La formatrice : « Très bien. Je dois être tenue informée des aménagements mis en place pour pouvoir valider la progression de Yasmine. Nous restons en contact. »", score:3, cDelta:1, setFlags:{ cfaInLoop:true }, feedback:"Dans le secteur artisanal, modifier les conditions de travail d'un apprenti en situation de handicap ne peut pas se faire unilatéralement. La médecine du travail, le CFA et l'AGEFIPH sont les trois interlocuteurs à mobiliser simultanément. Une bonne intention ne suffit pas à garantir la conformité du dispositif.",
         banner:"🔴 La relation avec Yasmine est fragilisée. Elle a eu le sentiment d'avoir été gérée sans être consultée.\n🟠 Deux semaines de formation au fournil sont à rattraper." }]
     }
   },
@@ -902,7 +902,7 @@ function App() {
               <div className="p-4 mt-4 bg-stone-50 rounded-xl border border-stone-200">
                 <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Les 3 interlocuteurs clés</p>
                 <div className="space-y-1.5 text-xs text-stone-600">
-                  {[["Médecine du travail","visite de poste, préconisations"],["AGEFIPH","financement, accompagnement TPE"],["CFA / formateur","validation de la formation"]].map(([name,desc])=><div key={name} className="flex gap-2"><span className="text-emerald-400">●</span><span><strong>{name}</strong> - {desc}</span></div>)}
+                  {[["Médecine du travail","visite de poste, préconisations"],["AGEFIPH","financement, accompagnement TPE"],["CFA / formatrice","validation de la formation"]].map(([name,desc])=><div key={name} className="flex gap-2"><span className="text-emerald-400">●</span><span><strong>{name}</strong> - {desc}</span></div>)}
                 </div>
               </div>
             </div>

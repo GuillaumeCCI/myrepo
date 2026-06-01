@@ -29,6 +29,28 @@
     .thread-scroll::-webkit-scrollbar { width: 6px; }
     .thread-scroll::-webkit-scrollbar-track { background: transparent; }
     .thread-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    /* ── Fullscreen spotlight ── */
+    @keyframes spotlightPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,.7), 0 6px 24px rgba(99,102,241,.4); transform: scale(1); }
+      50%      { box-shadow: 0 0 0 10px rgba(99,102,241,.2), 0 6px 24px rgba(99,102,241,.5); transform: scale(1.08); }
+    }
+    @keyframes spotlightArrow {
+      0%,100% { opacity: 1; transform: translateY(0); }
+      50%     { opacity: .7; transform: translateY(-3px); }
+    }
+    @keyframes spotlightFadeIn {
+      from { opacity: 0; transform: translateY(6px) scale(.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes spotlight-overlay-in {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .spotlight-btn     { animation: spotlightPulse 2s ease-in-out infinite !important; }
+    .spotlight-tooltip { animation: spotlightFadeIn .4s .5s ease both; }
+    .spotlight-arrow   { animation: spotlightArrow 1.2s ease-in-out infinite; }
+    .spotlight-overlay { animation: spotlight-overlay-in 0.4s ease forwards; }
   </style>
 </head>
 <body>
@@ -36,6 +58,149 @@
 
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
+
+    /* ─── Fullscreen helpers ─── */
+    const requestFS = (el) => {
+      if (el.requestFullscreen) return el.requestFullscreen();
+      if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+      if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+      if (el.msRequestFullscreen) return el.msRequestFullscreen();
+    };
+    const exitFS = () => {
+      if (document.exitFullscreen) return document.exitFullscreen();
+      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+      if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+      if (document.msExitFullscreen) return document.msExitFullscreen();
+    };
+    const isFullscreenNow = () =>
+      !!(document.fullscreenElement || document.webkitFullscreenElement ||
+         document.mozFullScreenElement || document.msFullscreenElement);
+
+    /* ─── Fullscreen Button ─── */
+    const FullscreenBtn = ({ isFS, onToggle, showSpotlight }) => {
+      const EnterIcon = () => (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+          <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        </svg>
+      );
+      const ExitIcon = () => (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+          <path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+        </svg>
+      );
+
+      return (
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+          <button
+            onClick={onToggle}
+            title={isFS ? 'Quitter le plein écran' : 'Plein écran'}
+            className={showSpotlight ? 'spotlight-btn' : ''}
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              border: showSpotlight ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.15)',
+              background: showSpotlight ? '#ffffff' : 'rgba(255,255,255,0.08)',
+              color: showSpotlight ? '#1e293b' : 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'border .2s, background .2s, color .2s',
+              flexShrink: 0,
+              position: 'relative',
+              zIndex: 62,
+            }}
+          >
+            {isFS ? <ExitIcon /> : <EnterIcon />}
+          </button>
+
+          {/* Tooltip apparaît en dessous du bouton */}
+          {showSpotlight && (
+            <div
+              className="spotlight-tooltip"
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 12px)',
+                right: 0,
+                background: '#1c1917',
+                color: 'white',
+                borderRadius: '10px',
+                padding: '8px 14px',
+                fontSize: '12px',
+                fontWeight: '700',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 6px 24px rgba(0,0,0,0.45)',
+                pointerEvents: 'none',
+                letterSpacing: '0.01em',
+                zIndex: 63,
+              }}
+            >
+              {/* Flèche vers le haut */}
+              <span
+                className="spotlight-arrow"
+                style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '11px',
+                  width: 0,
+                  height: 0,
+                  borderLeft: '6px solid transparent',
+                  borderRight: '6px solid transparent',
+                  borderBottom: '6px solid #1c1917',
+                }}
+              />
+              Passer en plein écran !
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    /* ─── Spotlight Overlay (découpe sur le bouton plein écran) ─── */
+    const SpotlightOverlay = ({ onDismiss }) => (
+      <div
+        className="spotlight-overlay"
+        onClick={onDismiss}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 59,
+          background: 'transparent',
+          cursor: 'pointer',
+        }}
+      >
+        {/* Trou dans l'obscurité — box-shadow spread sur tout l'écran sauf la zone du bouton */}
+        <div style={{
+          position: 'absolute',
+          top: '3px',
+          right: '60px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '14px',
+          boxShadow: '0 0 0 9999px rgba(10,15,30,0.80)',
+          pointerEvents: 'none',
+        }} />
+
+        {/* Message en bas */}
+        <div style={{
+          position: 'absolute',
+          bottom: '28px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: 'rgba(255,255,255,0.55)',
+          fontSize: '12px',
+          fontWeight: '600',
+          letterSpacing: '0.06em',
+          userSelect: 'none',
+          whiteSpace: 'nowrap',
+        }}>
+          Cliquez n'importe où pour ignorer
+        </div>
+      </div>
+    );
 
     const TypingIndicator = () => (
       <div className="flex items-center gap-1.5 px-4 py-3 bg-white border border-slate-200 rounded-2xl rounded-tl-sm w-fit shadow-sm msg-enter">
@@ -98,7 +263,10 @@
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     );
     const IconBread = ({ size = 24, className = '' }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 11c0-3.87 3.58-7 8-7s8 3.13 8 7c0 1.38-.46 2.67-1.24 3.74L17 21H7l-.76-6.26C5.46 13.67 5 12.38 5 11z"/><path d="M9 21v-6"/><path d="M15 21v-6"/></svg>
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/>
+        <line x1="6" y1="17" x2="18" y2="17"/>
+      </svg>
     );
     const IconMic = ({ size = 16, className = '' }) => (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
@@ -389,6 +557,36 @@
     };
 
     function App() {
+      const appRef = useRef(null);
+      const [isFS, setIsFS] = useState(false);
+      const [showSpotlight, setShowSpotlight] = useState(true);
+
+      // Sync fullscreen state with browser events
+      useEffect(() => {
+        const onFSChange = () => setIsFS(isFullscreenNow());
+        document.addEventListener('fullscreenchange', onFSChange);
+        document.addEventListener('webkitfullscreenchange', onFSChange);
+        document.addEventListener('mozfullscreenchange', onFSChange);
+        document.addEventListener('MSFullscreenChange', onFSChange);
+        return () => {
+          document.removeEventListener('fullscreenchange', onFSChange);
+          document.removeEventListener('webkitfullscreenchange', onFSChange);
+          document.removeEventListener('mozfullscreenchange', onFSChange);
+          document.removeEventListener('MSFullscreenChange', onFSChange);
+        };
+      }, []);
+
+      // Le spotlight ne se ferme que sur action utilisateur (clic overlay ou bouton)
+
+      const handleFSToggle = () => {
+        setShowSpotlight(false);
+        if (isFS) {
+          exitFS();
+        } else {
+          requestFS(appRef.current || document.documentElement);
+        }
+      };
+
       const [appState, setAppState] = useState('intro'); // intro, playing, transition
       const [transitionData, setTransitionData] = useState(null);
       const [phase, setPhase] = useState(0);
@@ -467,7 +665,6 @@
           null
         ];
         if (choiceCindy === 'A') {
-          // Refus total — Cindy envoie arrêt maladie
           cindyShifts = [
             { t: 'ARRÊT MALADIE', l: 'Absent', c: stError },
             { t: 'ARRÊT MALADIE', l: 'Absent', c: stError },
@@ -879,7 +1076,15 @@ Marcel`}</EmailMsg>
       };
 
       return (
-        <div className="relative flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden flex-col md:flex-row-reverse">
+        <div ref={appRef} className="relative flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden flex-col md:flex-row-reverse">
+
+          {/* ── Spotlight overlay ── */}
+          {showSpotlight && <SpotlightOverlay onDismiss={() => setShowSpotlight(false)} />}
+
+          {/* Fullscreen button — rendu en fixed pour passer au-dessus de l'overlay (z-59) */}
+          <div style={{ position: 'fixed', top: '11px', right: '68px', zIndex: 62 }}>
+            <FullscreenBtn isFS={isFS} onToggle={handleFSToggle} showSpotlight={showSpotlight} />
+          </div>
 
           {/* RIGHT PANEL: PLANNING GRID / CALENDAR */}
           <div className="flex-1 flex flex-col min-w-0 bg-white z-10 overflow-hidden relative">
@@ -897,6 +1102,8 @@ Marcel`}</EmailMsg>
                 </nav>
               </div>
               <div className="flex items-center gap-3">
+                {/* Espace réservé pour aligner le bouton plein écran (rendu en fixed au-dessus) */}
+                <div style={{ width: '34px', height: '34px', flexShrink: 0 }} />
                 <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-sm shadow-sm">V</div>
               </div>
             </div>
@@ -1166,7 +1373,7 @@ Marcel`}</EmailMsg>
           </div>
 
           {/* OVERLAYS D'IMMERSION */}
-          {appState === 'intro' && (
+          {appState === 'intro' && !showSpotlight && (
             <div className="absolute inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="max-w-md w-full bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-500 border border-slate-100">
                 <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-10 text-center relative overflow-hidden">

@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Brief d'équipe · Les Trois Épis</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+ body{margin:0;padding:0;}
+.app-wrapper{font-family:'DM Sans',sans-serif;}
+.font-serif{font-family:'DM Serif Display',serif!important;}
+.custom-scrollbar::-webkit-scrollbar{width:4px;}
+.custom-scrollbar::-webkit-scrollbar-track{background:transparent;}
+.custom-scrollbar::-webkit-scrollbar-thumb{background:#d4c9b5;border-radius:10px;}
+ @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+ @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+ @keyframes scaleIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}
+ @keyframes msgSlideIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+ @keyframes newMsgPulse{0%{box-shadow:0 0 0 0 rgba(180,140,60,.35),0 1px 4px rgba(0,0,0,.08);}50%{box-shadow:0 0 0 6px rgba(180,140,60,.10),0 1px 4px rgba(0,0,0,.08);}100%{box-shadow:0 0 0 0 rgba(180,140,60,0),0 1px 4px rgba(0,0,0,.08);}}
+ @keyframes spotlightPulse{0%,100%{box-shadow:0 0 0 0 rgba(44,36,21,.4),0 8px 32px rgba(0,0,0,.25);transform:scale(1);}50%{box-shadow:0 0 0 8px rgba(44,36,21,.1),0 8px 32px rgba(0,0,0,.25);transform:scale(1.05);}}
+ @keyframes spotlightFadeIn{from{opacity:0;transform:translateY(6px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+ @keyframes spotlightArrow{0%,100%{opacity:1;transform:translateY(0);}50%{opacity:.7;transform:translateY(-3px);}}
+ @keyframes deltaFade{0%{opacity:0;transform:translateY(6px);}15%{opacity:1;transform:translateY(0);}75%{opacity:1;}100%{opacity:0;transform:translateY(-6px);}}
+ @keyframes badgePop{0%{opacity:0;transform:scale(0.6) rotate(-8deg);}70%{transform:scale(1.1) rotate(2deg);}100%{opacity:1;transform:scale(1) rotate(0);}}
+ @keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(44,36,21,.15);}70%{box-shadow:0 0 0 6px rgba(44,36,21,0);}100%{box-shadow:0 0 0 0 rgba(44,36,21,0);}}
+.anim-fadeInUp{animation:fadeInUp.3s ease both;}
+.anim-fadeIn{animation:fadeIn.25s ease both;}
+.anim-scaleIn{animation:scaleIn.3s ease both;}
+.anim-delta{animation:deltaFade 3s ease both;}
+.anim-badge{animation:badgePop.5s cubic-bezier(.34,1.56,.64,1) both;}
+.anim-pulse-ring{animation:pulseRing 2s cubic-bezier(.4,0,.6,1) infinite;}
+.spotlight-btn{animation:spotlightPulse 2s ease-in-out infinite!important;}
+.spotlight-tooltip{animation:spotlightFadeIn.4s.5s ease both;}
+.spotlight-arrow{animation:spotlightArrow 1.2s ease-in-out infinite;}
+.engagement-bar{transition:width.6s cubic-bezier(.34,1.56,.64,1),background-color.6s ease;}
+ /* Custom utility classes (replaces Tailwind JIT-only classes) */
+.text-10px { font-size: 10px; }
+.text-9px { font-size: 9px; }
+.text-11px { font-size: 11px; }
+.max-h-640 { max-height: 640px; }
+.max-w-88p { max-width: 88%; }
+.max-w-82p { max-width: 82%; }
+.left-10px { left: 10px; }
+.bg-stone-50-half { background-color: rgba(250,250,249,.5); }
+.text-white-60 { color: rgba(255,255,255,.6); }
+/* Carnet styles */
+.carnet-page{flex:1;background-color:#fdfaf3;position:relative;overflow:hidden;background-image:repeating-linear-gradient(#fdfaf3 0px,#fdfaf3 31px,#b2dced 32px);font-family:'Patrick Hand',cursive;font-size:24px;line-height:32px;color:#1a252f;padding:31px 40px 31px 50px;box-sizing:border-box;}
+.carnet-page.left{border-radius:8px 0 0 8px;box-shadow:inset -15px 0 20px -15px rgba(0,0,0,0.3);}
+.carnet-page.right{border-radius:0 8px 8px 0;box-shadow:inset 15px 0 20px -15px rgba(0,0,0,0.3);}
+.carnet-list{margin:0;padding-left:20px;list-style-type:none;}
+.carnet-list li{position:relative;margin-bottom:0;}
+.carnet-list li::before{content:'-';position:absolute;left:-20px;color:#1a252f;}
+.carnet-scribble{position:relative;display:inline-block;color:#555;}
+.carnet-scribble::after{content:'';position:absolute;top:50%;left:-5%;width:110%;height:4px;background-color:#1a252f;border-radius:50%;transform:rotate(-2deg);opacity:0.8;}
+.carnet-circle{border:2px solid #2980b9;border-radius:50% 40% 60% 30% / 30% 60% 40% 50%;padding:0px 6px;display:inline-block;transform:rotate(1deg);}
+.carnet-arrow{color:#c0392b;font-weight:bold;display:inline-block;transform:rotate(15deg);margin:0 6px;}
+.carnet-hl{background-color:rgba(255,235,59,0.6);padding:2px 6px;border-radius:3px 8px 5px 2px;}
+.carnet-hl-green{background-color:rgba(139,195,74,0.5);padding:0px 4px;border-radius:5px 2px 8px 3px;}
+.carnet-hl-red{background-color:rgba(255,138,138,0.5);padding:0px 4px;border-radius:3px 6px 4px 2px;}
+.carnet-date{font-family:'Caveat',cursive;font-weight:700;font-size:32px;color:#c0392b;margin:0;display:inline-block;border-bottom:2px solid #c0392b;transform:rotate(-1deg);line-height:40px;}
+.carnet-stop{font-family:'Caveat',cursive;color:#c0392b;font-size:48px;font-weight:bold;line-height:40px;display:inline-block;transform:rotate(-2deg);border:3px solid #c0392b;padding:0 10px;border-radius:5px;}
+.carnet-postit{position:absolute;top:350px;right:40px;width:200px;background-color:#fcf174;box-shadow:3px 5px 10px rgba(0,0,0,0.2);transform:rotate(-3deg);padding:15px;font-family:'Caveat',cursive;font-size:22px;line-height:26px;color:#222;z-index:10;}
+.carnet-spine{position:absolute;top:4px;bottom:4px;left:50%;width:60px;transform:translateX(-50%);background:linear-gradient(to right,rgba(255,255,255,0) 0%,rgba(0,0,0,0.05) 40%,rgba(0,0,0,0.2) 50%,rgba(0,0,0,0.05) 60%,rgba(255,255,255,0) 100%);pointer-events:none;z-index:5;}
+.carnet-nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;background-color:#fdfaf3;border:2px solid #1a252f;border-radius:50%;font-size:22px;font-weight:bold;color:#1a252f;cursor:pointer;z-index:20;box-shadow:0 4px 10px rgba(0,0,0,0.3);display:flex;justify-content:center;align-items:center;transition:all 0.2s ease;}
+.carnet-nav-btn:hover{background-color:#fff;transform:translateY(-50%) scale(1.1);}
+.carnet-nav-btn:disabled{opacity:0;pointer-events:none;}
+.carnet-nav-btn.prev{left:-25px;}
+.carnet-nav-btn.next{right:-25px;}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const ChevronRight=({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 18 15 12 9 6"/></svg>;
+const RotateCcw=({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0.49-4.44"/></svg>;
+const Maximize=({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;
+const Minimize=({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
+const SidebarIcon=({size=20,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>;
+const PlayIcon=({size=12,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+const Check=({size=12,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>;
+const Lightbulb=({size=16,className=""})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8A6 6 0 0 0 6 8c0 1.23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>;
+
+let _audioCtx=null;
+const getCtx=()=>{if(!_audioCtx)_audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();return _audioCtx;};
+const playSound=(type)=>{
+ try{
+ const ctx=getCtx();
+ const master=ctx.createGain();
+ master.gain.setValueAtTime(0,ctx.currentTime);
+ master.gain.linearRampToValueAtTime(0.18,ctx.currentTime+0.02);
+ master.connect(ctx.destination);
+ const note=(freq,start,dur)=>{const osc=ctx.createOscillator();const g=ctx.createGain();osc.connect(g);g.connect(master);osc.type='sine';osc.frequency.setValueAtTime(freq,ctx.currentTime+start);g.gain.setValueAtTime(1,ctx.currentTime+start);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);osc.start(ctx.currentTime+start);osc.stop(ctx.currentTime+start+dur+0.05);};
+ if(type==='success'){note(330,0,.35);note(415,.1,.30);note(494,.22,.40);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.75);}
+ else if(type==='neutral'){note(370,0,.30);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.45);}
+ else if(type==='fail'){note(370,0,.28);note(294,.18,.35);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.60);}
+ else if(type==='msg'){master.gain.linearRampToValueAtTime(0.07,ctx.currentTime+0.01);note(620,0,.12);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.18);}
+ else if(type==='click'){master.gain.linearRampToValueAtTime(0.06,ctx.currentTime+0.005);note(520,0,.08);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.12);}
+ else if(type==='choices'){master.gain.linearRampToValueAtTime(0.07,ctx.currentTime+0.01);note(440,0,.10);note(520,.08,.12);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.25);}
+ else if(type==='hover'){master.gain.linearRampToValueAtTime(0.03,ctx.currentTime+0.005);note(480,0,.07);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.10);}
+ else if(type==='nearmiss'){note(440,0,.20);note(370,.15,.30);master.gain.linearRampToValueAtTime(0,ctx.currentTime+.55);}
+ else if(type==='page'){
+   const bufSize=ctx.sampleRate*0.18;const buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);const data=buf.getChannelData(0);for(let i=0;i<bufSize;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/bufSize,1.8);
+   const src=ctx.createBufferSource();src.buffer=buf;
+   const bpf=ctx.createBiquadFilter();bpf.type='bandpass';bpf.frequency.setValueAtTime(2200,ctx.currentTime);bpf.frequency.linearRampToValueAtTime(800,ctx.currentTime+0.18);bpf.Q.value=0.8;
+   src.connect(bpf);bpf.connect(master);master.gain.linearRampToValueAtTime(0.22,ctx.currentTime+0.01);master.gain.linearRampToValueAtTime(0,ctx.currentTime+0.18);src.start();src.stop(ctx.currentTime+0.20);
+ }
+ }catch(e){}
+};
+let _lastHoverOptId=null;
+const playHover=(id)=>{if(_lastHoverOptId===id)return;_lastHoverOptId=id;playSound('hover');};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AGENDA BLOCKS
+// ─────────────────────────────────────────────────────────────────────────────
+const BLOCK_ICONS={
+ table:   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+ chiffres:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+ operationnel:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>,
+ conflit: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+ cloture: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+};
+const AGENDA_BLOCKS=[
+ {id:'table',   label:'Tour de table',        rounds:[0,1],          required:true,  desc:'Donner la parole à chacun avant d\'aborder les sujets.'},
+ {id:'chiffres',label:'Chiffres & résultats', rounds:[2,3],          required:true,  desc:'Annoncer les résultats et analyser les causes ensemble.'},
+ {id:'operationnel',label:'Points opérationnels',rounds:[4,5,6,7],   required:false, desc:'Profil junior, rituel d\'accueil, vente multicanal, fournisseur.'},
+ {id:'conflit', label:'Gestion du conflit',   rounds:[8,9,10,11,12], required:false, desc:'Détecter et résoudre la tension entre Sofia et Leïla.'},
+ {id:'cloture', label:'Clôture',              rounds:[13,14],        required:true,  desc:'Conclure le brief et donner un feedback individuel à Marc.'},
+];
+const DEFAULT_AGENDA=AGENDA_BLOCKS.map(b=>b.id);
+
+// Aplatit l'agenda en liste de roundIds
+const flattenAgenda=(agendaIds,skipped=[])=>agendaIds.filter(id=>!skipped.includes(id)).flatMap(id=>AGENDA_BLOCKS.find(b=>b.id===id).rounds);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROUNDS - VERSION CORRIGÉE (cohérence narrative complète)
+// ─────────────────────────────────────────────────────────────────────────────
+const ROUNDS=[
+
+ // N0 : Ouverture
+ {id:0,phase:"Ouverture du brief",critere:" ",critClass:"C26",isNew:false,
+ hint:"Le premier mot d'un manager donne le ton pour toute la réunion. Une ouverture qui oriente d'emblée vers les chiffres ferme l'espace avant même qu'il s'ouvre.",
+ ctx:"Il est 8h45. Sofia consulte son téléphone. Marc est resté debout près de la porte. Leïla s'installe sans un mot. Vous prenez la parole.",
+ options:[
+ {id:"A",label:"Aller droit au but sur les problèmes",text:"« Bonjour à tous. La semaine a été compliquée niveau chiffres, donc on a pas mal de choses à voir ce matin. On attaque directement sur ce qui a coincé. »"},
+ {id:"B",label:"Prendre le pouls de l'équipe avant les chiffres",text:"« Bonjour tout le monde. Avant qu'on se plonge dans les résultats, je voulais faire un petit point avec vous. Comment vous l'avez ressentie, cette semaine ? »"},
+ {id:"C",label:"Cadrer avec un tour de table structuré",text:"« Bonjour. Pour qu'on soit efficaces ce matin, je vous propose un rapide tour de table avant de passer aux chiffres. Sofia, tu veux bien ouvrir le bal ? »"}
+ ],
+ feedback:{
+ A:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"L'intention d'aller droit au but se comprend, mais attaquer directement par les problèmes verrouille l'échange avant même qu'il ne commence. L'adhésion de l'équipe se gagne en posant d'abord un cadre sécurisant, pas en imposant l'urgence.",
+ narratif:"Sofia verrouille son écran, le visage fermé. Marc hoche la tête avec appréhension, tandis que Leïla attend en silence. L'attention est là, mais l'atmosphère s'alourdit instantanément."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Lancer la réunion de manière chaleureuse (comment s'est passée votre semaine) ou plus structurée (on va faire un tour de table) sont deux approches qui fonctionnent très bien. L'essentiel est atteint : vous avez posé un cadre sécurisant.",
+ text:"S'intéresser au ressenti de l'équipe avant d'aborder les chiffres est un excellent moteur d'adhésion. instaurer un climat de confiance avant de passer au constat opérationnel.",
+ narratif:"Sofia lève les yeux de son écran. Marc s'assoit en ébauchant un sourire et Leïla se redresse, plus réceptive. L'atmosphère se détend visiblement."},
+ C:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:0,par:1,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Lancer la réunion de manière structurée (tour de table) comme de manière chaleureuse (comment s'est passée votre semaine) sont deux entrées en matière parfaitement valides. L'essentiel est atteint : vous avez posé un cadre sécurisant.",
+ text:"Cadrer l'échange d'emblée tout en interpellant Sofia poliment prouve votre volonté d'équilibrer les temps de parole. C'est une approche structurée et redoutablement efficace.",
+ narratif:"Marc prend place en hochant la tête. Sofia pose son téléphone sur la table et Leïla dégaine son stylo. L'équipe est en condition."}
+ }
+ },
+
+ // N1 : Tour de table
+ {id:1,phase:"Tour de table",critere:" ",critClass:"C26",isNew:false,
+ hint:"Regardez qui n'a pas encore parlé. Nommer directement quelqu'un qui hésite est toujours plus efficace qu'une invitation générale.",
+ ctx:"Sofia a pris la parole en premier. Elle a évoqué sa semaine brièvement. Marc et Leïla l'ont écoutée sans intervenir.",
+ ctxByPrev:{
+ A:"L'ambiance est encore un peu lourde. Sofia a quand même pris la parole en premier et résumé sa semaine sommairement. Marc et Leïla n'ont pas réagi.",
+ B:"La question a détendu l'atmosphère. Sofia a parlé en premier, d'un ton plus ouvert qu'à l'habitude. Marc et Leïla l'ont écoutée sans intervenir.",
+ C:"Le tour de table a démarré sans friction. Sofia, sollicitée en premier, a résumé sa semaine. Marc et Leïla attendent leur tour en silence."
+ },
+ options:[
+ {id:"A",label:"Ouvrir la parole à tout le groupe",text:"« Ok, merci Sofia. Est-ce que quelqu'un d'autre a quelque chose à ajouter sur la semaine ? »"},
+ {id:"B",label:"Donner la parole à Marc",text:"« C'est noté, merci Sofia. Marc, comment ça s'est passé au fournil de ton côté ces derniers jours ? »"},
+ {id:"C",label:"Solliciter Leïla directement",text:"« Merci pour ce retour Sofia. Leïla, comment tu as perçu l'affluence en boutique cette semaine de ton côté ? »"},
+ {id:"D",label:"Passer directement aux chiffres",text:"« Merci Sofia, au moins c'est clair et direct. Bon, le temps file, on va passer tout de suite aux chiffres de la semaine. »"}
+ ],
+ optionsByPrev:{
+ A:[
+ {id:"A",label:"Ouvrir la parole à tout le groupe",text:"« Ok, merci Sofia. Est-ce que quelqu'un d'autre a quelque chose à ajouter sur la semaine ? »"},
+ {id:"B",label:"Donner la parole à Marc",text:"« C'est noté, merci Sofia. Marc, comment ça s'est passé au fournil de ton côté ces derniers jours ? »"},
+ {id:"C",label:"Solliciter Leïla directement",text:"« Merci pour ce retour Sofia. Leïla, comment tu as perçu l'affluence en boutique cette semaine de ton côté ? »"},
+ {id:"D",label:"Laisser Sofia continuer à piloter",text:"« Merci Sofia. Est-ce que tu as une idée de ce qu'on pourrait faire différemment cette semaine ? »"}
+ ]
+ },
+ feedbackByPrev:{
+ A:{
+ D:{note:0,eng:-2,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:1,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"En laissant Sofia piloter après avoir imposé un démarrage directif, vous confirmez que seule son point de vue compte. Marc et Leïla se sentent spectateurs, et l'atmosphère déjà pesante s'installe durablement.",
+ narratif:"Marc et Leïla échangent un regard. Sofia prend les rênes comme si la réunion lui appartenait. Le reste de l'équipe se mure dans le silence."}
+ }
+ },
+ feedback:{
+ A:{note:2,eng:0,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:0,par:1,fac:0},nearMiss:false,alt:null,
+ ref:"Le conseil du coach :L'intention d'ouvrir le dialogue est là. Mais face à une personnalité qui prend beaucoup de place, une question à la cantonade fait souvent chou blanc. La prochaine fois, n'hésitez pas à nommer directement la personne que vous voulez entendre pour l'aider à se lancer.",
+ text:"L'invitation au groupe est bien intentionnée, mais trop large : face au silence, vous avez dû désigner Marc pour relancer. Les profils en retrait ont besoin d'être nommés directement dès le départ pour oser prendre la parole.",
+ narratif:"Un blanc s'installe. Personne ne se lance. Vous nommez Marc pour récupérer la situation. Il prend la parole à contrecœur, brièvement. Le tour de table reste déséquilibré."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Que vous donniez la parole en premier à Marc ou à Leïla importe peu ici. Le vrai coup de maître managérial, c'est d'avoir le réflexe de distribuer activement la parole vers ceux qui restent silencieux.",
+ text:"La transition est habile : vous valorisez d'abord Sofia, puis vous amenez Marc sur un terrain de confort (le fournil). C'est une excellente adaptation à son profil junior.",
+ narratif:"Surpris qu'on s'adresse à lui, Marc se redresse. Il prend la parole prudemment et finit par évoquer des soucis de cadence sur les cuissons du jeudi."},
+ C:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Cibler Leïla (C) ou Marc (B) démontre une maîtrise équivalente de la distribution de la parole.",
+ text:"Solliciter Leïla sur son domaine direct d'expertise la valorise et facilite sa prise de parole. C'est une excellente illustration du rôle d'animateur garant de l'équilibre.",
+ narratif:"Leïla lève la tête, étonnée d'être sollicitée si vite. Elle prend confiance et explique que les retours clients ont été difficiles à gérer seule cette semaine."},
+ D:{note:0,eng:-2,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"Sacrifier le temps de parole pour grappiller deux minutes de réunion est une erreur tactique. Marc et Leïla se sentent exclus, ce qui enfreint la règle de base de la participation.",
+ narratif:"Marc se replonge aussitôt dans ses notes. Leïla hoche vaguement la tête en silence. Sofia a l'air ravie d'avoir plié le sujet. La fenêtre de dialogue vient de se refermer."}
+ }
+ },
+
+ // N2 : Annonce des résultats
+ // CORRECTION : narratif C (Sofia plus neutre, réaction moins chargée)
+ {id:2,phase:"Annonce des résultats",critere:" & crit.4",critClass:"C26",isNew:false,
+ hint:"Annoncer un résultat négatif sans ouvrir de discussion crée de la défense. Posez le fait, puis invitez immédiatement à l'analyse.",
+ ctx:"La semaine a été tendue en boutique et cela se ressent : le chiffre d'affaires clôture à -8 % par rapport à votre objectif. Il faut l'annoncer à l'équipe.",
+ options:[
+ {id:"A",label:"Annoncer le chiffre et exiger un redressement",text:"« Bon, on passe aux chiffres. On finit la semaine à -8 % sur l'objectif. C'est clairement en dessous de ce qu'on doit faire, il va falloir redresser la barre rapidement. »"},
+ {id:"B",label:"Poser le constat et inviter à analyser ensemble",text:"« Côté chiffres, on est à -8 % de notre objectif cette semaine. Avant de tirer des conclusions ou de changer quoi que ce soit, j'aimerais qu'on essaie d'identifier ensemble ce qui a pu coincer. »"},
+ {id:"C",label:"Partager son inquiétude personnelle",text:"« Au niveau des chiffres, on est à -8 % par rapport à nos attentes. Je vous avoue que cette baisse me préoccupe pas mal pour la dynamique du mois. »"}
+ ],
+ feedback:{
+ A:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"L'injonction à « redresser la barre » crée immédiatement une crispation. Pour être efficace, il vaut mieux poser le constat de manière neutre, puis inviter l'équipe à analyser sereinement la situation.",
+ narratif:"Sofia se referme en croisant les bras. Marc fuit votre regard. Leïla reste de marbre. L'équipe encaisse le coup sans mot dire."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"En privilégiant le « ensemble », vous transformez un mauvais chiffre en un moteur d'intelligence collective. Parler « d'identifier » ce qui a coincé prouve que vous cherchez des solutions, pas des coupables.",
+ narratif:"Marc redresse la tête. Sofia prend les devants en évoquant les ruptures de stocks, et Leïla approuve d'un signe de tête. La machine de l'équipe est relancée."},
+ C:{note:2,eng:-1,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:1,par:0,fac:0},nearMiss:true,alt:null,
+ ref:"Le conseil du coach :Jouer la carte de l'honnêteté est louable, mais il manque le pont vers l'action. Pour éviter de plomber l'ambiance, il faut tout de suite basculer sur le collectif : « voici mon inquiétude, comment on gère ça ensemble ? »",
+ text:"La transparence a ses limites : étaler votre inquiétude sans proposer de plan d'action génère juste de l'anxiété. Le manager doit éclairer le chemin, pas seulement constater le brouillard.",
+ narratif:"Un malaise palpable s'installe. Marc triture son stylo, Leïla fixe le bois de la table, et Sofia hausse les épaules. Personne ne sait par quel bout prendre le problème."}
+ }
+ },
+
+ // N3 : Recherche des causes
+ // CORRECTION : ctx neutralisé ("il est évoqué que" plutôt que "Sofia vient d'évoquer")
+ // CORRECTION : narratif A (Marc ciblé, Sofia réaction plus neutre)
+ {id:3,phase:"Recherche des causes",critere:" ",critClass:"C26",isNew:false,
+ hint:"Avant de cibler un individu sur une difficulté, ouvrir la question à tous. Les causes systémiques remontent mieux dans un espace collectif.",
+ ctx:"La discussion met en lumière un point précis : plusieurs ruptures de produits ont pénalisé les ventes de jeudi soir. Autour de la table, Marc se raidit un peu. C'est lui qui était aux commandes du fournil ce jour-là.",
+ options:[
+ {id:"A",label:"Interroger Marc directement sur son rôle",text:"« Marc, vu que c'est toi qui étais à la production jeudi, tu peux nous expliquer ce qui a coincé sur les stocks en fin de journée ? »"},
+ {id:"B",label:"Ouvrir la question à toute l'équipe",text:"« Ok, on a un vrai sujet sur ces ruptures du jeudi. À votre avis, qu'est-ce qui provoque ça ? Comment vous l'expliquez, au comptoir comme au fournil ? »"},
+ {id:"C",label:"Imposer une procédure de contrôle",text:"« Bon, ces ruptures du jeudi nous coûtent du chiffre. Pour régler ça vite, on va mettre en place une feuille de pointage des stocks à remplir tous les après-midis. »"}
+ ],
+ feedback:{
+ A:{note:2,eng:0,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:1,par:1,fac:0},nearMiss:true,alt:null,
+ ref:"Le conseil du coach :Vouloir comprendre ce qui a coincé est le bon réflexe. Mais pointer directement quelqu'un du doigt devant l'équipe le mettra toujours sur la défensive. Aborder le problème de manière plus globale permet souvent de faire émerger l'info en douceur, sans froisser personne.",
+ text:"Le réflexe d'interroger directement la personne en charge est compréhensible, mais il braque les projecteurs sur Marc devant toute l'équipe. L'obliger à se justifier à froid bloque la parole. Une approche plus large aurait permis de déminer le terrain.",
+ narratif:"Marc se crispe. Il balbutie une explication sur le retard du fournisseur, le regard fuyant. Sofia et Leïla le regardent sans venir à son secours."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"L'inclusion explicite de la vente et de la production (« au comptoir comme au fournil ») déplace le problème de l'individu vers le collectif. C'est un cas d'école d'intelligence collective : la solution devient l'affaire de tous.",
+ narratif:"Le visage de Marc se détend. Ne se sentant plus accusé, il explique le décalage dû à la livraison de farine. Leïla enchaîne sur l'impact client, soutenue par Sofia. Le dialogue est fluide et constructif."},
+ C:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"Dégainer une procédure (le tableau de pointage) pour masquer l'urgence ne résout rien si l'on ignore la racine du problème. En zappant l'analyse collective, vous imposez une contrainte administrative qui sera perçue comme une punition.",
+ narratif:"Marc se replie sur lui-même en fixant la table. Leïla lève les yeux au ciel imperceptiblement. Sofia lâche un « comme vous voulez » qui en dit long sur son absence d'adhésion."}
+ }
+ },
+
+ // N4 : Adapter son management au profil junior
+ // CORRECTION : ctx ("Marc a mentionné" remplacé par formule neutre, sans supposer N1=B)
+ // CORRECTION : narratif A (suppression mention Leïla hors-scène)
+ {id:4,phase:"Adapter son management au profil junior",critere:" ",critClass:"C26",isNew:false,
+ hint:"La culture artisanale valorise la rigueur sur le produit. Marc, junior, a besoin d'être soutenu sans être fragilisé devant ses collègues.",
+ ctx:"Le sujet glisse sur l'organisation des cuissons de fin de journée, dont Marc a la charge. Vous sentez qu'il reste sur la réserve et cherche ses mots. Face à Sofia et Leïla qui ont de l'expérience, il semble mal à l'aise d'exposer ses difficultés techniques.",
+ options:[
+ {id:"A",label:"Recadrer Marc sur la remontée d'informations",text:"« Je comprends Marc, mais si tu as un souci technique sur la prod, n'attends pas la réunion d'équipe pour le remonter. Viens m'en parler en direct dès que ça coince. »"},
+ {id:"B",label:"Proposer un aparté pour l'accompagner",text:"« C'est un bon point d'en parler. Gérer les dernières cuissons avec le rush du soir, c'est un vrai rythme à prendre. Je te propose qu'on se pose tous les deux tout à l'heure pour revoir ton organisation ? »"},
+ {id:"C",label:"Rassurer par la bienveillance",text:"« Ne te prends pas trop la tête avec ça, Marc. Tu es encore en train de prendre tes marques ici, c'est tout à fait normal de tâtonner un peu sur les cuissons au début. »"}
+ ],
+ feedback:{
+ A:{note:0,eng:-2,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"L'injonction est pragmatique, mais le timing est catastrophique. Recadrer un profil junior devant ses collègues plus expérimentés pulvérise la sécurité psychologique du brief. Le message passe, mais la confiance est rompue.",
+ narratif:"Marc s'empourpre, lâche un timide « excusez-moi » et se terre dans le silence. Leïla et Sofia regardent leurs chaussures. Un froid polaire s'abat sur la réunion."},
+ B:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:1,fac:1},nearMiss:false,alt:null,ref:null,
+ text:"C'est un sans-faute. En validant publiquement la difficulté technique (le fameux « rush »), vous légitimez le ressenti de Marc. La proposition d'un aparté lui offre une porte de sortie honorable et un véritable soutien.",
+ narratif:"Marc redresse les épaules, visiblement soulagé de ne pas être jugé incompétent. « Avec plaisir, ça m'aiderait bien », répond-il. Leïla lui adresse un regard complice. L'équilibre de l'équipe est préservé."},
+ C:{note:2,eng:0,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:0,par:1,fac:0},nearMiss:true,alt:null,
+ ref:"Le conseil du coach :C'est bien d'être rassurant, mais la bienveillance seule ne résout pas un problème opérationnel. Un collaborateur junior a aussi (et surtout) besoin de méthodes et de solutions concrètes pour se rassurer sur sa technique.",
+ text:"La bienveillance de façade ne remplace pas l'accompagnement managérial. Banaliser le problème (« c'est normal au début ») laisse Marc seul avec sa difficulté technique. Un junior attend des repères concrets, pas juste une tape dans le dos.",
+ narratif:"Marc acquiesce d'un sourire poli, mais son regard reste fuyant. Il ne se sent pas plus avancé, et le problème opérationnel reste entier."}
+ }
+ },
+
+ // N5 : Transmettre le rituel d'accueil
+ {id:5,phase:"Transmettre le rituel d'accueil",critere:" ",critClass:"C27",isNew:false,
+ hint:"La transmission entre pairs (senior → junior) est souvent plus efficace qu'une consigne descendante. Qui maîtrise ce rituel depuis longtemps ?",
+ ctx:"Vous avez remarqué que dans le feu de l'action, l'accueil client s'est un peu standardisé ces derniers temps. Vous voulez relancer le fameux « réflexe Trois Épis » : un vrai contact visuel, la phrase de bienvenue de la maison, et la mise en avant du produit phare.",
+ options:[
+ {id:"A",label:"Rappeler la règle de manière directive",text:"« Petite piqûre de rappel sur la vente : même quand il y a du monde, on n'oublie pas le sourire, notre petite phrase d'accueil et de toujours proposer le produit du moment. C'est la base de notre métier. »"},
+ {id:"B",label:"S'appuyer sur l'expérience de Sofia",text:"« Sofia, ça fait un moment que tu es avec nous et tu as un super contact client. Comment tu fais, toi, pour glisser notre phrase d'accueil et le produit du moment naturellement, même quand ça speed ? »"},
+ {id:"C",label:"Partir d'un constat partagé avec l'équipe",text:"« Côté boutique, j'ai l'impression qu'on a un peu perdu l'habitude de notre phrase de bienvenue et du produit du moment. Vous le ressentez comment au comptoir en ce moment ? »"}
+ ],
+ feedback:{
+ A:{note:2,eng:0,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:2,par:0,fac:0},nearMiss:true,alt:null,
+ ref:"Le conseil du coach :La règle a le mérite d'être claire, mais l'équipe risque de l'oublier dès le prochain coup de feu. Pour que ça marque les esprits, s'appuyer sur l'expérience des plus anciens pour montrer l'exemple est souvent bien plus puissant qu'une simple injonction.",
+ text:"La fameuse « piqûre de rappel » descendante a le mérite d'être claire, mais elle manque sa cible..",
+ narratif:"Sofia hoche vaguement la tête par politesse. Marc griffonne un mot sur son carnet sans lever les yeux. La consigne a plané au-dessus de la table sans vraiment s'y poser."},
+ B:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:1,fac:1},nearMiss:false,alt:null,ref:null,
+ text:"Excellente manœuvre. Transformer la collaboratrice experte en mentore informelle coche toutes les cases de la transmission. Sofia se sent valorisée, et Marc apprend le métier via un vocabulaire « terrain », bien plus digeste qu'un protocole théorique.",
+ narratif:"L'œil de Sofia s'allume. Flattée, elle partage volontiers son astuce pour caser la phrase d'accueil même quand la file s'allonge. Marc écoute avec attention, l'approche lui semble directement applicable."},
+ C:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:0,par:1,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Faire un constat partagé avec l'équipe sur ce qui coince, ou s'appuyer directement sur l'experte du groupe pour montrer l'exemple, sont deux excellentes méthodes. Dans les deux cas, vous évitez le piège du chef qui dicte la règle.",
+ text:"Partir d'un constat partagé (« j'ai l'impression que... ») est une approche d'inclusion très solide. Cela permet d'identifier les freins (la fatigue, le monde) avant de réimposer la règle, posant ainsi une bonne base pour la transmission.",
+ narratif:"La glace est brisée. Marc avoue qu'il panique un peu quand le magasin est plein, et Leïla concède qu'elle oublie souvent le produit du moment en fin de journée. Le diagnostic est partagé."}
+ }
+ },
+
+ // N6 : Techniques de vente multicanal
+ // CORRECTION : narratif B (clarification du rôle de Marc vs pickups)
+ {id:6,phase:"Techniques de vente multicanal",critere:" ",critClass:"C27",isNew:false,
+ hint:"Partir des difficultés vécues par l'équipe est plus efficace que d'expliquer un concept. Qui gère concrètement les retraits en boutique en ce moment ?",
+ ctx:"Le Click & Collect a été lancé il y a trois semaines et ça cartonne déjà (15 % des ventes). Mais vous observez que l'équipe gère les retraits complètement au feeling. Ça cafouille souvent quand un client internet arrive au milieu de la file d'attente classique.",
+ options:[
+ {id:"A",label:"Donner une consigne de rapidité",text:"« Pour les commandes internet, on ne va pas réinventer la roue. Le client a déjà payé, donc l'objectif c'est d'être ultra-rapide : vous prenez le nom, vous donnez la poche avec le sourire, et on enchaîne pour ne pas bloquer la caisse. »"},
+ {id:"B",label:"Partir de l'irritant vécu par Leïla",text:"« Leïla, c'est souvent toi qui te retrouves à gérer les retraits internet le samedi matin. Concrètement, qu'est-ce qui te fait perdre le plus de temps quand un client arrive pour récupérer sa commande ? »"},
+ {id:"C",label:"Poser la vision globale du Click et Collect",text:"« Attention à ne pas voir les commandes internet comme de simples retraits de colis. Le client a commandé sur son téléphone, mais quand il passe la porte, on doit lui faire le même accueil et, si possible, lui proposer la petite viennoiserie en plus. »"}
+ ],
+ feedback:{
+ A:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,
+ ref:"Le conseil du coach :On a souvent tendance à séparer le net et le physique. Or, un client Click & Collect reste un humain qui entre dans la boutique et qui peut craquer pour une viennoiserie en vitrine. Zapper l'accueil pour aller plus vite, c'est se priver d'une vente additionnelle facile.",
+ text:"Confondre commerce en ligne et distribution de colis tue l'expérience client..",
+ narratif:"Un léger flottement s'installe. Leïla demande timidement comment elle doit gérer si la commande internet n'est pas prête quand le client arrive. Sans cadre clair, c'est l'improvisation totale."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Que vous partiez du terrain (B) ou du concept global (C), vous répondez aux exigences du critère en donnant du sens à ce nouveau canal de vente.",
+ text:"Partir de l'irritant terrain (la perte de temps vécue par Leïla) capte instantanément l'attention. C'est la meilleure porte d'entrée pédagogique : le besoin d'une méthode émerge directement de la frustration vécue par l'équipe.",
+ narratif:"Leïla s'anime et décrit le casse-tête : préparer à l'avance et encombrer le comptoir, ou faire attendre le client. Sofia acquiesce vivement, partageant la même galère. Le sujet passionne enfin."},
+ C:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:1,par:0,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Que vous partiez du terrain (B) ou du concept global (C), vous répondez aux exigences du critère en donnant du sens à ce nouveau canal de vente.",
+ text:"Poser la vision stratégique (le Click & Collect reste une vente à part entière) avec des mots simples fixe un cap solide. C'est une posture plus directive, mais le sens de l'action commerciale est parfaitement transmis.",
+ narratif:"Marc hoche la tête, comprenant la nuance. Leïla valide : « D'accord, on garde le même sourire même s'ils ont déjà payé. » Le principe directeur vient d'être intégré."}
+ }
+ },
+
+ // N7 : Résolution collective
+ // CORRECTION : ctx ("cause identifiée" nuancé pour ne pas supposer N3=B)
+ {id:7,phase:"Résolution collective",critere:" ",critClass:"C26",isNew:false,
+ hint:"Qui connaît le mieux les contraintes du jeudi ? Comment laisser cette personne contribuer à la solution plutôt que de la lui imposer ?",
+ ctx:"Vous abordez un point noir récurrent : les ruptures de pain du jeudi soir. Tout le monde s'accorde à dire que le problème vient de la livraison de farine qui arrive trop tard. Il faut décider d'un plan d'action concret.",
+ options:[
+ {id:"A",label:"Prendre en charge la solution seul",text:"« Bon, pour la farine, on ne va pas tourner autour du pot. Je m'en occupe : je vais appeler le fournisseur tout à l'heure pour qu'il nous décale la livraison à mercredi au lieu de jeudi. Ça devrait régler le souci. »"},
+ {id:"B",label:"Ouvrir la réflexion à toute l'équipe",text:"« Le diagnostic est clair. À votre avis, comment on s'organise concrètement pour ne plus se retrouver à sec le jeudi soir ? Toutes les idées sont bonnes à prendre. »"},
+ {id:"C",label:"Consulter l'expert terrain en premier",text:"« Marc, vu que c'est toi qui gères les fournées ce jour-là, qu'est-ce qui t'arrangerait le plus pour qu'on sécurise ton stock de farine ? Comment tu verrais les choses ? »"}
+ ],
+ feedback:{
+ A:{note:2,eng:-1,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:2,par:0,fac:0},nearMiss:true,alt:null,ref:null,
+ text:"La solution est logique, mais l'imposer seul prive l'équipe de toute implication. C'est le syndrome du manager pragmatique : il gagne du temps mais court-circuite l'intelligence collective.",
+ narratif:"Marc dit « OK » sans enthousiasme. Sofia et Leïla ne réagissent pas. La solution est bonne, mais elle n'appartient à personne d'autre que vous."},
+ B:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"« Toutes les idées sont bonnes à prendre » invite réellement à la participation. Les solutions co-construites sont mieux appliquées et c'est le cœur de l'intelligence collective.",
+ narratif:"La méthode fonctionne : Marc propose de décaler l'appel au fournisseur d'un jour. Dans la foulée, Sofia suggère d'ajouter un pense-bête effaçable près de la caisse. Tout le monde a mis la main à la pâte."},
+ C:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:0,par:1,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir :Solliciter d'abord l'expert métier (comme Marc sur le fournil) ou lancer la question à la cantonade sont deux excellentes manières de faire. L'important est de ne pas arriver avec une solution toute faite, mais de laisser l'équipe construire la sienne.",
+ text:"Consulter l'expert terrain en premier est une bonne pratique. Pour activer pleinement l'intelligence collective, élargissez ensuite aux autres.",
+ narratif:"Marc propose de décaler l'appel au fournisseur. Sofia complète avec une idée de suivi. Leïla hoche la tête. La solution s'enrichit progressivement."}
+ }
+ },
+
+ // N8 : Détecter et nommer le différend
+ // CORRECTION : ctx (ajout déclencheur narratif précis, info pauses Sofia ancrée ici)
+ {id:8,phase:"Détecter et nommer le différend",critere:" ",critClass:"C28",isNew:false,
+ hint:"En brief collectif, un différend interpersonnel ne se résout pas. Il se nomme et se reporte à un cadre adapté. Votre rôle est de contenir, pas de trancher.",
+ ctx:"Alors que vous prenez un temps de parole, Leïla lâche à mi-voix, les yeux fixés sur son carnet : « Enfin bref... jeudi matin, j'étais quand même toute seule au comptoir pour gérer les clients mécontents. » Sofia se redresse d'un coup, piquée au vif : « C'est bon, n'exagère pas, j'étais là ! » Un silence de plomb s'installe. Cela fait écho à quelque chose que vous avez remarqué : ces derniers temps, Sofia a tendance à s'éclipser en pause sans toujours prévenir.",
+ options:[
+ {id:"A",label:"Esquiver en invoquant le temps",text:"« Ouh là, on ne va pas ouvrir ce dossier maintenant, on a déjà dépassé le temps du brief. On reste concentrés sur les décisions qu'on vient de prendre. »"},
+ {id:"B",label:"Nommer le désaccord et proposer un cadre dédié",text:"« Je vois qu'il y a un vrai désaccord sur ce qui s'est passé jeudi. Ce n'est pas le lieu pour régler ça devant tout le monde. Sofia, Leïla, je vous propose qu'on se garde 10 minutes toutes les trois juste après le brief pour mettre ça à plat. »"},
+ {id:"C",label:"Ouvrir le débat devant tout le groupe",text:"« Attendez, on va crever l'abcès tout de suite puisqu'on est tous là. Leïla, vas-y, explique-nous ce qui a coincé jeudi. Sofia, tu donneras ta version juste après. »"},
+ {id:"D",label:"Déléguer la résolution aux deux parties",text:"« Écoutez, on forme une petite équipe, on n'a vraiment pas besoin de ce genre de tension au comptoir. Vous êtes des professionnelles, je vous laisse discuter de ça entre vous dans la journée. »"}
+ ],
+ feedback:{
+ A:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:1,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"Utiliser le temps comme excuse pour balayer le problème est un réflexe compréhensible, mais il envoie le signal que les tensions interpersonnelles ne comptent pas. Le conflit reste entier.",
+ narratif:"Leïla se renfonce dans sa chaise. Sofia tape sur la table avec son stylo. La tension reste et s'installe."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:0,fac:2},nearMiss:false,alt:null,ref:null,
+ text:"Nommer le désaccord sans l'amplifier en collectif, protéger l'équipe d'un déballage public, et proposer un cadre concret : c'est la séquence exacte de (identifier) et (amorcer la résolution).",
+ narratif:"Leïla acquiesce doucement, soulagée d'avoir pu lâcher le morceau sans que ça tourne au drame. Sofia, encore un peu fermée, finit par hocher la tête. Vous clôturez les derniers points avec Marc."},
+ C:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:1,par:1,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"« Crever l'abcès » en public, c'est la transparence à tout prix. Mais ouvrir un échange contradictoire devant Marc aggrave la tension et fait dériver le brief. Un différend interpersonnel se traite dans un cadre bilatéral.",
+ narratif:"Sofia coupe Leïla à mi-phrase. Marc regarde fixement son téléphone. Le brief perd tout son fil."},
+ D:{note:0,eng:-2,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:1,par:0,fac:0},nearMiss:false,alt:null,ref:null,
+ text:"Enrober l'abandon de poste par un faux compliment (« vous êtes des professionnelles ») ne change pas la réalité : le manager se décharge d'un conflit qui lui appartient..",
+ narratif:"Leïla rougit. Sofia croise les bras. Marc ne sait plus où regarder. Le malaise s'installe pour tout le monde."}
+ }
+ },
+
+ // N9 : Diagnostiquer le type de conflit
+ // CORRECTION : ctx (info pauses désormais ancrée en N8, cohérent)
+ {id:9,phase:"Selon vous, quel est le vrai ressort de ce conflit ?",critere:" ",critClass:"C28",isNew:false,
+ hint:"Il y a deux lectures possibles : ce qui s'est passé concrètement jeudi (les faits) et ce qui existe entre elles depuis plus longtemps (la relation). Les deux coexistent souvent.",
+ ctx:"Marc retourne au fournil. Pendant que Sofia et Leïla rangent leurs affaires en silence, vous prenez quelques secondes pour analyser la situation avant de démarrer l'échange. Il y a ce désaccord sur la matinée de jeudi, oui, mais vous sentez bien que c'est la goutte d'eau qui fait déborder un vase déjà plein.",
+ options:[
+ {id:"A",label:"Conflit de valeurs lié à l'ancienneté",text:"C'est un conflit de valeurs. Sofia, de par son ancienneté, a une vision du travail très différente de celle de Leïla. C'est cette différence de mentalité qui pose problème."},
+ {id:"B",label:"Désaccord factuel sur les faits de jeudi",text:"C'est un problème purement factuel. L'une dit qu'elle était seule, l'autre affirme qu'elle était là. Mon urgence, c'est de tirer cette histoire au clair et de savoir ce qui s'est vraiment passé jeudi matin."},
+ {id:"C",label:"Conflit de territoire et de rôles",text:"C'est un problème de territoire. Sofia est la plus ancienne et prend des libertés qui agacent Leïla. Il va falloir que je remette les pendules à l'heure et que je recadre les limites de chacune."},
+ {id:"D",label:"Double lecture factuelle et relationnelle",text:"C'est un conflit à double fond : il y a l'événement déclencheur de jeudi qu'il faut clarifier, mais ça s'appuie clairement sur un ressentiment accumulé depuis plusieurs semaines autour des pauses de Sofia."}
+ ],
+ feedback:{
+ A:{note:1,eng:0,cls:"warn",icon:"warn",quality:"Incomplet",posture:{dir:0,par:0,fac:1},nearMiss:true,alt:null,
+ ref:"Le conseil du coach :Attention à ne pas voir un « conflit de valeurs » ou un « choc des générations » partout. Souvent, la friction part simplement d'un fait mal compris ou d'un manque de communication. Ne brûlez pas les étapes en cherchant trop loin, commencez par les faits.",
+ text:"Projeter un « problème de mentalité » sur une situation qui a d'abord une dimension factuelle précise oriente la médiation dans la mauvaise direction..",
+ narratif:"Vous entrez en médiation avec une grille de lecture trop large. Le risque est de passer à côté de ce qui s'est réellement passé."},
+ B:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:0,par:0,fac:2},nearMiss:false,
+ alt:"Bon à savoir :Vous focaliser sur les faits bruts (B) ou prendre aussi en compte l'historique de la relation (D) sont deux points de départ tout à fait pertinents. L'essentiel est d'avoir identifié qu'il y a d'abord un désaccord sur l'événement de jeudi à traiter.",
+ ref:"Le conseil du coach :Quand les versions s'opposent, le rôle du manager n'est pas de faire le détective pour trouver le coupable. Votre mission est d'abord de faire en sorte que chacun entende la version de l'autre de manière apaisée.",
+ text:"Partir des faits est pertinent et oriente vers la bonne méthode de départ.. Ignorer la dimension relationnelle sous-jacente reste un angle mort qui peut freiner la résolution durable.",
+ narratif:"Vous entrez dans la médiation avec un cap clair : établir ce qui s'est vraiment passé jeudi matin."},
+ C:{note:2,eng:0,cls:"warn",icon:"warn",quality:"Partiel",posture:{dir:0,par:0,fac:1},nearMiss:true,alt:null,
+ ref:"Le conseil du coach :Même si Sofia est plus ancienne, partir d'emblée sur l'idée qu'elle abuse de son pouvoir risque de vous rendre partial avant même le début de l'échange. Gardez l'esprit ouvert et écoutez d'abord ce qui s'est réellement passé.",
+ text:"L'ancienneté de Sofia crée une asymétrie réelle, mais « remettre les pendules à l'heure » avant même d'avoir entendu les deux versions risque de cadrer prématurément la responsabilité de Sofia.",
+ narratif:"Ce diagnostic vous amène à entrer en médiation avec une idée déjà faite, avant même d'avoir entendu les deux versions."},
+ D:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:0,fac:2},nearMiss:false,
+ alt:"Bon à savoir :Ce diagnostic « à double fond » (D) montre une belle finesse d'analyse. Mais se concentrer uniquement sur l'aspect factuel (B) est aussi une méthode très saine pour éviter de trop psychologiser la situation. Les deux approches fonctionnent.",
+ ref:"Le conseil du coach :En médiation, on dit souvent que derrière des positions qui s'opposent, il y a des intérêts communs. Au fond, Sofia et Leïla veulent toutes les deux que le service tourne bien. C'est sur ce point commun qu'il faudra s'appuyer.",
+ text:"Diagnostic précis : couche factuelle (ce qui s'est passé jeudi) et couche relationnelle (le ressentiment accumulé). Ce double diagnostic oriente vers une stratégie en deux temps : clarifier les faits, puis traiter la relation.",
+ narratif:"Vous entrez dans la médiation avec une lecture complète et équilibrée. C'est le meilleur point de départ."}
+ }
+ },
+
+ // N10 : Explorer la résolution amiable
+ {id:10,phase:"Explorer la résolution amiable",critere:" ",critClass:"C28",isNew:false,
+ hint:"Avant d'aborder le fond, assurez-vous que les deux parties acceptent le cadre de l'échange et se sentent en sécurité pour parler.",
+ ctx:"Marc est retourné au fournil. Vous fermez la porte de l'arrière-boutique. Vous vous retrouvez en tête-à-tête avec Sofia et Leïla. L'ambiance est lourde et les regards s'évitent. Il va falloir amorcer la discussion.",
+ options:[
+ {id:"A",label:"Entrer directement dans les faits",text:"« Bon, on va reprendre depuis le début. Sofia, tu dis que tu étais là. Leïla, tu dis que tu as dû gérer seule. Moi, je veux juste qu'on m'explique factuellement ce qui s'est passé jeudi matin. »"},
+ {id:"B",label:"Minimiser et encourager à vider son sac",text:"« Écoutez, on travaille ensemble tous les jours, c'est normal qu'il y ait des petits accrochages avec la fatigue. Ce n'est pas bien grave, l'important c'est de vider son sac et de repartir sur de bonnes bases. »"},
+ {id:"C",label:"Poser un cadre neutre avant de commencer",text:"« Ce que je vous propose, c'est qu'on prenne un moment juste toutes les trois pour poser les choses calmement. Mon but n'est pas de faire l'arbitre, mais de vous aider à vous comprendre. Vous êtes d'accord pour qu'on en discute sur ces bases ? »"}
+ ],
+ feedback:{
+ A:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:1,par:0,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir : Entrer tout de suite dans le vif du sujet (A) ou prendre le temps de sécuriser les règles du jeu avant de s'expliquer (C) sont deux méthodes valides. L'essentiel est de montrer que vous prenez le problème à bras le corps sans prendre parti.",
+ text:"Entrer directement dans les faits est une bonne intention, mais cela oublie une étape cruciale en médiation : s'assurer que les deux parties sont prêtes à parler calmement. Risque de raviver la tension immédiatement.",
+ narratif:"Leïla explique qu'elle était seule au comptoir pendant une vingtaine de minutes. Sofia reconnaît avoir perdu la notion du temps lors de sa pause."},
+ B:{note:2,eng:0,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:0,par:0,fac:1},nearMiss:true,alt:null,
+ ref:"Le conseil du coach : Vouloir détendre l'atmosphère est un bon réflexe, mais attention à ne pas minimiser le problème. Dire « ce n'est pas grave » à quelqu'un qui est agacé donne l'impression que vous n'écoutez pas sa frustration. Mieux vaut poser un cadre clair.",
+ text:"C'est le réflexe du manager mal à l'aise avec le conflit. L'intention est bonne, mais \"vider son sac\" sans cadre structuré ne crée pas les conditions d'une vraie résolution.",
+ narratif:"Sofia dit rapidement : « C'est bon, c'est réglé. » Leïla ne dit rien. La tension reste sous la surface."},
+ C:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:0,fac:2},nearMiss:false,ref:null,
+ alt:"Bon à savoir : Poser les règles d'emblée (C) ou attaquer direct sur les faits (A) — l'important est d'avoir su créer un espace dédié à cette discussion. Votre posture de facilitateur est bien en place.",
+ text:"Remplacer le vocabulaire de \"tiers neutre\" par une posture compréhensible (\"pas là pour faire l'arbitre\"), et demander le consentement explicite : c'est la base d'une médiation réussie.",
+ narratif:"Sofia et Leïla acceptent le principe. L'ambiance reste tendue, mais le fait d'avoir posé un cadre neutre les rassure. Leïla commence à raconter calmement comment elle a vécu la fameuse matinée de jeudi."}
+ }
+ },
+
+ // N11 : Gérer une réaction défensive
+ {id:11,phase:"Gérer une réaction défensive",critere:" ",critClass:"C28",isNew:true,
+ hint:"La méthode CNV recommande : Observation factuelle → Sentiment au « je » → Besoin → Demande. Le « tu » accuse et ferme ; le « je » ouvre.",
+ ctx:"Alors que Leïla explique qu'elle s'est sentie abandonnée dans le rush, Sofia, qui écoutait jusque-là, se braque d'un coup : « C'est toujours la même chose, c'est toujours moi qui prends quand ça va pas ! » Elle se recule sur sa chaise, sur la défensive.",
+ options:[
+ {id:"A",label:"Recadrer Sofia sur les règles de politesse",text:"« Sofia, s'il te plaît, on a dit qu'on s'écoutait. Laisse Leïla finir sa phrase sans la couper, c'est la moindre des choses. »"},
+ {id:"B",label:"Accuser réception de son émotion et lui redonner la parole",text:"« Je vois bien que ça te braque, Sofia, et l'idée n'est vraiment pas de te faire un procès. Comment toi, tu as perçu les choses jeudi matin quand il y a eu le rush ? »"},
+ {id:"C",label:"Calmer le jeu et recentrer sur les besoins",text:"« Ok, on redescend d'un cran. Personne n'est au tribunal ici, vous avez juste vécu la même matinée de deux manières complètement différentes. L'objectif maintenant, c'est de savoir de quoi vous avez besoin pour que ça ne se reproduise pas. »"},
+ {id:"D",label:"Suspendre et reporter à plus tard",text:"« Bon, je vois que les esprits s'échauffent un peu trop. On ne va pas y arriver comme ça. On va s'arrêter là pour aujourd'hui, on en reparlera demain à froid. »"}
+ ],
+ feedback:{
+ A:{note:0,eng:-2,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,
+ ref:"Le conseil du coach : Quand le ton monte, jouer au maître d'école ne marche jamais. Faire la morale à une personne sur la défensive, c'est jeter de l'huile sur le feu. Prenez d'abord une seconde pour accuser réception de son émotion, sans la juger.",
+ text:"C'est l'erreur classique du manager qui devient arbitre des règles de politesse. Face à Sofia déjà défensive, le ton moralisateur aggrave la fermeture. La posture de médiateur exige une neutralité totale.",
+ narratif:"Sofia se lève : « Je ne suis pas venue pour me faire reprendre. » Elle saisit ses affaires et quitte la pièce. La médiation s'arrête net."},
+ B:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:0,par:0,fac:2},nearMiss:false,
+ alt:"Bon à savoir : Creuser d'abord le ressenti de Sofia (B) ou calmer le jeu globalement en cherchant des solutions (C) : les deux approches sont d'excellents moyens de désamorcer une réaction de défense.",
+ ref:"Le conseil du coach : Vous validez le ressenti (« je vois que ça te braque ») sans utiliser un jargon de psy, vous rassurez sur vos intentions (« pas là pour faire un procès »), et vous relancez la balle. Résultat : la pression retombe.",
+ text:"Valider l'émotion de Sofia (\"je vois que ça te braque\") sans utiliser le jargon, puis lui redonner la parole sur son vécu factuel :.",
+ narratif:"Sofia se détend légèrement. Elle dit : « Je n'étais absente que dix minutes, pas vingt. » Le dialogue peut reprendre."},
+ C:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:0,fac:2},nearMiss:false,
+ alt:"Bon à savoir : Recentrer sur les solutions (C) ou prendre le temps d'écouter la version de Sofia (B) sont deux tactiques de désamorçage qui fonctionnent parfaitement sur le terrain.",
+ ref:"Le conseil du coach : Vous venez d'appliquer la Communication Non Violente sans avoir l'air de lire un manuel. Calmer le jeu sans accuser, puis orienter les cerveaux vers l'avenir (« de quoi avez-vous besoin ? ») est le meilleur moyen de sortir de l'impasse.",
+ text:"Posture de médiateur exemplaire : recadrage calme, déculpabilisation des deux parties, réorientation vers la recherche de solutions. C'est la CNV complète appliquée naturellement.",
+ narratif:"Sofia souffle un grand coup, la pression retombe. Leïla prend la balle au bond : « Moi, ça m'aiderait juste de savoir quand je me retrouve seule devant. » Sofia hoche la tête en signe de compréhension."},
+ D:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:0,par:0,fac:1},nearMiss:false,alt:null,
+ ref:"Le conseil du coach : Parfois il faut savoir faire une pause quand l'échange devient trop électrique. Mais si vous devez reporter, fixez toujours un rendez-vous précis (« On reprend à 14h dans le bureau »). Remettre à plus tard de façon vague, c'est laisser pourrir la situation.",
+ text:"\"On en reparlera à froid\" est le bouclier préféré des managers qui évitent le conflit. Sofia et Leïla retournent travailler ensemble avec toute cette rancœur non purgée..",
+ narratif:"Sofia repart sans un mot. Leïla regarde ses mains. Rien n'a été résolu et le sujet reste suspendu."}
+ }
+ },
+
+ // N12 : Orienter vers la solution
+ // CORRECTION : ctx (raccord prévu si Sofia a failli quitter, N11=A est une impasse)
+ // On suppose N11 résolu (B ou C) pour arriver ici. Le ctx le précise.
+ {id:12,phase:"Orienter vers la solution",critere:" ",critClass:"C28",isNew:false,
+ hint:"Une solution imposée par le manager, même juste, est moins solide qu'une solution construite par les parties elles-mêmes.",
+ ctx:"Le diagnostic est posé et accepté par les deux : Sofia a fait traîner sa pause, et Leïla a encaissé le rush sans appeler à l'aide. Maintenant que l'abcès est percé, il faut transformer cette prise de conscience en une règle de fonctionnement pour la boutique.",
+ options:[
+ {id:"A",label:"Imposer une règle ciblant Sofia",text:"« Bon, la solution est simple : Sofia, à l'avenir, tu préviens systématiquement Leïla quand tu pars en pause, même pour 5 minutes. Comme ça, plus de malentendu. »"},
+ {id:"B",label:"Laisser les deux parties construire la solution",text:"« Bon, on est sur la même longueur d'onde. Concrètement, qu'est-ce que vous pourriez mettre en place, vous deux, pour que cette situation ne se reproduise plus ? Je vous écoute. »"},
+ {id:"C",label:"Proposer un cadre équitable et demander validation",text:"« Écoutez, je vous propose une règle simple pour la boutique : dès que l'une de vous doit s'absenter de la surface de vente, elle fait un signe ou prévient l'autre, tout simplement. Ça vous irait de fonctionner comme ça ? »"}
+ ],
+ feedback:{
+ A:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,
+ ref:"Le conseil du coach : Trouver la solution à la place de vos collaborateurs, c'est la garantie qu'elle ne sera pas appliquée. Si vous donnez l'impression de punir l'un pour soulager l'autre, votre médiation aura fait plus de mal que de bien.",
+ text:"Le manager pense être pragmatique pour gagner du temps, mais faire porter tout le poids de la solution sur une seule personne brise complètement sa neutralité. Le risque de raviver la frustration de Sofia est immense.",
+ narratif:"Sofia dit « d'accord » d'un ton plat et résigné. Leïla n'a pas eu voix au chapitre. L'accord est purement formel, pas réel."},
+ B:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:0,fac:2},nearMiss:false,alt:null,ref:null,
+ text:"« On est sur la même longueur d'onde » valide positivement la compréhension mutuelle. En demandant « Je vous écoute », vous rendez la responsabilité de la solution aux collaboratrices : c'est le cœur même de la posture de médiateur.",
+ narratif:"Sofia propose un signal convenu : un message sur le groupe boutique avant chaque pause. Leïla propose, elle aussi, d'alerter quand la file client dépasse quatre personnes. Les deux se regardent avec un début d'accord."},
+ C:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien",posture:{dir:1,par:0,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir : Laisser la solution venir entièrement des parties (B) est l'idéal. Mais proposer vous-même un cadre équitable et demander leur validation (C) reste une excellente porte de sortie pour clore l'incident.",
+ text:"La règle proposée s'applique aux deux vendeuses de manière équitable et le manager prend soin de demander leur consentement (« Ça vous irait ? »). C'est une posture acceptable, même si elle est moins puissante qu'une vraie co-construction.",
+ narratif:"« Ça marche pour moi », glisse Leïla. Sofia hoche la tête avec un petit sourire de conciliation. L'air est nettement plus respirable."}
+ }
+ },
+
+ // N13 (ex-N14) : Clôture du brief
+ // INVERSION : la clôture collective précède l'aparté avec Marc
+ {id:13,phase:"Clôture du brief",critere:" & crit.3",critClass:"C26",isNew:false,
+ hint:"La clôture d'un brief doit consolider les décisions ET valoriser la dynamique collective. Faites en sorte que l'équipe repart avec le sentiment d'avoir vraiment contribué.",
+ ctx:"L'équipe est à nouveau réunie au complet. Le temps a filé et l'heure du gros rush approche à grands pas. Il vous reste une poignée de minutes pour clôturer cet échange hebdomadaire avant que chacun reparte à son poste.",
+ options:[
+ {id:"A",label:"Clôturer par l'urgence opérationnelle",text:"« Bon, le devoir nous appelle, on va devoir ouvrir la boutique. Merci à tous pour ce matin, allez, on se remet au boulot ! »"},
+ {id:"B",label:"Faire formuler un collaborateur pour ancrer les décisions",text:"« Avant qu'on lance la journée : Marc, on a dit pas mal de choses ce matin. Tu peux nous faire un mini-récap de ce qu'on a décidé de changer dès aujourd'hui ? »"},
+ {id:"C",label:"Résumer les bénéfices et donner du sens",text:"« Merci à tous. C'était pas le brief le plus reposant, mais il était super utile : on a débloqué la prod' de Marc, on a un cap pour le net, et on a mis les choses à plat. On attaque la journée là-dessus ! »"}
+ ],
+ feedback:{
+ A:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:1,par:0,fac:0},nearMiss:false,alt:null,
+ ref:"Le conseil du coach : Fuir dans l'opérationnel est une erreur classique. Une réunion sans vraie conclusion laisse l'équipe avec l'impression d'avoir discuté dans le vide. Prenez toujours ces 30 dernières secondes.",
+ text:"Le manager est happé par l'urgence de l'ouverture et oublie de verrouiller ce qui vient d'être décidé. Clôture sans consolidation ni reconnaissance de l'effort collectif..",
+ narratif:"L'équipe se lève sans un mot. Marc hésite à la porte, comme s'il attendait un mot de la fin. Rien ne vient."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:2,fac:0},nearMiss:false,ref:null,
+ alt:"Bon à savoir : Faire formuler un collaborateur pour vérifier l'ancrage (B) ou donner vous-même du sens à la dynamique globale (C) sont les deux meilleures façons de clôturer une réunion. Les deux approches fonctionnent très bien.",
+ text:"« Mini-récap » et « ce qu'on change dès aujourd'hui » : vocabulaire direct, adapté au terrain. Faire formuler Marc vérifie sa compréhension, engage son implication et ancre les décisions collectivement.",
+ narratif:"Marc se prête au jeu et résume bien les trois points clés. Sofia ajoute même un petit détail pour compléter. Chacun repart à son poste en sachant exactement ce qu'il a à faire."},
+ C:{note:4,eng:2,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:1,fac:1},nearMiss:false,ref:null,
+ alt:"Bon à savoir : Faire formuler un collaborateur pour vérifier l'ancrage (B) ou donner vous-même du sens à la dynamique globale (C) sont les deux meilleures façons de clôturer une réunion. Les deux approches fonctionnent très bien.",
+ text:"Assumer que le brief a été difficile (« pas le plus reposant ») rend le manager humain et crédible. Résumer les bénéfices concrets (« débloqué la prod' », « mis les choses à plat ») donne du sens à la présence de chacun.",
+ narratif:"Sofia sourit pour la première fois du brief. Leïla glisse un sincère « Merci ». Marc comprend enfin pourquoi ce moment de réunion existe chaque semaine."}
+ }
+ },
+
+ // N14 (ex-N13) : Feedback individuel à Marc
+ // INVERSION : aparté après la clôture, plus cohérent chronologiquement
+ // ctx précise que le brief est terminé
+ {id:14,phase:"Feedback individuel à Marc",critere:" ",critClass:"C26",isNew:false,
+ hint:"Un bon feedback est factuel, équilibré et orienté vers l'action. Il cite ce que vous avez observé, pas un jugement sur la personne.",
+ ctx:"Les filles filent en boutique. Marc, lui, traîne un peu pour ranger son carnet. Il finit par s'approcher de vous, l'air un peu penaud : « Avec cette histoire de farine... j'ai l'impression de faire pas mal de boulettes en ce moment, non ? »",
+ options:[
+ {id:"A",label:"Rassurer de manière vague et générale",text:"« Mais non, ne te prends pas la tête Marc ! Globalement tu fais du bon boulot, c'est le principal. Allez, file au fournil, tout va bien se passer. »"},
+ {id:"B",label:"Feedback factuel équilibré avec cap de progression",text:"« Écoute Marc, si on regarde tout le mois, tes cuissons du matin sont super régulières et la qualité est là. Là où j'attends que tu prennes un peu plus d'assurance maintenant, c'est sur l'anticipation de tes stocks. C'est ta prochaine étape. »"},
+ {id:"C",label:"Pointer directement l'erreur et son impact",text:"« Je ne vais pas te mentir, l'erreur de gestion de jeudi nous a coûté du chiffre, c'est un fait. Il va vraiment falloir que tu sois plus rigoureux là-dessus à l'avenir. »"}
+ ],
+ feedback:{
+ A:{note:1,eng:0,cls:"warn",icon:"warn",quality:"Presque",posture:{dir:0,par:1,fac:0},nearMiss:true,alt:null,
+ ref:"Le conseil du coach : Le compliment vague balancé à la va-vite rassure surtout le manager. Un collaborateur junior qui doute a besoin de preuves tangibles qu'il fait bien les choses, pas juste d'une tape dans le dos.",
+ text:"C'est le réflexe d'un manager bienveillant mais pressé. « Bon boulot » est beaucoup trop vague pour redonner une vraie confiance technique à un junior. la communication doit motiver ET orienter vers l'action.",
+ narratif:"Marc lâche un « ah, ok » sans sembler vraiment convaincu. Il repart au fournil avec la même incertitude qu'à son arrivée."},
+ B:{note:4,eng:1,cls:"ok",icon:"ok",quality:"Très bien",posture:{dir:0,par:1,fac:1},nearMiss:false,alt:null,ref:null,
+ text:"Faits positifs concrets (cuissons régulières, qualité) + axe de progrès précis (anticipation des stocks) + formulation motivante (« ta prochaine étape »). Feedback exemplaire.",
+ narratif:"Marc se redresse. Il avoue : « C'est vrai que j'ose pas trop sur les commandes. » Il repart avec un cap clair et la tête haute."},
+ C:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},nearMiss:false,alt:null,
+ ref:"Le conseil du coach : Mettre un coup de pression à quelqu'un qui a déjà conscience de son erreur, c'est tirer sur une ambulance. Pensez toujours à construire sur ce qui marche avant de corriger ce qui fâche.",
+ text:"L'électrochoc sur un collaborateur junior qui doute déjà de lui l'écrase au lieu de le redresser. Un feedback efficace ne se réduit pas à un blâme, aussi factuel soit-il.",
+ narratif:"Marc baisse les yeux, encaisse le coup, dit « excusez-moi » et part rapidement. Il est infiniment plus découragé qu'en arrivant."}
+ }
+ }
+];
+
+const SECTIONS=[
+ {id:'s0',title:"Ouverture du brief",roundIds:[0]},
+ {id:'s1',title:"Tour de table",roundIds:[1]},
+ {id:'s2',title:"Annonce des résultats",roundIds:[2]},
+ {id:'s3',title:"Recherche des causes",roundIds:[3]},
+ {id:'s4',title:"Profil junior",roundIds:[4]},
+ {id:'s5',title:"Rituel d'accueil",roundIds:[5]},
+ {id:'s6',title:"Vente multicanal",roundIds:[6]},
+ {id:'s7',title:"Résolution collective",roundIds:[7]},
+ {id:'s8',title:"Nommer le différend",roundIds:[8]},
+ {id:'s9',title:"Diagnostiquer le conflit",roundIds:[9]},
+ {id:'s10',title:"Résolution amiable",roundIds:[10]},
+ {id:'s11',title:"Réaction défensive",roundIds:[11]},
+ {id:'s12',title:"Orienter la solution",roundIds:[12]},
+ {id:'s13',title:"Clôture du brief",roundIds:[13]},
+ {id:'s14',title:"Feedback à Marc",roundIds:[14]},
+];
+
+const CRIT_COLORS={
+ C26:{bg:"bg-blue-100",text:"text-blue-800",border:"border-blue-200"},
+ C27:{bg:"bg-amber-100",text:"text-amber-800",border:"border-amber-200"},
+ C28:{bg:"bg-red-100",text:"text-red-800",border:"border-red-200"},
+};
+
+const SpeedometerSVG=({pct,color,size=100})=>{
+ const angle=-90+pct*180,rad=angle*(Math.PI/180);
+ const cx=size/2,cy=size*0.58,r=size*0.38;
+ const segs=[{s:-90,e:-54,c:'#c04020'},{s:-54,e:-18,c:'#e06020'},{s:-18,e:18,c:'#d4a820'},{s:18,e:54,c:'#90b820'},{s:54,e:90,c:'#208050'}];
+ const arc=(sd,ed)=>{const s2=sd*Math.PI/180,e2=ed*Math.PI/180;return`M ${(cx+r*Math.cos(s2)).toFixed(1)} ${(cy+r*Math.sin(s2)).toFixed(1)} A ${r} ${r} 0 0 1 ${(cx+r*Math.cos(e2)).toFixed(1)} ${(cy+r*Math.sin(e2)).toFixed(1)}`;};
+ const t=size*0.11;
+ const nx=(cx+r*0.7*Math.cos(rad)).toFixed(1),ny=(cy+r*0.7*Math.sin(rad)).toFixed(1);
+ const svgH=Math.round(size*0.85);
+ return(
+ <svg width={size} height={svgH} viewBox={`0 0 ${size} ${svgH}`} style={{overflow:'hidden'}}>
+ {segs.map((s,i)=><path key={i} d={arc(s.s,s.e)} fill="none" stroke={s.c} strokeWidth={t} strokeLinecap="butt"/>)}
+ <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#2c2415" strokeWidth={(size*0.025).toFixed(1)} strokeLinecap="round"/>
+ <circle cx={cx} cy={cy} r={(size*0.04).toFixed(1)} fill="#2c2415"/>
+ <text x={cx} y={(cy+size*0.22).toFixed(1)} textAnchor="middle" fontSize={(size*0.13).toFixed(1)} fontWeight="700" fill={color} fontFamily="DM Sans,sans-serif">{Math.round(pct*100)}%</text>
+ </svg>
+ );
+};
+
+const ConfidenceChart=({history})=>{
+ let eng=3;
+ const pts=[{label:'Début',e:eng,delta:0}];
+ history.forEach(item=>{
+ eng=Math.max(0,Math.min(5,eng+(item.feedback.eng||0)));
+ pts.push({label:item.round.phase,e:eng,delta:item.feedback.eng||0});
+ });
+ if(pts.length<2)return null;
+ const W=400,H=80,PX=24,PY=10,IW=W-PX*2,IH=H-PY*2,n=pts.length;
+ const toX=(i)=>PX+(i/(n-1))*IW;
+ const toY=(v)=>PY+IH-(v/5)*IH;
+ const linePath=pts.map((p,i)=>`${i===0?'M':'L'}${toX(i).toFixed(1)},${toY(p.e).toFixed(1)}`).join(' ');
+ const areaPath=`${linePath} L${toX(n-1).toFixed(1)},${(H-PY).toFixed(1)} L${PX},${(H-PY).toFixed(1)} Z`;
+ const keyMoments=pts.slice(1).map((p,i)=>({...p,origIdx:i+1})).filter(p=>Math.abs(p.delta)>=2).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,3);
+ return(
+ <div>
+ <svg width="100%" viewBox={`0 0 ${W} ${H}`} className="overflow-visible">
+ <defs><linearGradient id="engGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#b07a20" stopOpacity=".18"/><stop offset="100%" stopColor="#b07a20" stopOpacity="0"/></linearGradient></defs>
+ {[1,2,3,4,5].map(v=><line key={v} x1={PX} y1={toY(v)} x2={W-PX} y2={toY(v)} stroke={v===3?"#d1d5db":"#f3f4f6"} strokeWidth="1" strokeDasharray={v===3?"4,4":"3,3"}/>)}
+ {[0,1,2,3,4,5].map(v=><text key={v} x={PX-6} y={toY(v)+3} fontSize="8" fill="#9ca3af" textAnchor="end">{v}</text>)}
+ <path d={areaPath} fill="url(#engGrad)"/>
+ <path d={linePath} fill="none" stroke="#b07a20" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+ {pts.map((p,i)=><circle key={i} cx={toX(i)} cy={toY(p.e)} r="3" fill="white" stroke="#b07a20" strokeWidth="1.5"/>)}
+ {keyMoments.map((p,i)=><circle key={i} cx={toX(p.origIdx)} cy={toY(p.e)} r="6" fill={p.delta>0?'#4a9960':'#9b3030'} stroke="white" strokeWidth="2"/>)}
+ </svg>
+ {keyMoments.length>0&&<div className="flex flex-wrap gap-1.5 mt-2">{keyMoments.map((p,i)=><div key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-10px font-semibold border ${p.delta>0?'bg-green-50 text-green-700 border-green-200':'bg-red-50 text-red-700 border-red-200'}`}>{p.delta>0?'▲':'▼'} {p.label}</div>)}</div>}
+ </div>
+ );
+};
+
+function TransitionScreen({text,fading}){
+ const [visible,setVisible]=useState(false);
+ useEffect(()=>{const t=requestAnimationFrame(()=>setVisible(true));return()=>cancelAnimationFrame(t);},[]);
+ return(
+ <div className="absolute inset-0 z-40 flex flex-col items-center justify-center"
+ style={{background:'#2c2415',opacity:(visible&&!fading)?1:0,transition:'opacity 0.6s ease',pointerEvents:'none'}}>
+ <div className="w-16 h-16 bg-stone-700 rounded-2xl flex items-center justify-center mb-6 text-2xl">🥖</div>
+ {text&&<p className="text-stone-300 text-base italic text-center max-w-md leading-relaxed px-8">{text}</p>}
+ </div>
+ );
+}
+
+// Sous-choix conditionnels : roundId → optionId → définition
+const SUB_CHOICES={
+ '1_A':{
+ ctx:"Un blanc s'installe. Personne ne se lance. Vous devez réagir.",
+ options:[
+ {id:"A",label:"Désigner Marc directement",text:"« Marc, comment ça s'est passé au fournil de ton côté ? »"},
+ {id:"B",label:"Désigner Leïla directement",text:"« Leïla, tu as perçu quoi en boutique cette semaine ? »"},
+ {id:"C",label:"Laisser le silence s'installer",text:"(Vous attendez. Le silence dure encore quelques secondes.)"},
+ {id:"D",label:"Passer aux chiffres",text:"« Bon, on va avancer. On passe aux résultats de la semaine. »"},
+ ],
+ feedback:{
+ A:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien récupéré",posture:{dir:0,par:1,fac:1},
+ text:"Vous avez rattrapé la situation en nommant Marc après l'échec de l'invitation générale. Bon réflexe de récupération, même si partir directement sur une désignation nominative aurait été plus efficace.",
+ narratif:"Marc, surpris qu'on s'adresse à lui, se redresse et prend la parole timidement. Le tour de table reprend son cours."},
+ B:{note:3,eng:1,cls:"ok",icon:"ok",quality:"Bien récupéré",posture:{dir:0,par:1,fac:1},
+ text:"Vous avez rattrapé la situation en donnant la parole à Leïla. Bon réflexe de récupération : nommer directement les profils discrets est toujours plus efficace qu'une invitation générale.",
+ narratif:"Leïla, étonnée d'être sollicitée, se lance avec prudence. Elle évoque les difficultés au comptoir. Le silence est brisé."},
+ C:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:0,par:0,fac:1},
+ text:"Laisser le silence durer sans intervenir laisse le champ libre à Sofia qui reprend naturellement la main. Le rôle d'animateur, c'est précisément de redistribuer la parole quand personne ne se lance.",
+ narratif:"Sofia s'impatiente et reprend la parole d'elle-même, plus longtemps cette fois. Marc et Leïla restent en retrait. L'équilibre du tour de table est perdu."},
+ D:{note:1,eng:-1,cls:"bad",icon:"bad",quality:"À retravailler",posture:{dir:2,par:0,fac:0},
+ text:"Passer directement aux chiffres après un silence résout le problème de surface mais sacrifie l'espace d'expression de l'équipe. Marc et Leïla n'ont toujours pas eu la parole.",
+ narratif:"Marc referme son carnet. Leïla hoche vaguement la tête. Sofia a l'air soulagée. La fenêtre de dialogue se referme sans que personne d'autre n'ait pu s'exprimer."},
+ }
+ }
+};
+
+function App(){
+ const [agenda,setAgenda]=useState([...DEFAULT_AGENDA]);
+ const [skippedBlocks,setSkippedBlocks]=useState([]);
+ const [gs,setGs]=useState({seqIdx:0,engagement:3,posture:{dir:0,par:0,fac:0},history:[],selectedOpt:null,showFeedback:false,hints:3,hintUsed:false,isFinished:false,subChoiceActive:false,subChoiceOpt:null});
+ const [showIntro,setShowIntro]=useState(true);
+ const [showConcept,setShowConcept]=useState(false);
+ const [gameStarted,setGameStarted]=useState(false);
+ const [isPlanOpen,setIsPlanOpen]=useState(true);
+ const [isFullscreen,setIsFullscreen]=useState(false);
+ const [showSpotlight,setShowSpotlight]=useState(true);
+ const [visibleMsgs,setVisibleMsgs]=useState(0);
+ const [isMenuOpen,setIsMenuOpen]=useState(false);
+ const [transition,setTransition]=useState(null);
+ const [transitionFading,setTransitionFading]=useState(false);
+ const [showHint,setShowHint]=useState(false);
+ const [lastDelta,setLastDelta]=useState(null);
+ const [showJournal,setShowJournal]=useState(false);
+ const [journalSpread,setJournalSpread]=useState(0);
+ const [hasReadJournal,setHasReadJournal]=useState(false);
+ const [showCarnetTip,setShowCarnetTip]=useState(false);
+ // ranks: bid → rang choisi (1-based). Indépendant de agenda, résolu à la confirmation.
+ const [ranks,setRanks]=useState(()=>Object.fromEntries(DEFAULT_AGENDA.filter(b=>b!=='cloture').map((b,i)=>([b,i+1]))));
+ const [rankConflict,setRankConflict]=useState(false);
+ const [spotlightStep,setSpotlightStep]=useState(-1);
+ const [activeStep,setActiveStep]=useState(-1);
+ const [isTransitioning,setIsTransitioning]=useState(false);
+ const chatScrollRef=useRef(null);
+ const myBubbleRef=useRef(null);
+
+ const finishSpotlight=()=>{setSpotlightStep(-1);setActiveStep(-1);setGameStarted(true);};
+
+ useEffect(()=>{
+ if(spotlightStep===-1)return;
+ setIsTransitioning(true);
+ const t=setTimeout(()=>{setActiveStep(spotlightStep);setIsTransitioning(false);},120);
+ return()=>clearTimeout(t);
+ },[spotlightStep]);
+
+ const nextSpotlight=()=>{if(spotlightStep<5)setSpotlightStep(s=>s+1);else finishSpotlight();};
+ const skipSpotlight=()=>{if(spotlightStep<5)setSpotlightStep(5);else finishSpotlight();};
+
+ const smoothScroll=useCallback((delay=0,toRef=false)=>{
+ const run=()=>requestAnimationFrame(()=>{
+ const el=chatScrollRef.current;
+ if(!el)return;
+ if(toRef&&myBubbleRef.current){
+ const containerRect=el.getBoundingClientRect();
+ const bubbleRect=myBubbleRef.current.getBoundingClientRect();
+ const offset=bubbleRect.top-containerRect.top+el.scrollTop-80;
+ el.scrollTo({top:Math.max(0,offset),behavior:'smooth'});
+ }else{
+ el.scrollTo({top:el.scrollHeight,behavior:'smooth'});
+ }
+ });
+ if(delay)setTimeout(run,delay);else run();
+ },[]);
+
+ useEffect(()=>{const t=setTimeout(()=>setShowSpotlight(false),6000);return()=>clearTimeout(t);},[]);
+ useEffect(()=>{
+ if(!gs.subChoiceActive)smoothScroll(50);
+ },[gs.history,visibleMsgs,isMenuOpen,gs.showFeedback,gs.subChoiceActive]);
+ useEffect(()=>{
+ if(gs.subChoiceActive)setTimeout(()=>smoothScroll(0,false),150);
+ },[gs.subChoiceActive]);
+ useEffect(()=>{const h=()=>setIsFullscreen(!!document.fullscreenElement);document.addEventListener('fullscreenchange',h);return()=>document.removeEventListener('fullscreenchange',h);},[]);
+
+ useEffect(()=>{
+ if(!gameStarted||gs.isFinished)return;
+ const roundSeq=flattenAgenda(agenda,skippedBlocks);
+ const roundId=roundSeq[gs.seqIdx];
+ const rd=ROUNDS[roundId];
+ if(!rd)return;
+ const alreadyAnswered=gs.history.some(h=>h.roundId===rd.id);
+ if(alreadyAnswered){setVisibleMsgs(99);setIsMenuOpen(false);setTransition(null);return;}
+ const msgs=[rd.ctx].filter(Boolean);
+ setVisibleMsgs(0);setIsMenuOpen(false);setShowHint(false);
+ const timers=[];
+ if(gs.seqIdx===0){
+ setTransitionFading(false);
+ setTransition(rd.ctx);
+ timers.push(setTimeout(()=>setTransitionFading(true),2500));
+ timers.push(setTimeout(()=>{
+ setTransition(null);setTransitionFading(false);
+ msgs.forEach((_,i)=>{timers.push(setTimeout(()=>{setVisibleMsgs(i+1);playSound('msg');},i*600));});
+ timers.push(setTimeout(()=>{setIsMenuOpen(true);playSound('choices');},msgs.length*600+1200));
+ },3100));
+ } else {
+ setTransition(null);setTransitionFading(false);
+ msgs.forEach((_,i)=>{timers.push(setTimeout(()=>{setVisibleMsgs(i+1);playSound('msg');},i*600));});
+ timers.push(setTimeout(()=>{setIsMenuOpen(true);playSound('choices');},msgs.length*600+800));
+ }
+ return()=>timers.forEach(clearTimeout);
+ },[gs.seqIdx,gs.isFinished,gameStarted,agenda,skippedBlocks]);
+
+ const toggleFullscreen=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();};
+
+ const roundSeq=flattenAgenda(agenda,skippedBlocks);
+ const rd=ROUNDS[roundSeq[gs.seqIdx]];
+ const prevN0Opt=gs.history.find(h=>h.roundId===0)?.option?.id||null;
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ // Marc part pendant le conflit — si chiffres vient APRÈS conflit, il faut le faire revenir
+ const conflitIdx=agenda.indexOf('conflit');
+ const chiffresIdx=agenda.indexOf('chiffres');
+ const chiffresApresConflit=!skippedBlocks.includes('chiffres')&&chiffresIdx>conflitIdx;
+ const chiffresSkipped=skippedBlocks.includes('chiffres');
+
+ const handleStart=()=>{setShowIntro(false);setShowConcept(true);};
+ const handleConceptNext=()=>{setShowConcept(false);setVisibleMsgs(0);setIsMenuOpen(false);setTransition(null);setSpotlightStep(0);setActiveStep(0);};
+
+ const handleSubmit=()=>{
+ if(!gs.selectedOpt)return;
+ const subKey=`${rd.id}_${gs.selectedOpt}`;
+ if(SUB_CHOICES[subKey]){
+ // Intercepter : montrer le sous-choix d'abord
+ setGs(prev=>({...prev,subChoiceActive:true,subChoiceOpt:prev.selectedOpt,selectedOpt:null}));
+ setIsMenuOpen(false);
+ setTimeout(()=>smoothScroll(0,true),120);
+ return;
+ }
+ const prevOpt=gs.history.find(h=>h.roundId===0)?.option?.id||null;
+ const rdOptions=(rd.optionsByPrev&&prevOpt&&rd.optionsByPrev[prevOpt])||rd.options;
+ const rdFeedback=(rd.feedbackByPrev&&prevOpt&&rd.feedbackByPrev[prevOpt]&&rd.feedbackByPrev[prevOpt][gs.selectedOpt])||(rd.feedback[gs.selectedOpt]);
+ const opt=rdOptions.find(o=>o.id===gs.selectedOpt);
+ const fb=rdFeedback;
+ const newPosture={
+ dir:clamp(gs.posture.dir+(fb.posture?.dir||0),0,30),
+ par:clamp(gs.posture.par+(fb.posture?.par||0),0,30),
+ fac:clamp(gs.posture.fac+(fb.posture?.fac||0),0,30),
+ };
+ const newEng=clamp(gs.engagement+(fb.eng||0),0,5);
+ const delta=fb.eng||0;
+ if(delta!==0){setLastDelta(delta);setTimeout(()=>setLastDelta(null),3000);}
+ playSound(fb.note>=3?'success':fb.note>=2?'nearmiss':'fail');
+ setGs(prev=>({...prev,posture:newPosture,engagement:newEng,history:[...prev.history,{roundId:rd.id,round:rd,option:opt,feedback:fb}],showFeedback:true,selectedOpt:gs.selectedOpt}));
+ setIsMenuOpen(false);
+ setTimeout(()=>smoothScroll(0,false),200);
+ };
+
+ const handleSubSubmit=()=>{
+ if(!gs.subChoiceOpt||!gs.selectedOpt)return;
+ const subKey=`${rd.id}_${gs.subChoiceOpt}`;
+ const sub=SUB_CHOICES[subKey];
+ if(!sub)return;
+ const mainOpt=rd.options.find(o=>o.id===gs.subChoiceOpt);
+ const subOptData=sub.options.find(o=>o.id===gs.selectedOpt);
+ const fb=sub.feedback[gs.selectedOpt];
+ // Posture + engagement combinés (main opt avait note:2 eng:0 par:1)
+ const mainFbPosture={dir:0,par:1,fac:0};
+ const newPosture={
+ dir:clamp(gs.posture.dir+(mainFbPosture.dir||0)+(fb.posture?.dir||0),0,30),
+ par:clamp(gs.posture.par+(mainFbPosture.par||0)+(fb.posture?.par||0),0,30),
+ fac:clamp(gs.posture.fac+(mainFbPosture.fac||0)+(fb.posture?.fac||0),0,30),
+ };
+ const newEng=clamp(gs.engagement+(fb.eng||0),0,5);
+ const delta=fb.eng||0;
+ if(delta!==0){setLastDelta(delta);setTimeout(()=>setLastDelta(null),3000);}
+ playSound(fb.note>=3?'success':fb.note>=2?'nearmiss':'fail');
+ // Histoire : on enregistre le mainOpt avec le fb du sous-choix
+ const histEntry={roundId:rd.id,round:rd,option:mainOpt,subOption:subOptData,feedback:{...fb,posture:{...mainFbPosture,...Object.fromEntries(Object.entries(fb.posture||{}).map(([k,v])=>([k,(mainFbPosture[k]||0)+v])))}}};
+ setGs(prev=>({...prev,posture:newPosture,engagement:newEng,history:[...prev.history,histEntry],showFeedback:true,subChoiceActive:false,selectedOpt:gs.subChoiceOpt}));
+ setTimeout(()=>smoothScroll(0,false),200);
+ };
+
+ const handleRetry=()=>{
+ const last=gs.history[gs.history.length-1];
+ if(!last)return;
+ const fb=last.feedback;
+ setGs(prev=>({...prev,
+ posture:{dir:clamp(prev.posture.dir-(fb.posture?.dir||0),0,30),par:clamp(prev.posture.par-(fb.posture?.par||0),0,30),fac:clamp(prev.posture.fac-(fb.posture?.fac||0),0,30)},
+ engagement:clamp(prev.engagement-(fb.eng||0),0,5),
+ history:prev.history.slice(0,-1),selectedOpt:null,showFeedback:false,hintUsed:false
+ }));
+ setShowHint(false);
+ setTimeout(()=>{setIsMenuOpen(true);playSound('choices');},100);
+ };
+
+ const handleContinue=()=>{
+ const next=gs.seqIdx+1;
+ if(next>=roundSeq.length){setGs(prev=>({...prev,isFinished:true}));return;}
+ setGs(prev=>({...prev,seqIdx:next,selectedOpt:null,showFeedback:false,hintUsed:false}));
+ setShowHint(false);
+ };
+
+ const useHint=()=>{
+ if(gs.hints<=0||gs.showFeedback||showHint)return;
+ setGs(prev=>({...prev,hints:prev.hints-1,hintUsed:true}));
+ setShowHint(true);
+ playSound('click');
+ };
+
+ useEffect(()=>{
+ const p=new URLSearchParams(window.location.search).get('round');
+ if(p!==null){
+ const r=clamp(parseInt(p)||0,0,roundSeq.length-1);
+ setGs(prev=>({...prev,seqIdx:r}));
+ setShowIntro(false);setShowConcept(false);setGameStarted(true);
+ }
+ },[]);
+
+ const engPct=(gs.engagement/5)*100;
+ const engColor=gs.engagement>=4?'#4a9960':gs.engagement>=2?'#b07a20':'#9b3030';
+ const {dir,par,fac}=gs.posture;
+ const total=dir+par+fac||1;
+ const critColors=rd?CRIT_COLORS[rd.critClass]||CRIT_COLORS.C26:{};
+
+ const FullBtn=()=>(
+ <button onClick={()=>{toggleFullscreen();setShowSpotlight(false);}}
+ className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-xl border transition-all ${showSpotlight?'bg-stone-900 text-stone-100 border-stone-900 spotlight-btn':'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>
+ {isFullscreen?<Minimize size={16}/>:<Maximize size={16}/>}
+ {isFullscreen?"Quitter":"Plein écran"}
+ </button>
+ );
+
+ if(showConcept) return(
+ <div className="app-wrapper min-h-screen bg-[#f3f4f6] flex flex-col font-sans">
+ <div className="fixed top-4 right-4 z-50"><FullBtn/></div>
+ <main className="flex-1 p-4 sm:p-8 flex justify-center items-center overflow-y-auto">
+ <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden my-auto anim-fadeInUp">
+ <div className="bg-[#1e1c1a] px-8 py-10 sm:px-12 sm:py-12">
+ <h1 className="text-3xl sm:text-4xl font-serif text-white italic">Comment fonctionne ce simulateur ?</h1>
+ </div>
+ <div className="px-8 py-10 sm:px-12 sm:py-10 space-y-6 text-[#4a4643] text-base leading-relaxed">
+ <p>Vous animez le brief hebdomadaire de votre équipe : <strong>Sofia</strong> (vendeuse senior, 8 ans), <strong>Marc</strong> (boulanger junior, 1 an) et <strong>Leïla</strong> (vendeuse, 3 ans). La semaine a été difficile et une tension interpersonnelle est perceptible.</p>
+ <p>À chaque situation, vous choisissez comment réagir. Vos décisions façonnent votre style de manager : plutôt <strong className="text-red-600">cadrant</strong>, <strong className="text-blue-600">participatif</strong> ou <strong className="text-emerald-600">facilitateur</strong>. Votre profil se construit au fil du brief.</p>
+ <p>Un indicateur évolue en temps réel : l'<strong>engagement de l'équipe</strong>. Certaines décisions le renforcent, d'autres le fragilisent. Observez-le pour ajuster votre posture.</p>
+ <p>Si vous êtes bloqué·e, vous disposez de <strong>3 indices</strong> pour vous aider à prendre la bonne décision.</p>
+ <div className="pt-4">
+ <button onClick={handleConceptNext} className="w-full bg-[#1e1c1a] text-white rounded-xl py-4 font-medium hover:bg-black transition-all flex items-center justify-center gap-2 group shadow-md hover:shadow-lg">
+ <span>Commencer le brief</span>
+ <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform"/>
+ </button>
+ </div>
+ </div>
+ </div>
+ </main>
+ </div>
+ );
+
+ if(showIntro) return(
+ <div className="app-wrapper min-h-screen bg-gray-100 flex flex-col font-sans">
+ <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">
+ {showSpotlight&&<div className="spotlight-tooltip flex items-center gap-2 bg-stone-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl whitespace-nowrap"><span className="spotlight-arrow">↑</span>Meilleure expérience en plein écran</div>}
+ <FullBtn/>
+ </div>
+ <main className="flex-1 p-4 sm:p-8 flex justify-center items-start overflow-y-auto">
+ <div className="max-w-3xl w-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-4 mb-12 anim-fadeInUp">
+ {/* Bannière sombre */}
+ <div className="bg-stone-900 p-8 sm:p-12 relative" style={{backgroundImage:'repeating-linear-gradient(135deg,transparent,transparent 50px,rgba(255,255,255,.018) 50px,rgba(255,255,255,.018) 100px)'}}>
+ <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"/>
+ <div className="relative z-10">
+ <div className="text-stone-400 text-10px font-bold tracking-widest uppercase mb-4">Simulateur de management · CCI France</div>
+ <h1 className="text-3xl sm:text-4xl font-serif text-white mb-2 italic">Brief d'équipe</h1>
+ <h2 className="text-2xl sm:text-3xl font-medium text-white mb-6">Boulangerie Les Trois Épis</h2>
+ <div className="text-stone-400 text-sm flex items-center gap-2">
+ <span>Préparation à l'épreuve</span>
+ <span className="w-1 h-1 rounded-full bg-stone-600"/>
+ <span>Phase 1</span>
+ </div>
+ </div>
+ </div>
+ {/* Contenu */}
+ <div className="p-8 sm:p-12">
+ <div className="space-y-5 text-stone-700 text-base leading-relaxed mb-10">
+ <p>Vous êtes manager de la boulangerie artisanale <strong>Les Trois Épis</strong> depuis deux ans. Votre équipe tourne bien en général, mais cette semaine a été plus tendue que d'habitude.</p>
+ <p>Le chiffre d'affaires a décroché de <strong>8 %</strong> par rapport à l'objectif. Plusieurs clients réguliers ont trouvé porte close sur certains pains jeudi soir : des ruptures de stock qui ne passent pas.</p>
+ <p>En parallèle, vous avez remarqué une atmosphère plus pesante au comptoir. <strong>Sofia</strong>, votre vendeuse la plus expérimentée, a tendance à s'éclipser en pause sans prévenir — et à monopoliser la parole quand elle est là. <strong>Leïla</strong> et <strong>Marc</strong>, eux, restent discrets : ils parlent peu en réunion, attendent qu'on leur donne la parole, et ont tendance à rester en retrait quand ça se tend.</p>
+ <p>Ce matin, vous réunissez les trois pour le brief hebdomadaire. Vous savez que la réunion ne sera pas de tout repos.</p>
+ </div>
+ <div className="flex justify-center pt-2">
+ <button onClick={()=>{playSound('click');handleStart();}} className="bg-stone-900 text-white rounded-xl px-8 py-3.5 font-medium hover:bg-stone-800 transition-all flex items-center gap-2 group w-full sm:w-auto shadow-md hover:shadow-lg">
+ <span>Commencer le brief</span>
+ <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform"/>
+ </button>
+ </div>
+ </div>
+ </div>
+ </main>
+ </div>
+ );
+
+ if(gs.isFinished){
+ const totalNote=gs.history.reduce((s,h)=>s+(h.feedback.note||0),0);
+ const maxNote=ROUNDS.length*4,pct=Math.round((totalNote/maxNote)*100);
+ const dp=dir/total,pp=par/total,fp=fac/total;
+ let dominant='Équilibré';
+ if(dir>par&&dir>fac)dominant='Directif';else if(par>dir&&par>fac)dominant='Participatif';else if(fac>dir&&fac>par)dominant='Facilitateur';
+ const profileDesc=dominant==='Directif'
+ ?`Votre style dominant est <strong>directif</strong>. Vous tendez à trancher seul·e. Dans un brief d'équipe, cela peut rassurer sur le cadre, mais limite l'expression collective et la co-construction.`
+ :dominant==='Participatif'
+ ?`Votre style dominant est <strong>participatif</strong>. Vous consultez, invitez, co-construisez. C'est le style le plus adapté à l'animation de brief.`
+ :dominant==='Facilitateur'
+ ?`Votre style dominant est <strong>facilitateur</strong>. Vous écoutez, restez neutre, orientez vers la solution. C'est le style le plus adapté à la gestion de conflits.`
+ :`Votre profil est <strong>équilibré</strong> sur les trois postures. C'est un excellent signe de flexibilité managériale.`;
+ const level=pct>=75?{label:"Brief maîtrisé",bg:"bg-green-800",icon:"trophy"}:pct>=50?{label:"Brief solide",bg:"bg-amber-700",icon:"solid"}:{label:"À consolider",bg:"bg-red-800",icon:"work"};
+ const byKey={};
+ gs.history.forEach(h=>{const crit=h.round.critere||'';crit.split(/[,&]/).forEach(p=>{const k=p.trim().split(' ')[0].trim();if(!k)return;if(!byKey[k])byKey[k]={total:0,count:0,label:k,cls:k.substring(0,3)};byKey[k].total+=h.feedback.note;byKey[k].count++;});});
+ const barsFor=(prefix)=>Object.entries(byKey).filter(([k])=>k.startsWith(prefix)).map(([k,v])=>{
+ const p=v.count>0?Math.round((v.total/(v.count*4))*100):0;
+ const col=p>=75?'bg-green-500':p>=50?'bg-amber-500':'bg-red-500';
+ return(<div key={k} className="mb-3"><div className="flex justify-between mb-1"><span className="text-xs font-semibold text-stone-700">{v.label}</span><span className="text-xs text-stone-400">{p}%</span></div><div className="h-2 bg-stone-100 rounded-full overflow-hidden"><div className={`h-full rounded-full ${col}`} style={{width:`${p}%`}}/></div></div>);
+ });
+ return(
+ <div className="app-wrapper min-h-screen bg-stone-100 flex items-center justify-center p-4">
+ <div className="fixed top-4 right-4 z-50"><FullBtn/></div>
+ <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200 anim-scaleIn">
+ <div className={`p-10 text-white text-center ${level.bg}`}>
+ <div className="flex justify-center mb-4">
+ {level.icon==='trophy'&&<svg viewBox="0 0 40 40" fill="none" className="w-10 h-10"><path d="M12 6h16v12c0 5-4 9-8 9s-8-4-8-9V6z" fill="white" fillOpacity=".9"/><path d="M8 8H6a4 4 0 004 4" stroke="white" strokeWidth="1.8" strokeLinecap="round"/><path d="M32 8h2a4 4 0 01-4 4" stroke="white" strokeWidth="1.8" strokeLinecap="round"/><rect x="16" y="27" width="8" height="3" rx="1" fill="white" fillOpacity=".9"/><rect x="13" y="30" width="14" height="3" rx="1.5" fill="white" fillOpacity=".9"/></svg>}
+ {level.icon==='solid'&&<svg viewBox="0 0 40 40" fill="none" className="w-10 h-10"><circle cx="20" cy="18" r="11" fill="white" fillOpacity=".9"/><path d="M15 18l4 4 7-7" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="13" y="30" width="14" height="3" rx="1.5" fill="white" fillOpacity=".9"/></svg>}
+ {level.icon==='work'&&<svg viewBox="0 0 40 40" fill="none" className="w-10 h-10"><circle cx="20" cy="20" r="13" fill="white" fillOpacity=".15" stroke="white" strokeWidth="1.5"/><path d="M20 13v8l5 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+ </div>
+ <h2 className="text-3xl font-serif italic mb-1">Brief terminé</h2>
+ <p className="text-white-60 text-sm">{level.label} · Les Trois Épis</p>
+ </div>
+ {(skippedBlocks.includes('conflit')||skippedBlocks.includes('operationnel'))&&(
+ <div className="px-8 pt-6 pb-5 border-b border-amber-100 bg-amber-50">
+ <div className="flex gap-3 items-start">
+ <div className="shrink-0 w-8 h-8 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center mt-0.5">
+ <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/></svg>
+ </div>
+ <div>
+ <p className="text-sm font-bold text-amber-800 mb-1">Vous avez écarté {skippedBlocks.includes('conflit')&&skippedBlocks.includes('operationnel')?'deux thèmes importants':'un thème important'}</p>
+ <p className="text-sm text-amber-700 leading-relaxed">
+ {skippedBlocks.includes('conflit')&&skippedBlocks.includes('operationnel')
+ ?<>La <strong>gestion du conflit</strong> et les <strong>points opérationnels</strong> ont été retirés de votre ordre du jour. En réunion réelle, ignorer ces sujets laisse des tensions non traitées et des décisions en suspens — l'équipe le ressent, même si rien n'est dit.</>
+ :skippedBlocks.includes('conflit')
+ ?<>La <strong>gestion du conflit</strong> a été retirée de votre ordre du jour. En réunion réelle, ignorer une tension interpersonnelle ne la fait pas disparaître — elle ressurgit, souvent de manière moins contrôlée.</>
+ :<>Les <strong>points opérationnels</strong> ont été retirés de votre ordre du jour. Ce sont pourtant les décisions concrètes qui permettent à l'équipe de repartir avec des actions claires.</>
+ }
+ </p>
+ </div>
+ </div>
+ </div>
+ )}
+ {gs.history.length>=2&&(
+ <div className="px-8 pt-6 pb-5 border-b border-stone-100 bg-stone-50-half">
+ <p className="text-10px font-bold text-stone-400 uppercase tracking-widest mb-3">Trajectoire d'engagement de l'équipe</p>
+ <ConfidenceChart history={gs.history}/>
+ </div>
+ )}
+ <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+ <div className="space-y-6">
+ <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100">
+ <div className="flex items-center justify-between">
+ <div><p className="text-xs text-stone-400 uppercase font-semibold tracking-wider">Score</p><p className="text-3xl font-serif">{totalNote}<span className="text-base text-stone-400">/{maxNote}</span> <span className="text-sm text-stone-500">({pct}%)</span></p></div>
+ <div className="text-right"><p className="text-xs text-stone-400 uppercase font-semibold tracking-wider mb-1">Engagement final</p><div className="flex gap-1 justify-end">{[1,2,3,4,5].map(i=><div key={i} className={`w-3 h-3 rounded-full ${i<=gs.engagement?'bg-amber-500':'bg-stone-200'}`}/>)}</div></div>
+ </div>
+ </div>
+ <div className="p-5 bg-white rounded-2xl border border-stone-100">
+ <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Profil de posture managériale</p>
+ <div className="flex gap-4 justify-around">
+ {[{k:'dir',p:dp,c:'#c04020',l:'Directif'},{k:'par',p:pp,c:'#2070b0',l:'Participatif'},{k:'fac',p:fp,c:'#208050',l:'Facilitateur'}].map(({k,p,c,l})=>(
+ <div key={k} className="text-center"><SpeedometerSVG pct={p} color={c} size={90}/><p className="text-xs font-bold mt-1" style={{color:c}}>{l}</p></div>
+ ))}
+ </div>
+ <div className="mt-4 p-3 bg-stone-50 rounded-xl border border-stone-100 text-xs text-stone-600 leading-relaxed" dangerouslySetInnerHTML={{__html:profileDesc}}/>
+ </div>
+ <div className="p-5 bg-white rounded-2xl border border-stone-100">
+ <p className="text-10px font-bold text-blue-700 uppercase tracking-widest mb-3">Animation de réunion</p>
+ {barsFor('C26')}
+ <p className="text-10px font-bold text-amber-700 uppercase tracking-widest mb-3 mt-4">Transmission des pratiques</p>
+ {barsFor('C27')}
+ <p className="text-10px font-bold text-red-700 uppercase tracking-widest mb-3 mt-4">Gestion d'un différend</p>
+ {barsFor('C28')}
+ </div>
+ <button onClick={()=>{setGs({roundIdx:0,engagement:3,posture:{dir:0,par:0,fac:0},history:[],selectedOpt:null,showFeedback:false,hints:3,hintUsed:false,isFinished:false});setShowIntro(true);setShowConcept(false);setGameStarted(false);setVisibleMsgs(0);setIsMenuOpen(false);setTransition(null);}} className="w-full py-3 border-2 border-stone-900 text-stone-900 rounded-xl font-medium hover:bg-stone-50 transition-colors flex items-center justify-center gap-2 text-sm"><RotateCcw size={16}/> Recommencer</button>
+ </div>
+ <div className="space-y-2 overflow-y-auto max-h-640 pr-2 custom-scrollbar">
+ <h3 className="font-semibold text-stone-800 sticky top-0 bg-white py-2 text-sm">Détail par décision</h3>
+ {gs.history.map((item,idx)=>{
+ const cc=CRIT_COLORS[item.round.critClass]||CRIT_COLORS.C26;
+ return(
+ <div key={idx} className="p-3.5 border-b border-stone-100 last:border-0">
+ <div className="flex justify-between items-start mb-1"><span className="text-xs font-bold text-stone-400 uppercase tracking-wider">D{idx+1}</span><span className={`text-xs font-bold ${item.feedback.note>=3?'text-green-600':'text-amber-600'}`}>+{item.feedback.note} pts</span></div>
+ <p className="text-xs text-stone-800 font-medium mb-1">{item.round.phase}</p>
+ <p className="text-xs text-stone-500 italic mb-1">{item.option.label}</p>
+ <div className="flex items-center gap-2 flex-wrap">
+ {item.feedback.eng!==0&&<span className={`text-xs font-medium ${item.feedback.eng>0?'text-green-600':'text-red-500'}`}>{item.feedback.eng>0?`▲ +${item.feedback.eng}`:`▼ ${item.feedback.eng}`}</span>}
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ </div>
+ </div>
+ );
+ }
+
+ const slideIn={animation:'msgSlideIn 0.55s cubic-bezier(0.22,1,0.36,1) both, newMsgPulse 1.6s ease-out 0.4s both',opacity:0,animationFillMode:'both'};
+ const cc=CRIT_COLORS[rd.critClass]||CRIT_COLORS.C26;
+ const lastHist=gs.history.length>0?gs.history[gs.history.length-1]:null;
+ const fb=gs.showFeedback&&gs.selectedOpt?(lastHist&&lastHist.subOption&&lastHist.roundId===rd.id?lastHist.feedback:(rd.feedbackByPrev&&prevN0Opt&&rd.feedbackByPrev[prevN0Opt]&&rd.feedbackByPrev[prevN0Opt][gs.selectedOpt])||rd.feedback[gs.selectedOpt]):null;
+
+ const spHL=(step)=>spotlightStep===step?"relative z-[50] ring-4 ring-blue-500 ring-offset-1 bg-white rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.55)] transition-all duration-300":"transition-all duration-300";
+
+ return(
+ <div className="app-wrapper h-screen bg-stone-100 flex flex-col relative">
+ {/* SPOTLIGHT OVERLAY */}
+ {spotlightStep>=0&&<div className="fixed inset-0 bg-stone-900/60 z-40 backdrop-blur-[1px] transition-opacity duration-300 pointer-events-none"/>}
+ {/* STEP 0 : bienvenue */}
+ {activeStep===0&&(
+ <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 pointer-events-none">
+ <div className={`bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-full max-w-md pointer-events-auto transition-opacity duration-150 ${isTransitioning?'opacity-0':'opacity-100'}`}>
+ <div className="p-8">
+ <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-5">
+ <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+ </div>
+ <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">Bienvenue !</h3>
+ <p className="text-gray-600 text-sm leading-relaxed mb-7">Avant de commencer, prenons 30 secondes pour découvrir les indicateurs de votre tableau de bord.</p>
+ <div className="flex items-center justify-between">
+ <button onClick={skipSpotlight} className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">Passer la visite</button>
+ <button onClick={nextSpotlight} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">Démarrer <ChevronRight size={16}/></button>
+ </div>
+ </div>
+ </div>
+ </div>
+ )}
+ <header className={`bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 shrink-0 ${spotlightStep>0&&spotlightStep<4?'z-[45]':'z-40'}`}>
+ {/* GAUCHE : identité */}
+ <div className="flex items-center gap-4 min-w-max">
+ <div className="w-12 h-12 bg-stone-900 rounded-xl flex items-center justify-center text-2xl shadow-inner border border-stone-800">🥖</div>
+ <div className="flex flex-col">
+ <h1 className="text-base font-bold text-gray-900 leading-tight">Les Trois Épis</h1>
+ <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-0.5">Brief hebdomadaire</span>
+ </div>
+ </div>
+ {/* CENTRE : métriques */}
+ <div className="flex-1 flex items-center justify-center gap-8">
+ {/* Engagement (SPOTLIGHT 1) */}
+ <div className="relative">
+ <div className={`flex items-center gap-5 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 ${spotlightStep===-1?'cursor-help hover:bg-gray-100':''} ${spHL(1)}`}>
+ <div className="flex flex-col">
+ <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Engagement</span>
+ <div className="flex items-baseline gap-1">
+ <span className="text-2xl font-extrabold text-gray-900 leading-none">{gs.engagement}</span>
+ <span className="text-sm font-semibold text-gray-400">/5</span>
+ </div>
+ </div>
+ <div className="relative w-28 h-3 bg-gray-200 rounded-full overflow-hidden">
+ <div className="absolute top-0 left-0 h-full rounded-full engagement-bar" style={{width:`${engPct}%`,backgroundColor:engColor}}/>
+ </div>
+ {lastDelta!==null&&<span className={`absolute -top-3 right-0 text-sm font-bold anim-delta ${lastDelta>0?'text-green-500':'text-red-500'}`}>{lastDelta>0?`+${lastDelta}`:lastDelta}</span>}
+ </div>
+ {activeStep===1&&(
+ <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-5 z-[100] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 transition-opacity duration-150 ${isTransitioning?'opacity-0':'opacity-100'}`}>
+ <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100"/>
+ <div className="p-6">
+ <h3 className="text-lg font-serif font-bold text-gray-900 mb-2">Engagement d'équipe</h3>
+ <p className="text-gray-600 text-sm leading-relaxed mb-6">Cet indicateur reflète l'adhésion de l'équipe à votre discours. Vos choix lors du brief le feront monter ou descendre.</p>
+ <div className="flex items-center justify-between">
+ <button onClick={skipSpotlight} className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">Passer</button>
+ <button onClick={nextSpotlight} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors">Suivant <ChevronRight size={14}/></button>
+ </div>
+ </div>
+ </div>
+ )}
+ </div>
+ {/* Postures (SPOTLIGHT 2) */}
+ <div className="relative">
+ <div className={`hidden md:flex flex-col border-l border-gray-200 pl-8 pr-4 py-1 justify-center rounded-xl ${spHL(2)}`}>
+ <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Styles de management</span>
+ <div className="flex items-center gap-6">
+ {[
+ {k:'dir',letter:'D',label:'Directif',color:'bg-red-500',bg:'bg-red-100',text:'text-red-700'},
+ {k:'par',letter:'P',label:'Participatif',color:'bg-blue-500',bg:'bg-blue-100',text:'text-blue-700'},
+ {k:'fac',letter:'F',label:'Facilitateur',color:'bg-emerald-500',bg:'bg-emerald-100',text:'text-emerald-700'},
+ ].map(({k,letter,label,color,bg,text})=>(
+ <div key={k} className="flex items-center gap-2">
+ <span className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${bg} ${text}`}>{letter}</span>
+ <div className="w-14 h-2 bg-gray-200 rounded-full overflow-hidden">
+ <div className={`h-full rounded-full ${color}`} style={{width:`${Math.round((gs.posture[k]/total)*100)}%`,transition:'width .5s ease'}}/>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
+ {activeStep===2&&(
+ <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-5 z-[100] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 transition-opacity duration-150 ${isTransitioning?'opacity-0':'opacity-100'}`}>
+ <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100"/>
+ <div className="p-6">
+ <h3 className="text-lg font-serif font-bold text-gray-900 mb-2">Vos postures</h3>
+ <p className="text-gray-600 text-sm leading-relaxed mb-6">Chacune de vos réponses remplit ces jauges de style de management (Directif, Participatif, Facilitateur). À la fin, vous obtiendrez votre profil dominant.</p>
+ <div className="flex items-center justify-between">
+ <button onClick={skipSpotlight} className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">Passer</button>
+ <button onClick={nextSpotlight} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors">Suivant <ChevronRight size={14}/></button>
+ </div>
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
+ {/* DROITE : outils */}
+ <div className="flex items-center justify-end gap-5 min-w-max">
+ {/* Indice (SPOTLIGHT 3) */}
+ <div className="relative">
+ <button onClick={useHint} disabled={gs.hints<=0||gs.showFeedback||showHint||spotlightStep>=0} className={`flex items-center gap-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${spHL(3)}`}>
+ <Lightbulb size={18}/><span className="font-bold text-base">{gs.hints}</span>
+ </button>
+ {activeStep===3&&(
+ <div className={`absolute top-full -right-3 mt-5 z-[100] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 transition-opacity duration-150 ${isTransitioning?'opacity-0':'opacity-100'}`}>
+ <div className="absolute -top-2 right-[38px] w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100"/>
+ <div className="p-6">
+ <h3 className="text-lg font-serif font-bold text-gray-900 mb-2">Des aides disponibles</h3>
+ <p className="text-gray-600 text-sm leading-relaxed mb-6">Vous avez un doute ? Vous disposez de 3 indices pour vous aiguiller vers la meilleure réponse sur une étape difficile.</p>
+ <div className="flex items-center justify-between">
+ <button onClick={skipSpotlight} className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">Passer</button>
+ <button onClick={nextSpotlight} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors">Suivant <ChevronRight size={14}/></button>
+ </div>
+ </div>
+ </div>
+ )}
+ </div>
+ <div className="w-px h-9 bg-gray-200"/>
+ {/* Bouton carnet */}
+ <div className={`relative ${spHL(5)}`}>
+ <button onClick={()=>{if(spotlightStep<0)setShowJournal(v=>!v);}} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${showJournal?'bg-amber-100 text-amber-800 border border-amber-200':'bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700'}`}>
+ <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5 shrink-0"><rect x="3" y="2" width="11" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M14 4h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-1" stroke="currentColor" strokeWidth="1.5"/><path d="M6 6h5M6 9h5M6 12h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+ <span>Mon carnet</span>
+ </button>
+ {activeStep===5&&(
+ <div className={`absolute top-full right-0 mt-5 z-[100] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 transition-opacity duration-150 ${isTransitioning?'opacity-0':'opacity-100'}`}>
+ <div className="absolute -top-2 right-[38px] w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100"/>
+ <div className="p-6">
+ <h3 className="text-lg font-serif font-bold text-gray-900 mb-2">Préparez votre brief</h3>
+ <p className="text-gray-600 text-sm leading-relaxed mb-3">Votre carnet contient le contexte complet et votre <strong>ordre du jour</strong>.</p>
+ <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-xs text-amber-800 leading-relaxed">
+ <p className="font-semibold mb-1">Comment organiser votre brief :</p>
+ <ul className="space-y-1 list-none">
+ <li className="flex items-start gap-1.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0"><polyline points="18 15 12 9 6 15"/></svg><span>Utilisez les flèches pour <strong>changer l'ordre</strong> des thèmes</span></li>
+ <li className="flex items-start gap-1.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg><span>Cochez / décochez les thèmes <strong>optionnels</strong></span></li>
+ <li className="flex items-start gap-1.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0"><polyline points="20 6 9 17 4 12"/></svg><span>Les thèmes <strong>obligatoires</strong> ne peuvent pas être supprimés</span></li>
+ </ul>
+ </div>
+ {!hasReadJournal?(
+ <div className="mb-4">
+ <button onClick={()=>{setShowJournal(true);setJournalSpread(0);if(!hasReadJournal)setShowCarnetTip(true);}} className="w-full bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors">
+ <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4"><rect x="3" y="2" width="11" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M14 4h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-1" stroke="currentColor" strokeWidth="1.5"/><path d="M6 6h5M6 9h5M6 12h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+ Ouvrir mon carnet
+ </button>
+ <p className="text-xs text-amber-700 text-center mt-2 font-medium">⚠ Consultez votre carnet avant de commencer</p>
+ </div>
+ ):(
+ <div className="flex items-center gap-2 mb-4 text-green-600 text-sm font-medium"><svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>Carnet consulté ✓</div>
+ )}
+ <div className="flex items-center justify-between">
+ <button onClick={()=>{setShowJournal(true);setJournalSpread(0);if(!hasReadJournal)setShowCarnetTip(true);}} className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">Passer</button>
+ <button onClick={nextSpotlight} disabled={!hasReadJournal} className={`px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors ${hasReadJournal?'bg-blue-600 hover:bg-blue-700 text-white':'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Commencer ! <ChevronRight size={14}/></button>
+ </div>
+ </div>
+ </div>
+ )}
+ </div>
+ <div className="w-px h-9 bg-gray-200"/>
+ {/* Plein écran + sidebar */}
+ <div className="flex items-center gap-1">
+ <button onClick={toggleFullscreen} className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">{isFullscreen?<Minimize size={22}/>:<Maximize size={22}/>}</button>
+ <button onClick={()=>setIsPlanOpen(!isPlanOpen)} className={`hidden xl:flex p-2.5 rounded-lg transition-colors ${isPlanOpen?'bg-gray-100 text-gray-800':'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}><SidebarIcon size={22}/></button>
+ </div>
+ </div>
+ </header>
+
+ {/* MODAL CARNET */}
+ {showJournal&&(
+ <div className="absolute inset-0 z-[80] flex items-center justify-center px-12 py-8" style={{background:'rgba(0,0,0,0.6)',backdropFilter:'blur(4px)'}} onClick={()=>{if(spotlightStep===5)return;setShowJournal(false);setHasReadJournal(true);}}>
+ <div className="w-full max-w-5xl flex flex-col items-center anim-fadeInUp" onClick={e=>e.stopPropagation()}>
+ {/* Notebook */}
+ <div className="relative w-full" style={{background:'#1a252f',borderRadius:12,boxShadow:'0 20px 40px rgba(0,0,0,0.5)',padding:4}}>
+ {/* Spine */}
+ <div className="carnet-spine"/>
+ {/* Close button — caché pendant spotlight pour forcer passage par bouton confirm */}
+ {spotlightStep!==5&&<button onClick={()=>{setShowJournal(false);setHasReadJournal(true);}} style={{position:'absolute',top:8,right:12,color:'rgba(253,250,243,0.6)',fontSize:'1.6rem',lineHeight:1,zIndex:30,background:'none',border:'none',cursor:'pointer'}} onMouseOver={e=>e.target.style.color='#fdfaf3'} onMouseOut={e=>e.target.style.color='rgba(253,250,243,0.6)'}>×</button>}
+ {/* Nav arrows */}
+ <button className="carnet-nav-btn prev" onClick={()=>{playSound('page');setJournalSpread(s=>Math.max(0,s-1));}} disabled={journalSpread===0}>❮</button>
+ <button className="carnet-nav-btn next" onClick={()=>{playSound('page');setJournalSpread(s=>Math.min(2,s+1));}} disabled={journalSpread===2}>❯</button>
+ {/* Pages spread */}
+ <div style={{display:'flex',width:'100%',position:'relative'}}>
+ {/* In-carnet tutorial overlay — first open during spotlight */}
+ {showCarnetTip&&journalSpread===0&&(
+ <div style={{position:'fixed',inset:0,zIndex:200,background:'rgba(26,37,47,0.75)',backdropFilter:'blur(3px)',display:'flex',alignItems:'center',justifyContent:'center',padding:32}}>
+ <div style={{background:'#fdfaf3',borderRadius:14,padding:'36px 40px',maxWidth:560,width:'100%',fontFamily:"'DM Sans', sans-serif",boxShadow:'0 16px 48px rgba(0,0,0,0.5)'}}>
+ <div style={{fontSize:22,fontWeight:700,color:'#1a252f',marginBottom:16,textAlign:'center'}}>📋 Votre carnet de brief</div>
+ <p style={{fontSize:15,color:'#4b5563',lineHeight:1.6,marginBottom:20}}>Ce carnet contient tout ce dont vous avez besoin pour animer ce brief : contexte de la boutique, chiffres clés, profils des collaborateurs et points de vigilance.</p>
+ <div style={{background:'#fef3c7',border:'1px solid #fde68a',borderRadius:10,padding:'14px 18px',marginBottom:14}}>
+ <p style={{fontWeight:700,marginBottom:4,color:'#92400e',fontSize:15}}>1 2 3 … Choisir l'ordre</p>
+ <p style={{fontSize:14,color:'#78350f',margin:0,lineHeight:1.5}}>Cliquez sur un numéro pour placer chaque thème à la position souhaitée dans votre brief.</p>
+ </div>
+ <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:10,padding:'14px 18px',marginBottom:24}}>
+ <p style={{fontWeight:700,marginBottom:4,color:'#166534',fontSize:15}}>☑ Thèmes optionnels</p>
+ <p style={{fontSize:14,color:'#14532d',margin:0,lineHeight:1.5}}>Les cases à cocher permettent d'inclure ou d'exclure certains thèmes. Les thèmes avec ✓ sont obligatoires.</p>
+ </div>
+ <button onClick={()=>setShowCarnetTip(false)} style={{display:'block',width:'100%',background:'#1a252f',color:'#fdfaf3',border:'none',borderRadius:10,padding:'14px 24px',fontFamily:"'DM Sans', sans-serif",fontSize:15,fontWeight:600,cursor:'pointer',transition:'background 0.15s'}} onMouseOver={e=>e.currentTarget.style.background='#2c3e50'} onMouseOut={e=>e.currentTarget.style.background='#1a252f'}>
+ J'ai compris, personnaliser mon ordre du jour →
+ </button>
+ </div>
+ </div>
+ )}
+ {journalSpread===0&&(<>
+ {/* Page Ordre du jour gauche */}
+ <div className="carnet-page left">
+ <div className="carnet-date">Ordre du jour</div><br/>
+ <p style={{fontSize:15,color:'#555',marginBottom:12,fontStyle:'italic'}}>Choisissez dans quel ordre aborder chaque thème, et cochez les optionnels.</p>
+ {(()=>{
+ // Affichage fixe = DEFAULT_AGENDA. ranks[bid] = rang choisi librement.
+ const n=DEFAULT_AGENDA.filter(b=>b!=='cloture').length;
+ return DEFAULT_AGENDA.map(bid=>{
+ const block=AGENDA_BLOCKS.find(b=>b.id===bid);
+ if(!block)return null;
+ const isSkipped=skippedBlocks.includes(bid);
+ const isLast=bid==='cloture';
+ const currentRank=ranks[bid]; // rang choisi pour ce bloc
+ const minAllowed=bid==='conflit'?2:1;
+ // Détecter doublon avec un autre bloc actif
+ const isDupe=!isLast&&!isSkipped&&DEFAULT_AGENDA.filter(b=>b!=='cloture'&&b!==bid&&!skippedBlocks.includes(b)).some(b=>ranks[b]===currentRank);
+ return(
+ <div key={bid} style={{display:'flex',alignItems:'center',gap:10,marginBottom:10,opacity:isSkipped?0.35:1,transition:'opacity 0.2s'}}>
+ {/* Rang libre — chaque bloc a ses propres boutons indépendants */}
+ {!isLast?(
+ <div style={{display:'flex',gap:3,flexShrink:0}}>
+ {Array.from({length:n},(_,k)=>k+1).map(p=>{
+ const isActive=p===currentRank;
+ const forbidden=bid==='conflit'&&p<minAllowed;
+ const conflict=isActive&&isDupe;
+ return(
+ <button key={p}
+ onClick={()=>{if(forbidden)return;setRanks(r=>({...r,[bid]:p}));setRankConflict(false);playSound('click');}}
+ disabled={forbidden}
+ title={forbidden?'Le conflit ne peut pas être en 1ère position':isActive?'Rang actuel':`Choisir rang ${p}`}
+ style={{width:22,height:22,borderRadius:6,
+ border:isActive?`2px solid ${conflict?'#dc2626':'#1a252f'}`:'1.5px solid',
+ borderColor:forbidden?'#e5e5e5':isActive?(conflict?'#dc2626':'#1a252f'):'#bbb',
+ background:isActive?(conflict?'#dc2626':'#1a252f'):forbidden?'transparent':'#fff',
+ color:isActive?'#fff':forbidden?'#ddd':'#555',
+ fontSize:11,fontWeight:700,cursor:forbidden?'default':'pointer',
+ display:'flex',alignItems:'center',justifyContent:'center',
+ transition:'all 0.12s',fontFamily:"'DM Sans',sans-serif"}}>
+ {p}
+ </button>
+ );
+ })}
+ </div>
+ ):(
+ <div style={{width:n*25,flexShrink:0}}/>
+ )}
+ {/* Checkbox / lock */}
+ {!block.required?(
+ <input type="checkbox" checked={!isSkipped} onChange={()=>{setSkippedBlocks(prev=>isSkipped?prev.filter(x=>x!==bid):[...prev,bid]);setRankConflict(false);}} style={{width:16,height:16,cursor:'pointer',accentColor:'#c0392b',flexShrink:0}}/>
+ ):(
+ <div style={{width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27ae60" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+ </div>
+ )}
+ {/* Icon */}
+ <span style={{color:isSkipped?'#aaa':'#1a252f',flexShrink:0,display:'flex',alignItems:'center'}}>{BLOCK_ICONS[bid]}</span>
+ {/* Label + doublon warning */}
+ <span style={{fontSize:18,fontWeight:600,textDecoration:isSkipped?'line-through':'none',color:isLast?'#888':block.required?'#1a252f':(isSkipped?'#aaa':'#333'),transition:'color 0.2s'}}>{block.label}</span>
+ {isDupe&&!isSkipped&&<span style={{fontSize:11,color:'#dc2626',whiteSpace:'nowrap',marginLeft:4}}>⚠ rang déjà pris</span>}
+ {block.required&&!isDupe&&<span style={{fontSize:11,color:'#aaa',fontStyle:'italic',whiteSpace:'nowrap',marginLeft:'auto'}}>(obligatoire)</span>}
+ {isLast&&<span style={{fontSize:11,color:'#aaa',fontStyle:'italic',whiteSpace:'nowrap',marginLeft:'auto'}}>(toujours en dernier)</span>}
+ </div>
+ );
+ });
+ })()}
+ </div>
+ {/* Page droite : légende */}
+ <div className="carnet-page right">
+ <div className="carnet-date">Contexte du brief</div><br/>
+ <p style={{fontSize:18,marginBottom:12}}>Brief du <strong>lundi 8h45</strong> — Boulangerie <em>Les Trois Épis</em></p>
+ <ul className="carnet-list">
+ <li><strong>Équipe :</strong> Sofia (8 ans), Leïla (3 ans), Marc (1 an)</li>
+ </ul><br/>
+ <ul className="carnet-list">
+ <li><strong>CA semaine :</strong> <span className="carnet-hl-red">-8 %</span> vs objectif</li>
+ <li><strong>Click &amp; Collect :</strong> 15 % des ventes — <span className="carnet-hl-green">succès</span> mais désorganisation</li>
+ <li><strong>Ruptures jeudi soir :</strong> clients mécontents</li>
+ </ul><br/>
+ <ul className="carnet-list">
+ <li><strong>Tension :</strong> Sofia vs Leïla sur les pauses / rushs</li>
+ <li><strong>Marc :</strong> doute sur ses cuissons — à rassurer</li>
+ </ul><br/>
+ <p style={{fontSize:16,fontStyle:'italic',color:'#888'}}>Tournez les pages pour le détail →</p>
+ </div>
+ </>)}
+ {journalSpread===1&&(<>
+ {/* Page 1 */}
+ <div className="carnet-page left">
+ <div className="carnet-date">1. Les Chiffres de la semaine</div><br/>
+ <ul className="carnet-list">
+ <li><strong>CA global :</strong> <span className="carnet-hl-red">-8 %</span> par rapport à l'obj.<br/><span className="carnet-arrow">↘</span> <em>(Ne pas faire la police : poser le chiffre et chercher les causes <span className="carnet-circle">ensemble</span>).</em></li>
+ </ul>
+ <br/>
+ <ul className="carnet-list">
+ <li><strong>Click &amp; Collect :</strong> 15 % des ventes. → <span className="carnet-hl-green">Gros succès !</span><br/>⚠️ <em>Mais attention à la désorganisation en boutique...</em></li>
+ </ul>
+ </div>
+ {/* Page 2 */}
+ <div className="carnet-page right">
+ <div className="carnet-date">2. Sujets opérationnels</div><br/>
+ <ul className="carnet-list">
+ <li><strong>Ruptures jeudi soir :</strong> Clients mécontents (pas de pain). Marc était au fournil.<br/><span className="carnet-circle">Point d'attention</span> : Ne pas l'accuser directement → enquêter sur la cause. <em>(Retard farine ? Mauvaise anticipation ?)</em></li>
+ </ul>
+ <br/>
+ <ul className="carnet-list">
+ <li><strong>Gestion Click &amp; Collect :</strong> Ça cafouille pendant les rushs. <del className="carnet-scribble">Surchauffe</del><br/>Comment intégrer sans bloquer la caisse ?</li>
+ </ul>
+ <br/>
+ <ul className="carnet-list">
+ <li><strong>Rituel d'accueil :</strong> Le "Réflexe 3 Épis" se perd.<br/><span className="carnet-hl">Astuce :</span> Mettre Sofia en valeur pour qu'elle explique sa technique aux autres.</li>
+ </ul>
+ </div>
+ </>)}
+ {journalSpread===2&&(<>
+ {/* Page 3 */}
+ <div className="carnet-page left">
+ <div className="carnet-date">3. Dynamique d'équipe (RH)</div><br/>
+ <ul className="carnet-list">
+ <li><strong>Sofia (8 ans anc.) :</strong> Leader informelle. Très bonne vendeuse, mais écrase les autres. → La canaliser en la valorisant comme <span className="carnet-circle">experte</span>.<br/>⚠️ <em>Gare aux pauses "sauvages" (agace Leïla).</em></li>
+ </ul>
+ <br/>
+ <ul className="carnet-list">
+ <li><strong>Leïla (3 ans anc.) :</strong> Travailleuse, discrète. Accumule de la frustration... → L'interroger <span className="carnet-hl">nominativement</span> pour l'obliger à s'exprimer.</li>
+ </ul>
+ <br/>
+ <ul className="carnet-list">
+ <li><strong>Marc (1 an anc.) :</strong> Fait du bon pain mais doute. Le rassurer publiquement sur ses cuissons. Prévoir aparté pour l'aider (gestion stocks).</li>
+ </ul>
+ </div>
+ {/* Page 4 */}
+ <div className="carnet-page right" style={{position:'relative'}}>
+ <div className="carnet-postit"><div style={{width:30,height:10,background:'rgba(255,255,255,0.4)',position:'absolute',top:-5,left:'50%',transform:'translateX(-50%) rotate(2deg)',boxShadow:'0 1px 2px rgba(0,0,0,0.1)'}}/><strong>Rappel perso !</strong><br/>Faire parler Leïla et Marc en premier, sinon Sofia va prendre tout l'espace !</div>
+ <div className="carnet-date">4. Posture managériale</div><br/><br/>
+ <ul className="carnet-list">
+ <li>Si le ton monte entre Sofia et Leïla au sujet des pauses / rushs :</li>
+ </ul>
+ <div style={{textAlign:'center',margin:'32px 0'}}><span className="carnet-stop">STOP.</span></div>
+ <ul className="carnet-list">
+ <li><span className="carnet-hl-red">Ne JAMAIS arbitrer un conflit personnel devant toute l'équipe.</span><br/><span className="carnet-arrow">↘</span> Proposer un point à 3 à la fin.</li>
+ </ul>
+ </div>
+ </>)}
+ </div>
+ </div>
+ {/* Page indicator + close */}
+ <div style={{marginTop:16,display:'flex',alignItems:'center',gap:24}}>
+ <div style={{color:'#fdfaf3',fontFamily:"'Patrick Hand',cursive",fontSize:20}}>{journalSpread===0?'Ordre du jour':`Pages ${journalSpread*2-1} – ${journalSpread*2}`}</div>
+ {spotlightStep===5?(
+ <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:8}}>
+ {rankConflict&&(
+ <div style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:8,padding:'8px 14px',fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'#b91c1c',maxWidth:340,textAlign:'center'}}>
+ ⚠ Deux thèmes ont le même rang. Choisissez des numéros différents pour chacun.
+ </div>
+ )}
+ <button onClick={()=>{
+ // Vérifier doublons (hors blocs skippés)
+ const activeRanks=DEFAULT_AGENDA.filter(b=>b!=='cloture'&&!skippedBlocks.includes(b)).map(b=>ranks[b]);
+ const hasDupes=activeRanks.length!==new Set(activeRanks).size;
+ if(hasDupes){setRankConflict(true);return;}
+ setRankConflict(false);
+ // Construire agenda dans l'ordre des rangs
+ const reorderable=DEFAULT_AGENDA.filter(b=>b!=='cloture');
+ const sorted=[...reorderable].sort((a,b)=>(ranks[a]||99)-(ranks[b]||99));
+ setAgenda([...sorted,'cloture']);
+ setShowJournal(false);setHasReadJournal(true);finishSpotlight();
+ }} style={{background:'#c0392b',border:'2px solid #c0392b',borderRadius:8,padding:'8px 24px',fontFamily:"'Patrick Hand',cursive",fontSize:18,color:'#fff',cursor:'pointer',fontWeight:700,transition:'background 0.15s'}} onMouseOver={e=>e.currentTarget.style.background='#a93226'} onMouseOut={e=>e.currentTarget.style.background='#c0392b'}>✓ Confirmer mon ordre du jour</button>
+ </div>
+ ):(
+ <button onClick={()=>{setShowJournal(false);setHasReadJournal(true);}} style={{background:'#fdfaf3',border:'2px solid #1a252f',borderRadius:8,padding:'6px 20px',fontFamily:"'Patrick Hand',cursive",fontSize:16,color:'#1a252f',cursor:'pointer',fontWeight:600,transition:'background 0.15s'}} onMouseOver={e=>e.currentTarget.style.background='#fff'} onMouseOut={e=>e.currentTarget.style.background='#fdfaf3'}>Fermer le carnet</button>
+ )}
+ </div>
+ </div>
+ </div>
+ )}
+
+ <main className="flex-1 flex overflow-hidden">
+ <section className="flex-1 flex flex-col bg-stone-50 relative overflow-hidden">
+ <div ref={chatScrollRef} className="flex-1 overflow-y-scroll p-8 space-y-7 custom-scrollbar" style={{paddingBottom: fb?'380px':'64px'}}>
+
+ {gs.history.map((item,idx)=>(
+ <div key={idx} className="space-y-4 anim-fadeInUp">
+ <div className="flex justify-center">
+ <div className="max-w-88p bg-stone-100 text-stone-500 px-8 py-5 rounded-2xl border border-stone-200 text-base italic text-center leading-relaxed">{item.round.ctx}</div>
+ </div>
+ <div className="flex justify-center">
+ <div className="flex items-center gap-2">
+ </div>
+ </div>
+ <div ref={idx===gs.history.length-1&&!item.subOption?myBubbleRef:null} className="flex justify-end">
+ <div className="max-w-82p bg-stone-900 text-white p-5 rounded-2xl rounded-tr-none shadow-sm">
+ <p className="text-xs opacity-40 mb-2 font-bold uppercase tracking-wider">Vous</p>
+ <p className="text-sm font-semibold text-stone-400 mb-2">{item.option.label}</p>
+ <p className="text-base italic leading-relaxed">{item.option.text}</p>
+ </div>
+ </div>
+ {item.subOption&&(()=>{
+ const subKey=`${item.roundId}_${item.option.id}`;
+ const sub=SUB_CHOICES[subKey];
+ return(<>
+ {sub&&(
+ <div className="flex justify-center">
+ <div className="flex flex-col items-center gap-3 w-full">
+ <div className="flex items-center gap-3 w-full">
+ <div className="flex-1 h-px bg-stone-300"/>
+ <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-stone-400 shrink-0"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="6" cy="12" r="1.5" fill="currentColor"/><circle cx="18" cy="12" r="1.5" fill="currentColor"/></svg>
+ <div className="flex-1 h-px bg-stone-300"/>
+ </div>
+ <p className="text-base font-serif italic text-stone-600 text-center px-4 leading-relaxed">{sub.ctx}</p>
+ </div>
+ </div>
+ )}
+ <div ref={idx===gs.history.length-1?myBubbleRef:null} className="flex justify-end">
+ <div className="max-w-82p bg-stone-900 text-white p-5 rounded-2xl rounded-tr-none shadow-sm">
+ <p className="text-xs opacity-40 mb-2 font-bold uppercase tracking-wider">Vous</p>
+ <p className="text-sm font-semibold text-stone-400 mb-2">{item.subOption.label}</p>
+ <p className="text-base italic leading-relaxed">{item.subOption.text}</p>
+ </div>
+ </div>
+ </>);
+ })()}
+ <div className="flex justify-start">
+ <div className="max-w-82p bg-white text-stone-800 p-5 rounded-2xl rounded-tl-none shadow-sm border border-stone-200">
+ <p className="text-xs text-stone-400 mb-2 font-bold uppercase tracking-wider">L'équipe réagit…</p>
+ <p className="text-base leading-relaxed italic text-stone-600">{item.feedback.narratif}</p>
+ </div>
+ </div>
+ </div>
+ ))}
+
+ {(()=>{
+ if(gs.history.some(h=>h.roundId===rd.id))return null;
+ const elems=[];
+ if(visibleMsgs>0){
+ elems.push(
+ <div key="ctx" className="flex justify-center">
+ <div style={slideIn} className="max-w-88p bg-stone-100 text-stone-500 px-8 py-5 rounded-2xl border border-stone-200 text-base italic text-center leading-relaxed">
+ {(rd.ctxByPrev&&prevN0Opt&&rd.ctxByPrev[prevN0Opt])||rd.ctx}
+ {rd.id===9&&<>{' '}Vous demandez à Marc de retourner au fournil le temps de cet échange.</>}
+ {rd.id===13&&chiffresApresConflit&&<>{' '}Vous faites signe à Marc de revenir — il reste encore les chiffres à passer en revue avec toute l'équipe.</>}
+ </div>
+ </div>
+ );
+ elems.push(
+ <div key="critere" className="flex justify-center">
+ <div style={{...slideIn,animationDelay:'.1s'}} className="flex items-center gap-2">
+ </div>
+ </div>
+ );
+ }
+ return elems;
+ })()}
+
+ {!gs.showFeedback&&rd.ctxNote&&visibleMsgs>0&&(
+ <div className="flex justify-center">
+ <div style={slideIn} className="max-w-88p bg-amber-50 border border-amber-100 text-amber-800 px-5 py-3 rounded-2xl text-xs leading-relaxed" dangerouslySetInnerHTML={{__html:rd.ctxNote}}/>
+ </div>
+ )}
+
+ {showHint&&(
+ <div className="flex justify-center anim-fadeInUp">
+ <div className="max-w-88p bg-amber-50 border border-amber-200 text-amber-900 px-5 py-4 rounded-2xl text-sm leading-relaxed flex items-start gap-3">
+ <Lightbulb size={16} className="shrink-0 mt-0.5 text-amber-600"/>
+ <span>{rd.hint}</span>
+ </div>
+ </div>
+ )}
+
+ {!gs.showFeedback&&gs.subChoiceActive&&(()=>{
+ const subKey=`${rd.id}_${gs.subChoiceOpt}`;
+ const sub=SUB_CHOICES[subKey];
+ if(!sub)return null;
+ const mainOpt=rd.options.find(o=>o.id===gs.subChoiceOpt);
+ return(
+ <div className="space-y-8 anim-fadeInUp">
+ {/* Bulle VOUS avec le choix principal */}
+ <div className="flex justify-end">
+ <div className="max-w-82p bg-stone-900 text-white p-5 rounded-2xl rounded-tr-none shadow-sm">
+ <p className="text-xs opacity-40 mb-2 font-bold uppercase tracking-wider">Vous</p>
+ <p className="text-sm font-semibold text-stone-400 mb-2">{mainOpt.label}</p>
+ <p className="text-base italic leading-relaxed">{mainOpt.text}</p>
+ </div>
+ </div>
+ {/* Réaction : silence */}
+ <div className="flex justify-center">
+ <div className="flex flex-col items-center gap-3" style={{animation:'fadeInUp 0.5s 0.3s ease both',opacity:0,animationFillMode:'both'}}>
+ <div className="flex items-center gap-3 w-full">
+ <div className="flex-1 h-px bg-stone-300"/>
+ <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-stone-400 shrink-0"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="6" cy="12" r="1.5" fill="currentColor"/><circle cx="18" cy="12" r="1.5" fill="currentColor"/></svg>
+ <div className="flex-1 h-px bg-stone-300"/>
+ </div>
+ <p className="text-base font-serif italic text-stone-600 text-center px-4 leading-relaxed">{sub.ctx}</p>
+ </div>
+ </div>
+ {/* Sous-options */}
+ <div style={{animation:'fadeInUp 0.6s 0.5s ease both',opacity:0,animationFillMode:'both'}} className="max-w-2xl mx-auto">
+ <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 text-center">Comment réagissez-vous ?</p>
+ <div className="space-y-3">
+ {sub.options.map((option,oi)=>(
+ <button key={option.id}
+ onClick={()=>{playSound('click');setGs(prev=>({...prev,selectedOpt:option.id}));}}
+ style={{animation:`fadeInUp 0.35s ${0.15+oi*0.1}s ease both`,opacity:0,animationFillMode:'both'}}
+ className={`w-full text-left p-5 rounded-2xl border-2 transition-colors flex items-center gap-4 ${gs.selectedOpt===option.id?'bg-stone-900 border-stone-900 text-white shadow-lg':'bg-white border-stone-200 hover:border-stone-400 shadow-sm'}`}>
+ <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${gs.selectedOpt===option.id?'bg-stone-700 text-stone-200':'bg-stone-100 text-stone-500'}`}>{option.id}</span>
+ <p className={`text-base font-medium leading-snug ${gs.selectedOpt===option.id?'text-white':'text-stone-800'}`}>{option.label}</p>
+ </button>
+ ))}
+ </div>
+ {gs.selectedOpt&&(
+ <div className="flex justify-end mt-4">
+ <button onClick={()=>{playSound('click');handleSubSubmit();}} className="px-8 py-3.5 bg-stone-900 text-white rounded-xl font-semibold text-sm hover:bg-stone-800 transition-all shadow-lg flex items-center gap-2">Valider cette action <ChevronRight size={18}/></button>
+ </div>
+ )}
+ </div>
+ </div>
+ );
+ })()}
+
+ {!gs.showFeedback&&!gs.subChoiceActive&&isMenuOpen&&(()=>{
+ const rdOptions=(rd.optionsByPrev&&prevN0Opt&&rd.optionsByPrev[prevN0Opt])||rd.options;
+ return(
+ <div style={{animation:'fadeInUp 0.4s ease both'}} className="max-w-2xl mx-auto">
+ <p className="text-lg font-semibold text-stone-700 mb-5 text-center leading-snug">{rd.phase}</p>
+ <div className="space-y-3">
+ {rdOptions.map((option,oi)=>(
+ <button key={option.id}
+ onClick={()=>{playSound('click');setGs(prev=>({...prev,selectedOpt:option.id}));}}
+ onMouseEnter={()=>playHover(option.id)} onMouseLeave={()=>{_lastHoverOptId=null;}}
+ style={{animation:`fadeInUp 0.35s ${0.15+oi*0.1}s ease both`,opacity:0,animationFillMode:'both'}}
+ className={`w-full text-left p-5 rounded-2xl border-2 transition-colors flex items-center gap-4 ${gs.selectedOpt===option.id?'bg-stone-900 border-stone-900 text-white shadow-lg':'bg-white border-stone-200 hover:border-stone-400 shadow-sm'}`}>
+ <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${gs.selectedOpt===option.id?'bg-stone-700 text-stone-200':'bg-stone-100 text-stone-500'}`}>{option.id}</span>
+ <p className={`text-base font-medium leading-snug ${gs.selectedOpt===option.id?'text-white':'text-stone-800'}`}>{option.label}</p>
+ </button>
+ ))}
+ </div>
+ {gs.selectedOpt&&(
+ <div className="flex justify-end mt-4">
+ <button onClick={()=>{playSound('click');handleSubmit();}} className="px-8 py-3.5 bg-stone-900 text-white rounded-xl font-semibold text-sm hover:bg-stone-800 transition-all shadow-lg flex items-center gap-2">Valider cette action <ChevronRight size={18}/></button>
+ </div>
+ )}
+ </div>
+ );
+ })()}
+
+
+ <div className="h-4 shrink-0"/>
+ </div>
+
+ {transition&&<TransitionScreen text={typeof transition==='string'?transition:null} fading={transitionFading}/>}
+
+ {fb&&(
+ <div className="absolute bottom-0 left-0 right-0 z-20 anim-fadeInUp bg-white border-t border-gray-200 shadow-xl">
+ {/* Corps */}
+ <div className="px-8 py-6">
+ {/* Badges + nearMiss inline */}
+ <div className="flex flex-wrap items-center gap-3 mb-5" style={{animation:'fadeInUp 0.3s ease 0.1s both'}}>
+ {fb.icon==='ok'&&<div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-800 rounded-md font-bold text-xs uppercase tracking-wider"><svg viewBox="0 0 20 20" fill="none" className="w-4 h-4"><circle cx="10" cy="10" r="9" fill="#16a34a"/><path d="M6 10.5l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>{fb.quality}</div>}
+ {fb.icon==='bad'&&<div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-800 rounded-md font-bold text-xs uppercase tracking-wider"><svg viewBox="0 0 20 20" fill="none" className="w-4 h-4"><circle cx="10" cy="10" r="9" fill="#dc2626"/><path d="M7 7l6 6M13 7l-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>{fb.quality}</div>}
+ {fb.icon==='warn'&&<div className="flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-md font-bold text-xs uppercase tracking-wider"><svg viewBox="0 0 20 20" fill="none" className="w-4 h-4"><path d="M10 2L18.5 17H1.5L10 2z" fill="#d97706"/><path d="M10 8v4" stroke="white" strokeWidth="1.8" strokeLinecap="round"/><circle cx="10" cy="14.5" r="0.9" fill="white"/></svg>{fb.quality}</div>}
+ {fb.posture&&Object.entries(fb.posture).filter(([,v])=>v>0).map(([k,v])=>(
+ <div key={k} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold border ${k==='dir'?'bg-white text-red-600 border-red-300':k==='par'?'bg-white text-blue-600 border-blue-300':'bg-white text-green-600 border-green-300'}`}>
+ {k==='dir'?'Directif':k==='par'?'Participatif':'Facilitateur'} <span className="font-bold">+{v}</span>
+ </div>
+ ))}
+ {fb.nearMiss&&<span className="text-sm text-gray-500 font-medium ml-1">Vous étiez sur la bonne voie.</span>}
+ </div>
+ {/* Texte principal */}
+ <p className="text-base font-semibold text-gray-900 leading-relaxed mb-4" style={{animation:'fadeInUp 0.3s ease 0.2s both'}}>{fb.text}</p>
+ {/* Conseil du coach */}
+ {fb.ref&&(
+ <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 flex gap-4" style={{animation:'fadeInUp 0.3s ease 0.3s both'}}>
+ <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mt-0.5">
+ <Lightbulb size={16}/>
+ </div>
+ <div>
+ <p className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-1.5">Le conseil du coach</p>
+ <p className="text-blue-900/80 text-sm leading-relaxed" dangerouslySetInnerHTML={{__html:fb.ref.replace('Le conseil du coach :','').replace('Le conseil du coach : ','')}}/>
+ </div>
+ </div>
+ )}
+ {/* Bon à savoir */}
+ {fb.alt&&(
+ <div className={`${fb.ref?'mt-3':''} bg-white border border-stone-200 rounded-xl px-5 py-4 flex gap-4`} style={{animation:'fadeInUp 0.3s ease 0.35s both'}}>
+ <div className="shrink-0 w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mt-0.5 text-base font-bold">?</div>
+ <div>
+ <p className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1.5">Bon à savoir</p>
+ <p className="text-stone-700 text-sm leading-relaxed">{fb.alt.replace('Bon à savoir :','').replace('Bon à savoir : ','')}</p>
+ </div>
+ </div>
+ )}
+ </div>
+ {/* Footer actions */}
+ <div className="bg-gray-50 border-t border-gray-200 px-8 py-4 flex justify-between items-center gap-3" style={{animation:'fadeInUp 0.3s ease 0.4s both'}}>
+ <div className="text-sm text-gray-500">
+ {fb.nearMiss?"Rejouez ce nœud pour trouver la formulation plus efficace.":""}
+ </div>
+ <div className="flex items-center gap-3">
+ {fb.nearMiss&&(
+ <button onClick={()=>{playSound('click');handleRetry();}} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-amber-300 text-amber-700 hover:bg-amber-50 rounded-lg font-medium text-sm transition-colors">
+ <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4"><path d="M2 2v5h5M14 14v-5H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 9A6 6 0 1 0 9 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+ Rejouer
+ </button>
+ )}
+ <button onClick={()=>{playSound('click');handleContinue();}} className="flex items-center gap-2 px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+ Continuer
+ <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+ </button>
+ </div>
+ </div>
+ </div>
+ )}
+ </section>
+
+ {isPlanOpen&&(
+ <aside className={`w-72 bg-white border-l border-stone-200 p-6 ${spotlightStep===4?'overflow-visible':'overflow-y-auto'} hidden xl:block shrink-0 custom-scrollbar relative ${spotlightStep===4?'z-[45]':'z-10'}`}>
+ <h2 className={`text-xs font-bold text-stone-400 uppercase tracking-widest mb-5 ${spHL(4)}`}>Déroulé du brief</h2>
+ {activeStep===4&&(
+ <div className={`fixed top-1/2 -translate-y-1/2 right-72 z-[100] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 transition-opacity duration-150 ${isTransitioning?'opacity-0':'opacity-100'}`}>
+ <div className="absolute top-1/2 -translate-y-1/2 -right-2 w-4 h-4 bg-white rotate-45 border-t border-r border-gray-100"/>
+ <div className="p-6">
+ <h3 className="text-lg font-serif font-bold text-gray-900 mb-2">Plan du brief</h3>
+ <p className="text-gray-600 text-sm leading-relaxed mb-6">Ici, vous pouvez suivre l'avancée de votre réunion, étape par étape, jusqu'à la clôture et les feedbacks.</p>
+ <div className="flex items-center justify-between">
+ <button onClick={skipSpotlight} className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">Passer</button>
+ <button onClick={nextSpotlight} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors">C'est parti ! <ChevronRight size={14}/></button>
+ </div>
+ </div>
+ </div>
+ )}
+ <div className="space-y-1 relative">
+ <div className="absolute left-10px top-3 bottom-3 w-px bg-stone-100"/>
+ {agenda.filter(bid=>!skippedBlocks.includes(bid)).map(bid=>{
+ const block=AGENDA_BLOCKS.find(b=>b.id===bid);
+ if(!block)return null;
+ const currentRoundId=roundSeq[gs.seqIdx];
+ const isCurrent=block.rounds.includes(currentRoundId)&&!gs.showFeedback||block.rounds.includes(currentRoundId)&&gs.showFeedback;
+ const isPlayed=block.rounds.every(rid=>gs.history.some(h=>h.roundId===rid));
+ const isPartial=!isPlayed&&block.rounds.some(rid=>gs.history.some(h=>h.roundId===rid));
+ const cc2=ROUNDS[block.rounds[0]];
+ const critCls=cc2?CRIT_COLORS[cc2.critClass]:CRIT_COLORS.C26;
+ return(
+ <div key={bid} className="relative flex items-center gap-3 py-1.5">
+ <div className={`relative z-10 w-6 h-6 rounded-full flex items-center justify-center border-2 shrink-0 transition-all duration-500 ${isCurrent?'bg-stone-900 border-stone-900 text-white anim-pulse-ring scale-110':isPlayed?`bg-white ${critCls.border} ${critCls.text}`:isPartial?'bg-stone-100 border-stone-300':'bg-white border-stone-200'}`}>
+ {isCurrent&&<PlayIcon size={10}/>}
+ {isPlayed&&!isCurrent&&<Check size={10}/>}
+ {isPartial&&!isCurrent&&<div className="w-1.5 h-1.5 rounded-full bg-stone-400"/>}
+ {!isCurrent&&!isPlayed&&!isPartial&&<div className="w-1.5 h-1.5 rounded-full bg-stone-300"/>}
+ </div>
+ <div className={`text-sm leading-snug transition-all duration-300 ${isCurrent?'font-bold text-stone-900':isPlayed||isPartial?'font-medium text-stone-500':'text-stone-400'}`}>
+ {block.label}
+ </div>
+ </div>
+ );
+ })}
+ {skippedBlocks.length>0&&(
+ <div className="mt-3 pt-3 border-t border-stone-100">
+ <p className="text-9px font-bold text-stone-300 uppercase tracking-widest mb-1.5">Non abordé</p>
+ {skippedBlocks.map(bid=>{
+ const block=AGENDA_BLOCKS.find(b=>b.id===bid);
+ return block?(<div key={bid} className="flex items-center gap-2 py-1 text-stone-300 line-through text-xs"><span>{block.icon}</span>{block.label}</div>):null;
+ })}
+ </div>
+ )}
+ </div>
+ </aside>
+ )}
+ </main>
+ </div>
+ );
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+</script>
+</body>
+</html>

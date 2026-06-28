@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atelier de professionnalisation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+    .delay-150 { animation-delay: 150ms; opacity: 0; }
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+  const { useState, useEffect, useRef } = React;
+
+  // --- SVG ICONS ---
+  const Icon = ({ d, size = 24, fill = "none", strokeWidth = 2, ...rest }) =>
+    React.createElement('svg', {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: size, height: size,
+      viewBox: "0 0 24 24",
+      fill: fill,
+      stroke: "currentColor",
+      strokeWidth,
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      ...rest
+    }, React.createElement('path', { d }));
+
+  const Trophy = ({ size }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+    React.createElement('path', { d:"M6 9H4.5a2.5 2.5 0 0 1 0-5H6" }),
+    React.createElement('path', { d:"M18 9h1.5a2.5 2.5 0 0 0 0-5H18" }),
+    React.createElement('path', { d:"M4 22h16" }),
+    React.createElement('path', { d:"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" }),
+    React.createElement('path', { d:"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" }),
+    React.createElement('path', { d:"M18 2H6v7a6 6 0 0 0 12 0V2z" })
+  );
+
+  const Star = ({ size, fill: fillProp }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill: fillProp || "none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+    React.createElement('polygon', { points:"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" })
+  );
+
+  const Award = ({ size }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+    React.createElement('circle', { cx:"12", cy:"8", r:"6" }),
+    React.createElement('path', { d:"M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" })
+  );
+
+  const Users = ({ size }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+    React.createElement('path', { d:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" }),
+    React.createElement('circle', { cx:"9", cy:"7", r:"4" }),
+    React.createElement('path', { d:"M22 21v-2a4 4 0 0 0-3-3.87" }),
+    React.createElement('path', { d:"M16 3.13a4 4 0 0 1 0 7.75" })
+  );
+
+  const ShieldAlert = ({ size }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+    React.createElement('path', { d:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" }),
+    React.createElement('path', { d:"M12 8v4" }),
+    React.createElement('path', { d:"M12 16h.01" })
+  );
+
+  const CheckCircle2 = ({ size, className }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", className },
+    React.createElement('circle', { cx:"12", cy:"12", r:"10" }),
+    React.createElement('path', { d:"m9 12 2 2 4-4" })
+  );
+
+  const XCircle = ({ size, className }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", className },
+    React.createElement('circle', { cx:"12", cy:"12", r:"10" }),
+    React.createElement('path', { d:"m15 9-6 6" }),
+    React.createElement('path', { d:"m9 9 6 6" })
+  );
+
+  const ArrowRight = ({ size, className }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", className },
+    React.createElement('path', { d:"M5 12h14" }),
+    React.createElement('path', { d:"m12 5 7 7-7 7" })
+  );
+
+  const ChevronLeft = ({ size, className }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", className },
+    React.createElement('path', { d:"m15 18-6-6 6-6" })
+  );
+
+  const RefreshCcw = ({ size, className }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", className },
+    React.createElement('path', { d:"M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
+    React.createElement('path', { d:"M3 3v5h5" }),
+    React.createElement('path', { d:"M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" }),
+    React.createElement('path', { d:"M16 16h5v5" })
+  );
+
+  const Home = ({ size, className }) => React.createElement('svg', { xmlns:"http://www.w3.org/2000/svg", width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", className },
+    React.createElement('path', { d:"m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" }),
+    React.createElement('polyline', { points:"9 22 9 12 15 12 15 22" })
+  );
+
+  // --- AUDIO MANAGER ---
+  const playSound = (type) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const playTone = (freq, waveType, duration, vol, startTime = ctx.currentTime) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = waveType;
+        osc.frequency.setValueAtTime(freq, startTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(vol, startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+      if (type === 'click') { playTone(600, 'sine', 0.1, 0.05); }
+      else if (type === 'correct') {
+        playTone(523.25, 'sine', 0.15, 0.1);
+        playTone(659.25, 'sine', 0.25, 0.1, ctx.currentTime + 0.1);
+        playTone(783.99, 'sine', 0.4, 0.1, ctx.currentTime + 0.2);
+      } else if (type === 'wrong') {
+        playTone(250, 'triangle', 0.2, 0.1);
+        playTone(180, 'triangle', 0.3, 0.1, ctx.currentTime + 0.15);
+      }
+    } catch (e) { console.warn("Audio bloqué ou non supporté"); }
+  };
+
+  // --- DATA ---
+  const SCENARIOS = [
+    {
+      id: 1,
+      icon: Award,
+      title: "Le candidat enthousiaste mais imprécis",
+      tag: "Notation",
+      audioSrc: "audio/1.wav",
+      context: "Lors de l'échange, le candidat se montre à l'aise, courtois et impliqué. Il répond avec énergie, écoute activement et appréhende bien l'enjeu global de la situation. Dans sa projection, il privilégie une approche macroscopique et conceptuelle. Il propose des actions et un plan de manière spontanée et intuitive, témoignant d'une réflexion davantage orientée vers les grandes idées que vers le suivi analytique ou le cadre strict des obligations. Son profil laisse ainsi de belles opportunités pour approfondir ultérieurement les aspects plus techniques de la grille.",
+      step1: {
+        question: "Concernant l'évaluation de cette certification, quelle qualification attribuez-vous au candidat ?",
+        options: [
+          { id: 'A', text: "Atteint (ou dépasse) les attentes", isCorrect: false, feedback: "Même si le candidat donne une impression positive, la performance ne peut pas être validée uniquement sur sa posture, son aisance ou sa motivation. Les éléments essentiels attendus ne sont pas suffisamment expliqués, justifiés ni reliés aux critères observables de la grille." },
+          { id: 'B', text: "Atteint partiellement les attentes", isCorrect: true, feedback: null },
+          { id: 'C', text: "En deçà des attentes", isCorrect: false, feedback: "Le candidat démontre une compréhension globale des enjeux et une implication réelle. La qualification « en deçà » serait trop sévère au regard des éléments présents, même si leur justification reste insuffisante." }
+        ]
+      },
+      step2: {
+        question: "Pourquoi la qualification « Atteint partiellement les attentes » est-elle la plus juste selon la situation présentée ?",
+        options: [
+          { id: 'A', text: "L'attitude dynamique et l'implication du candidat compensent le manque de précision de ses réponses factuelles.", isCorrect: false, feedback: "L'évaluation doit se fonder sur des compétences objectivement démontrées, pas sur la posture ou l'enthousiasme." },
+          { id: 'B', text: "L'évaluation doit se baser sur des compétences objectivement démontrées plutôt que sur une posture positive.", isCorrect: true, feedback: null }
+        ]
+      },
+      bonnePratique: "L'évaluateur ne doit pas compenser une compétence insuffisamment démontrée par une bonne posture générale. Il doit revenir aux critères observables de la grille."
+    },
+    {
+      id: 2,
+      icon: Users,
+      title: "Le candidat qui bloque pendant l'oral",
+      tag: "Conduite de l'oral",
+      audioSrc: "audio/2.wav",
+      context: "Pendant l'oral, le candidat amorce sa réponse, puis s'interrompt et peine à trouver ses mots. Face à ce silence, l'évaluateur intervient une première fois en reformulant la question initiale. Le candidat rencontrant toujours des difficultés pour poursuivre, l'évaluateur intervient à nouveau : pour l'aider à rebondir, il mentionne lui-même la notion clé qui était attendue dans la réponse.",
+      step1: {
+        question: "Comment l'évaluateur aurait-il dû relancer le candidat lors de sa seconde intervention ?",
+        options: [
+          { id: 'A', text: "Relancer le candidat en nommant explicitement la notion attendue pour l'aider à se remettre sur la bonne piste.", isCorrect: false, feedback: "En citant lui-même la notion attendue, l'évaluateur fournit un indice qui permet au candidat de produire une réponse qu'il n'aurait peut-être pas formulée seul. Cela fausse l'évaluation." },
+          { id: 'B', text: "Relancer de manière neutre, sans citer la réponse attendue ni orienter le candidat vers un contenu précis.", isCorrect: true, feedback: null }
+        ]
+      },
+      step2: {
+        question: "Pourquoi cette attitude est-elle la plus juste ?",
+        options: [
+          { id: 'A', text: "Parce que l'évaluation doit mesurer ce que le candidat est capable d'expliquer par lui-même. Une relance est possible, mais elle doit rester neutre et ne pas donner d'indice sur la réponse attendue.", isCorrect: true, feedback: null },
+          { id: 'B', text: "Parce que l'évaluateur doit pouvoir accompagner le candidat lorsqu'il bloque. En citant la notion attendue, il évite que l'oral reste figé et permet au candidat de montrer ce qu'il sait vraiment, même si la réponse doit être légèrement provoquée.", isCorrect: false, feedback: "Aider le candidat à comprendre la question ou à préciser sa pensée est acceptable. En revanche, fournir un indice qui permet de produire la réponse attendue dépasse le rôle de l'évaluateur." }
+        ]
+      },
+      bonnePratique: "L'évaluateur peut reformuler, demander de préciser, faire expliciter, mais ne doit pas souffler la réponse ni guider le candidat vers l'attendu."
+    },
+    {
+      id: 3,
+      icon: ShieldAlert,
+      title: "La pression commerciale à la notation",
+      tag: "Indépendance",
+      audioSrc: "audio/3.wav",
+      context: "Au moment de finaliser sa notation, l'évaluateur est informé que le candidat appartient à une entreprise partenaire historique du centre, qui y inscrit régulièrement un volume important de salariés. Du côté de la prestation, le bilan est mitigé : si quelques éléments sont bien présents, plusieurs critères incontournables de la grille ne sont pas validés. L'évaluateur s'apprête à rédiger sa décision finale en tenant compte de la situation.",
+      step1: {
+        question: "Quelle est la bonne attitude pour l'évaluateur ?",
+        options: [
+          { id: 'A', text: "Maintenir une décision strictement fondée sur les critères de la grille, sans tenir compte des conséquences commerciales possibles.", isCorrect: true, feedback: null },
+          { id: 'B', text: "Ajuster légèrement son appréciation pour éviter une tension avec une entreprise cliente importante, surtout si le candidat n'est pas très loin du niveau attendu.", isCorrect: false, feedback: "L'évaluation ne doit pas être influencée par le statut de l'entreprise, son importance économique ou les conséquences possibles d'une décision défavorable. Ce qui compte, c'est la performance réellement observée au regard des critères de certification." },
+          { id: 'C', text: "Reporter sa décision et demander un avis commercial avant de valider ou non la performance du candidat.", isCorrect: false, feedback: "Reporter pour motif commercial revient à soumettre la décision d'évaluation à des considérations extérieures à la grille. Cela compromet l'indépendance et la fiabilité de la certification." }
+        ]
+      },
+      step2: {
+        question: "Pourquoi cette attitude est-elle la plus juste ?",
+        options: [
+          { id: 'A', text: "Parce que la certification doit rester équitable et fiable. Si une pression commerciale influence la décision, deux candidats pourraient être évalués différemment pour une même performance, ce qui remettrait en cause la valeur de l'évaluation.", isCorrect: true, feedback: null },
+          { id: 'B', text: "Parce qu'une entreprise cliente importante doit être préservée, mais sans que cela apparaisse dans la décision finale. L'évaluateur peut donc rester discret, nuancer son appréciation et éviter une formulation trop défavorable.", isCorrect: false, feedback: "Nuancer une décision pour préserver une relation commerciale, même discrètement, revient à biaiser l'évaluation. La grille s'applique de manière identique pour tous les candidats." },
+          { id: 'C', text: "Parce que l'évaluateur doit écarter toute pression extérieure et, si cette pression devient explicite ou persistante, la signaler selon les règles prévues.", isCorrect: false, feedback: "Cette réponse est partiellement correcte : signaler une pression est bien une bonne pratique. Mais la raison principale reste l'équité et la fiabilité de la certification pour tous les candidats, pas uniquement la gestion de la pression." }
+        ]
+      },
+      bonnePratique: "La décision doit rester exclusivement fondée sur les critères de certification. Toute pression commerciale doit être écartée et, si nécessaire, signalée."
+    }
+  ];
+
+  // --- APP ---
+  function App() {
+    const [appState, setAppState] = useState('menu');
+    const [currentScenarioIndex, setCurrentScenarioIndex] = useState(null);
+    const [showTranscript, setShowTranscript] = useState(false);
+    const [activeSection, setActiveSection] = useState('step1');
+    const [step1State, setStep1State] = useState({ solved: false, wrongIds: [], errorMsg: null, correctId: null });
+    const [step2State, setStep2State] = useState({ solved: false, wrongIds: [], errorMsg: null, correctId: null });
+    const [progress, setProgress] = useState({});
+    const step2Ref = useRef(null);
+    const finaleRef = useRef(null);
+
+    useEffect(() => {
+      if (activeSection === 'step2' && step2Ref.current) {
+        setTimeout(() => step2Ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      } else if (activeSection === 'finale' && finaleRef.current) {
+        setTimeout(() => finaleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      }
+    }, [activeSection]);
+
+    const openScenario = (index) => {
+      playSound('click');
+      setCurrentScenarioIndex(index);
+      setActiveSection('step1');
+      setStep1State({ solved: false, wrongIds: [], errorMsg: null, correctId: null });
+      setStep2State({ solved: false, wrongIds: [], errorMsg: null, correctId: null });
+      setShowTranscript(false);
+      setAppState('quiz');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const backToMenu = (completed = false) => {
+      playSound('click');
+      if (completed) {
+        const id = SCENARIOS[currentScenarioIndex].id;
+        setProgress(prev => ({ ...prev, [id]: true }));
+      }
+      setAppState('menu');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const resetProgress = () => { playSound('click'); setProgress({}); };
+    const goToSection = (section) => { playSound('click'); setActiveSection(section); };
+
+    const completedCount = Object.keys(progress).length;
+    const isAllCompleted = completedCount === SCENARIOS.length;
+
+    const handleStep1Option = (option) => {
+      if (step1State.solved) return;
+      if (option.isCorrect) {
+        playSound('correct');
+        setStep1State(prev => ({ ...prev, solved: true, errorMsg: null, correctId: option.id }));
+      } else {
+        playSound('wrong');
+        setStep1State(prev => ({ ...prev, wrongIds: [...prev.wrongIds, option.id], errorMsg: option.feedback }));
+      }
+    };
+
+    const handleStep2Option = (option) => {
+      if (step2State.solved) return;
+      if (option.isCorrect) {
+        playSound('correct');
+        setStep2State(prev => ({ ...prev, solved: true, errorMsg: null, correctId: option.id }));
+      } else {
+        playSound('wrong');
+        setStep2State(prev => ({ ...prev, wrongIds: [...prev.wrongIds, option.id], errorMsg: option.feedback }));
+      }
+    };
+
+    const e = React.createElement;
+
+    // --- MENU ---
+    if (appState === 'menu') {
+      return e('div', { className: "min-h-screen bg-slate-50 flex flex-col items-center py-12 px-6 text-slate-800" },
+        e('div', { className: "max-w-5xl w-full" },
+          e('div', { className: "text-center mb-12 animate-fade-in-up" },
+            e('div', { className: "w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600 shadow-sm" },
+              e(Trophy, { size: 36 })
+            ),
+            e('h1', { className: "text-4xl font-extrabold mb-4 text-slate-900 tracking-tight" }, "Atelier de professionnalisation"),
+            e('p', { className: "text-lg text-slate-600 max-w-2xl mx-auto" },
+              "Testez vos réflexes d'évaluateur à travers 3 mises en situation. Choisissez le cas pratique de votre choix pour commencer."
+            )
+          ),
+          isAllCompleted && e('div', { className: "bg-green-50 border border-green-200 rounded-3xl p-8 mb-10 text-center animate-fade-in-up flex flex-col items-center" },
+            e('div', { className: "w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4" },
+              e(Star, { size: 32 })
+            ),
+            e('h2', { className: "text-2xl font-bold text-green-800 mb-2" }, "Félicitations, module complété !"),
+            e('p', { className: "text-green-700 mb-6 max-w-lg" },
+              "Vous avez terminé toutes les situations avec succès. Vous maîtrisez désormais les bonnes postures d'évaluation."
+            ),
+            e('button', {
+              onClick: resetProgress,
+              className: "text-white bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
+            }, e(RefreshCcw, { size: 18 }), " Recommencer l'atelier")
+          ),
+          e('div', { className: "grid gap-6", style: { gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" } },
+            ...SCENARIOS.map((scenario, index) => {
+              const isDone = progress[scenario.id];
+              const SIcon = scenario.icon;
+              const cardStyle = isDone
+                ? "bg-green-50 border-green-200 hover:border-green-400"
+                : "bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md";
+              return e('button', {
+                key: scenario.id,
+                onClick: () => openScenario(index),
+                className: `relative p-8 rounded-3xl border-2 text-left transition-all duration-300 flex flex-col h-full animate-fade-in-up ${cardStyle}`,
+                style: { animationDelay: `${index * 100}ms` }
+              },
+                e('div', { className: "flex justify-between items-start w-full mb-6" },
+                  e('div', { className: `p-4 rounded-2xl ${isDone ? 'bg-green-100 text-green-600' : 'bg-indigo-50 text-indigo-500'}` },
+                    e(SIcon, { size: 28 })
+                  ),
+                  isDone && e('span', { className: "flex items-center text-xs font-bold text-green-700 bg-green-100 px-3 py-1.5 rounded-full gap-1" },
+                    e(CheckCircle2, { size: 14 }), " Terminé"
+                  )
+                ),
+                e('div', { className: "text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" }, scenario.tag),
+                e('h3', { className: "text-xl font-bold text-slate-800 mb-4" }, scenario.title),
+                e('p', { className: "text-slate-500 text-sm line-clamp-3 mt-auto leading-relaxed" }, scenario.context)
+              );
+            })
+          )
+        )
+      );
+    }
+
+    // --- QUIZ ---
+    const currentScenario = SCENARIOS[currentScenarioIndex];
+    const SIcon = currentScenario.icon;
+
+    const renderOption = (option, state, handler) => {
+      const isWrong = state.wrongIds.includes(option.id);
+      const isCorrectAndSolved = state.solved && option.id === state.correctId;
+      let btnClass = "bg-slate-50 border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700";
+      if (isWrong) btnClass = "bg-red-50 border-2 border-red-200 text-red-900 opacity-60 line-through cursor-not-allowed";
+      else if (isCorrectAndSolved) btnClass = "bg-green-50 border-2 border-green-500 text-green-900 font-medium";
+      else if (state.solved) btnClass = "bg-slate-50 border-2 border-slate-100 text-slate-400 opacity-50 cursor-not-allowed";
+      const circleClass = isCorrectAndSolved ? 'border-green-500 bg-green-500 text-white'
+        : isWrong ? 'border-red-400 text-red-400'
+        : 'border-slate-300 text-slate-400';
+      return e('button', {
+        key: option.id,
+        onClick: () => handler(option),
+        disabled: state.solved || isWrong,
+        className: `p-4 rounded-xl text-left transition-all duration-300 flex items-start ${btnClass}`
+      },
+        e('div', { className: `flex-shrink-0 mt-0.5 w-7 h-7 rounded-full border-2 flex items-center justify-center mr-4 font-bold text-sm ${circleClass}` },
+          isCorrectAndSolved ? e(CheckCircle2, { size: 16 }) : isWrong ? e(XCircle, { size: 16 }) : option.id
+        ),
+        e('span', { className: "text-base" }, option.text)
+      );
+    };
+
+    return e('div', { className: "min-h-screen bg-slate-50 text-slate-800 pb-32" },
+      e('header', { className: "bg-white sticky top-0 z-10 shadow-sm border-b border-slate-200" },
+        e('div', { className: "max-w-3xl mx-auto px-6 py-4 flex items-center justify-between" },
+          e('button', {
+            onClick: () => backToMenu(false),
+            className: "flex items-center text-slate-500 hover:text-indigo-600 font-medium transition-colors text-sm gap-1"
+          }, e(ChevronLeft, { size: 20 }), "Retour aux situations"),
+          e('span', { className: "font-bold text-slate-400 text-sm uppercase tracking-widest hidden md:block" }, currentScenario.tag)
+        )
+      ),
+      e('main', { className: "max-w-3xl mx-auto px-6 mt-10 space-y-8" },
+
+        // CONTEXT CARD
+        e('section', { className: "bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in-up" },
+          e('div', { className: "bg-slate-900 text-white p-6 flex items-center" },
+            e('div', { className: "bg-white/10 p-4 rounded-2xl mr-5" }, e(SIcon, { size: 28, className: "text-indigo-300" })),
+            e('h2', { className: "text-2xl font-bold" }, currentScenario.title)
+          ),
+          e('div', { className: "p-6 space-y-4" },
+            e('audio', { controls: true, src: currentScenario.audioSrc, className: "w-full rounded-xl" }),
+            e('div', null,
+              e('button', {
+                onClick: () => setShowTranscript(prev => !prev),
+                className: "text-sm text-indigo-600 hover:text-indigo-800 font-medium underline underline-offset-2 transition-colors"
+              }, showTranscript ? "Masquer la transcription" : "Voir la transcription"),
+              showTranscript && e('div', { className: "mt-3 flex items-start animate-fade-in-up" },
+                e('div', { className: "text-5xl text-indigo-200 font-serif mr-4 leading-none", style: { lineHeight: 1 } }, "“"),
+                e('p', { className: "text-lg leading-relaxed text-slate-700 italic" }, currentScenario.context)
+              )
+            )
+          )
+        ),
+
+        // STEP 1
+        e('section', { className: "bg-white rounded-3xl shadow-sm border border-slate-200 p-6 animate-fade-in-up delay-150" },
+          e('div', { className: "text-xs font-bold tracking-widest text-indigo-500 uppercase mb-3" }, "Étape 1"),
+          e('h3', { className: "text-xl font-bold text-slate-800 mb-6" }, currentScenario.step1.question),
+          e('div', { className: "grid gap-3" }, ...currentScenario.step1.options.map(o => renderOption(o, step1State, handleStep1Option))),
+          step1State.errorMsg && !step1State.solved && e('div', { className: "mt-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-800 rounded-r-xl flex items-start animate-fade-in-up" },
+            e(XCircle, { size: 20, className: "mr-3 flex-shrink-0 mt-0.5" }),
+            e('p', { className: "text-sm font-medium" }, step1State.errorMsg)
+          ),
+          step1State.solved && e('div', { className: "mt-8 pt-6 border-t border-slate-100 flex items-center justify-between animate-fade-in-up" },
+            e('div', { className: "flex items-center text-green-600 font-bold gap-2" }, e(CheckCircle2, { size: 24 }), "Bonne réponse"),
+            activeSection === 'step1' && e('button', {
+              onClick: () => goToSection('step2'),
+              className: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center shadow-md gap-2"
+            }, "Continuer", e(ArrowRight, { size: 18 }))
+          )
+        ),
+
+        // STEP 2
+        (activeSection === 'step2' || activeSection === 'finale') && e('section', { ref: step2Ref, className: "bg-white rounded-3xl shadow-sm border border-slate-200 p-6 animate-fade-in-up" },
+          e('div', { className: "text-xs font-bold tracking-widest text-indigo-500 uppercase mb-3" }, "Étape 2"),
+          e('h3', { className: "text-xl font-bold text-slate-800 mb-6" }, currentScenario.step2.question),
+          e('div', { className: "grid gap-3" }, ...currentScenario.step2.options.map(o => renderOption(o, step2State, handleStep2Option))),
+          step2State.errorMsg && !step2State.solved && e('div', { className: "mt-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-800 rounded-r-xl flex items-start animate-fade-in-up" },
+            e(XCircle, { size: 20, className: "mr-3 flex-shrink-0 mt-0.5" }),
+            e('p', { className: "text-sm font-medium" }, step2State.errorMsg)
+          ),
+          step2State.solved && e('div', { className: "mt-8 pt-6 border-t border-slate-100 flex items-center justify-between animate-fade-in-up" },
+            e('div', { className: "flex items-center text-green-600 font-bold gap-2" }, e(CheckCircle2, { size: 24 }), "Excellente analyse"),
+            activeSection === 'step2' && e('button', {
+              onClick: () => goToSection('finale'),
+              className: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center shadow-md gap-2"
+            }, "Voir la bonne pratique", e(ArrowRight, { size: 18 }))
+          )
+        ),
+
+        // FINALE
+        activeSection === 'finale' && e('section', { ref: finaleRef, className: "animate-fade-in-up" },
+          e('div', { className: "bg-amber-50 border-2 border-amber-200 p-8 rounded-3xl shadow-sm" },
+            e('div', { className: "flex items-center mb-4" },
+              e('div', { className: "w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mr-4" },
+                e(Star, { size: 24, fill: "currentColor" })
+              ),
+              e('div', null,
+                e('div', { className: "text-xs font-bold text-amber-600 uppercase tracking-widest mb-1" }, "À retenir"),
+                e('h3', { className: "text-xl font-bold text-amber-900" }, "La bonne pratique attendue")
+              )
+            ),
+            e('p', { className: "text-lg text-amber-900 leading-relaxed font-medium italic mb-8" }, currentScenario.bonnePratique),
+            e('div', { className: "flex justify-end" },
+              e('button', {
+                onClick: () => backToMenu(true),
+                className: "bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-8 rounded-xl transition-colors flex items-center shadow-md gap-2"
+              }, e(Home, { size: 20 }), "Terminer et retourner au menu")
+            )
+          )
+        )
+      )
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+  </script>
+</body>
+</html>

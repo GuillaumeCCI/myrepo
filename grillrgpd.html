@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activité - Grille RGPD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Figtree', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    @keyframes numIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-num-in { animation: numIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+    @keyframes titleIn {
+      from { opacity: 0; transform: translateX(12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .animate-title-in { animation: titleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+
+    @keyframes badgePulse {
+      0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.1); }
+      50%  { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(0,0,0,0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+    }
+    .animate-badge-flash { animation: badgePulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+    @keyframes rowPulse {
+      0%, 100% { box-shadow: inset 4px 0 0 0 rgba(79, 70, 229, 0.35); }
+      50%      { box-shadow: inset 4px 0 0 0 rgba(79, 70, 229, 0.85); }
+    }
+    .row-active-pulse { animation: rowPulse 2s ease-in-out infinite; }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 2px solid transparent; background-clip: padding-box; }
+
+    .bg-dot-pattern {
+      background-image: radial-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fadein 0.3s ease both; }
+
+    html, body, #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script>
+  (function() {
+    const { useState, useEffect, useRef } = React;
+    const h = React.createElement;
+
+    // ─── Icons (inline SVG) ────────────────────────────────────────────
+    const ArrowRight = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M5 12h14' }),
+        h('path', { d:'m12 5 7 7-7 7' })
+      );
+
+    const Info = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('circle', { cx:12, cy:12, r:10 }),
+        h('path', { d:'M12 16v-4' }),
+        h('path', { d:'M12 8h.01' })
+      );
+
+    const PenTool = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M12 19l7-7 3 3-7 7-3-3z' }),
+        h('path', { d:'M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z' }),
+        h('path', { d:'M2 2l7.586 7.586' }),
+        h('circle', { cx:11, cy:11, r:2 })
+      );
+
+    const LayoutGrid = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('rect', { width:7, height:7, x:3, y:3, rx:1 }),
+        h('rect', { width:7, height:7, x:14, y:3, rx:1 }),
+        h('rect', { width:7, height:7, x:14, y:14, rx:1 }),
+        h('rect', { width:7, height:7, x:3, y:14, rx:1 })
+      );
+
+    const Check = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M20 6 9 17l-5-5' })
+      );
+
+    const X = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M18 6 6 18' }),
+        h('path', { d:'m6 6 12 12' })
+      );
+
+    // ─── playSound ────────────────────────────────────────────────────
+    const playSound = (type) => {
+      const _ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (_ac.state === 'suspended') _ac.resume();
+      const t = _ac.currentTime;
+      const g = _ac.createGain();
+      g.connect(_ac.destination);
+
+      if (type === 'click') {
+        const o = _ac.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(1200, t);
+        o.frequency.exponentialRampToValueAtTime(900, t + 0.03);
+        g.gain.setValueAtTime(0.06, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        o.connect(g);
+        o.start(t); o.stop(t + 0.05);
+      } else if (type === 'correct') {
+        [0, 0.13].forEach((delay, i) => {
+          const o = _ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(i === 0 ? 520 : 780, t + delay);
+          const gn = _ac.createGain();
+          gn.gain.setValueAtTime(0.22, t + delay);
+          gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.18);
+          o.connect(gn); gn.connect(_ac.destination);
+          o.start(t + delay); o.stop(t + delay + 0.2);
+        });
+      } else if (type === 'wrong') {
+        [0, 0.1].forEach((delay) => {
+          const o = _ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(220, t + delay);
+          const gn = _ac.createGain();
+          gn.gain.setValueAtTime(0.10, t + delay);
+          gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.08);
+          o.connect(gn); gn.connect(_ac.destination);
+          o.start(t + delay); o.stop(t + delay + 0.09);
+        });
+      } else if (type === 'advance') {
+        const o = _ac.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(520, t);
+        o.frequency.exponentialRampToValueAtTime(780, t + 0.08);
+        g.gain.setValueAtTime(0.07, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        o.connect(g);
+        o.start(t); o.stop(t + 0.11);
+      } else if (type === 'done') {
+        [[0, 660], [0.15, 880], [0.3, 1100]].forEach(([delay, freq]) => {
+          const o = _ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(freq, t + delay);
+          const gn = _ac.createGain();
+          gn.gain.setValueAtTime(0.12, t + delay);
+          gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.25);
+          o.connect(gn); gn.connect(_ac.destination);
+          o.start(t + delay); o.stop(t + delay + 0.28);
+        });
+      }
+    };
+    window.playSound = playSound;
+
+    // ─── Data ─────────────────────────────────────────────────────────
+    const tdClass = "border border-black p-2 text-left align-top text-[13px] text-black leading-snug";
+    const thClass = "border border-black p-2 text-left align-middle text-[14px] font-bold text-black bg-[#638EC6]";
+    const ptsClass = "border border-black p-2 text-left align-top text-[13px] text-black bg-slate-200";
+
+    const GRID_ROWS = [
+      {
+        id: 'C1', max: '10',
+        title: "Analyse de la problématique de l'entreprise en matière de traitement et de protection des données personnelles",
+        refText: "C1 et C2",
+        col1: h('div', null,
+          h('div', { className:'mb-1 italic' }, "Sont identifiés et définis :"),
+          h('div', { className:'space-y-1 italic pl-2' },
+            h('div', null, "- Les obligations et enjeux de l'entreprise liés à la protection des données"),
+            h('div', null, "- Le projet et ses éléments constitutifs adaptés à l'entreprise : méthode de conduite de projet, plan d'action, calendrier des actions, composition de l'équipe projet.")
+          )
+        ),
+        col2_1: h('div', { className:'space-y-2' },
+          h('div', null, "- L'analyse et l'interprétation des textes légaux et règlementaires sont exactes et permettent une identification correcte des obligations incombant à l'entreprise en matière de traitement et de protection des données personnelles, selon son contexte."),
+          h('div', null, "- Les rôles et missions des acteurs institutionnels (ANSSI, CNIL…) participant à l'application de la règlementation en matière de protection des données personnelles sont identifiés, ainsi que l'utilité des ressources et outils qu'ils proposent.")
+        ),
+        col2_2: h('div', { className:'space-y-2' },
+          h('div', null, "- L'analyse de la problématique de l'entreprise permet de qualifier et de quantifier ses enjeux liés à la protection des données, au regard de la nature de son activité, de son modèle économique, de son organisation interne et de ses moyens techniques."),
+          h('div', null, "- La méthodologie de projet choisie (approche agile ou prédictive, phasage, étapes…) est adaptée au contexte de l'entreprise (moyens techniques et humains, culture…) et optimise ses conditions d'aboutissement."),
+          h('div', null, "- La planification des actions constitutives du projet est réaliste, adaptée aux objectifs visés concernant les échéances fixées et cohérente avec la méthodologie de projet retenue."),
+          h('div', null, "- L'équipe projet est correctement dimensionnée au regard des moyens de l'entreprise et des objectifs visés, sa constitution est justifiée au regard de la position fonctionnelle et hiérarchique que ses membres occupent au sein de l'entreprise."),
+          h('div', null, "- Les spécificités des collaborateurs impliqués sont prises en compte et des adaptations sont identifiées pour garantir l'inclusivité de la démarche, notamment concernant le personnel en situation de handicap."),
+          h('div', null, "- Le plan projet est globalement correctement dimensionné au regard des objectifs visés et des moyens de l'entreprise.")
+        )
+      },
+      {
+        id: 'C4', max: '10',
+        title: "Elaboration du registre de traitement des données personnelles",
+        refText: "C4",
+        col1: h('div', { className:'space-y-2 italic' },
+          h('div', null, "Les activités de traitement des données personnelles sont exhaustives."),
+          h('div', null, "Les informations à porter au registre satisfont les exigences réglementaires.")
+        ),
+        col2_1: h('div', { className:'space-y-2' },
+          h('div', null, "- L'identification des activités de traitement des données personnelles opérées sur le périmètre de la fonction ou du service est exhaustive et intègre, le cas échéant, celles d'éventuels sous-traitants.")
+        ),
+        col2_2: h('div', { className:'space-y-2' },
+          h('div', null, "- La qualité et la précision des informations portées dans le registre satisfont les exigences règlementaires. Sont notamment spécifiés pour chaque activité de traitement : l'identité et les coordonnées du responsable du traitement ; les objectifs poursuivis ; la liste exhaustive des données collectées et l'identification de celles présentant un degré de criticité particulier ; les mesures de conservation et de sécurisation des données ; les services et personnels destinataires des données en interne ; les destinataires externes des données en cas de transfert hors de l'UE."),
+          h('div', null, "- La qualité du registre et de son niveau d'information permet l'évaluation du degré de conformité de l'entreprise en matière de traitement des données personnelles et d'identifier les actions à conduire pour optimiser et régulariser les pratiques usuelles.")
+        )
+      },
+      {
+        id: 'C5', max: '15',
+        title: "Plan des actions de mise en conformité à réaliser, évaluation de l'opportunité de mener une AIPD",
+        refText: "C5, C6",
+        col1: h('div', { className:'space-y-2 italic' },
+          h('div', null, "Les points de non-conformité sont identifiés et leur degré d'importance est qualifié."),
+          h('div', null, "Les actions identifiées sont exhaustives, satisfont les exigences réglementaires et sont justifiées au regard des caractéristiques des données et de leur criticité."),
+          h('div', null, "Les dispositions d'information des personnes concernant le traitement de leurs données sont prévues.")
+        ),
+        col2_1: h('div', { className:'space-y-2' },
+          h('div', null, "Les points de non-conformité sont identifiés de façon exhaustive et leur degré d'importance est qualifié."),
+          h('div', null, "Les actions identifiées satisfont les obligations règlementaires concernant la mise en œuvre de traitements licites, le respect des droits des personnes, les éventuels transferts vers un pays tiers, les destinataires des données collectées, la durée de conservation des données collectées."),
+          h('div', null, "Les dispositions d'information des personnes concernant le traitement de leurs données sont prévues et appliquent les principes de concision, de transparence, d'intelligibilité et d'accessibilité."),
+          h('div', null, "La collecte et le traitement des données sont justifiés par leur utilité au regard de la finalité du traitement ; les données et fichiers inutiles sont supprimés."),
+          h('div', null, "Les données sont sécurisées en croisant différents moyens correctement dimensionnés au regard des capacités de l'entreprise : infrastructure informatique, outils de protection (antivirus), limitation d'accès aux données par des mesures de protection (mots de passe…)."),
+          h('div', null, "- L'accès aux données est règlementé et restreint aux seuls opérateurs ayant un intérêt avéré à les consulter ou traiter."),
+          h('div', null, "- La durée de conservation des données est justifiée et limitée."),
+          h('div', null, "- Les transferts de données hors de l'UE sont encadrés."),
+          h('div', null, "- Le recours à des sous-traitants pour le traitement des données est encadré et contractualisé...")
+        ),
+        col2_2: h('div', { className:'space-y-2' },
+          h('div', null, "- Les données à caractère sensible (santé, opinion politique, conviction religieuse…) sont identifiées et leur degré de criticité est correctement évalué."),
+          h('div', null, "- Les traitements porteurs de risques élevés pour les droits et libertés des personnes concernées sont identifiés."),
+          h('div', null, "- Le choix de conduire ou non une AIPD est justifié par l'analyse de la nature des données personnelles et de leurs traitements ; il traduit une compréhension et une application correcte du RGPD.")
+        )
+      },
+      {
+        id: 'C7', max: '10',
+        title: "Définition de procédure de traitement des données personnelles au sein de l'entreprise",
+        refText: "C7",
+        col1: h('div', { className:'space-y-2 italic' },
+          h('div', null, "Les procédures sont adaptées aux risques identifiés, déterminent les éléments à protéger et les principes supplémentaires à appliquer.")
+        ),
+        col2_1: h('div', { className:'space-y-2' },
+          h('div', null, "- Les mesures techniques et organisationnelles adaptées aux risques identifiés sont définies et déterminent les éléments à protéger et les principes supplémentaires à appliquer (sauvegarde, traçage de l'activité, gestion des violations de données…)."),
+          h('div', null, "- Les différentes procédures stipulent clairement et précisément les acteurs internes concernés."),
+          h('div', null, "- La gestion des réclamations et l'exercice des droits des personnes sont garantis par une procédure leur permettant notamment d'accéder à leurs données, d'en demander la rectification ou l'effacement et d'en limiter la durée de traitement.")
+        ),
+        col2_2: h('div', { className:'space-y-2' },
+          h('div', null, "- Une procédure est mise en place en cas de violation des données, prévoyant notamment l'alerte de l'autorité compétente et l'information des personnes concernées."),
+          h('div', null, "- Les procédures mises en place garantissent l'application des réflexes de la protection des données par les différents opérateurs concernés au sein de l'entreprise.")
+        )
+      },
+      {
+        id: 'C8', max: '10',
+        title: "Identification de la documentation technique et organisationnelle relative au traitement des données personnelles au sein de l'entreprise",
+        refText: "C8",
+        col1: h('div', { className:'space-y-2 italic' },
+          h('div', null, "La documentation est conforme et suffisante au regard des attentes et exigences de l'autorité administrative. La documentation non obligatoire est adaptée aux besoins de l'entreprise et de ses salariés.")
+        ),
+        col2_1: h('div', { className:'space-y-2' },
+          h('div', null, "- La documentation obligatoire est, sur la forme et le fond, conforme et suffisante au regard des attentes et exigences de l'autorité administrative.")
+        ),
+        col2_2: h('div', { className:'space-y-2' },
+          h('div', null, "- Le choix de la documentation non obligatoire est adapté aux besoins de l'entreprise et à ses salariés.")
+        )
+      },
+      {
+        id: 'C9', max: '10',
+        title: "Programme de maintien du dispositif",
+        refText: "C9",
+        col1: h('div', { className:'space-y-2 italic' },
+          h('div', null, "Les modalités de gouvernance, de contrôle et de mise à jour du registre sont prévues. Les actions d'informations et de sensibilisation sont déterminées dans un plan de communication.")
+        ),
+        col2_1: h('div', { className:'space-y-2' },
+          h('div', null, "- L'analyse justifiant le choix de désigner ou non un DPO est correcte et s'appuie sur la prise en compte de paramètres externes (les dispositions du RGPD en la matière) et internes (taille et organisation de la TPE/PME, compétences, enjeux concernant ses données…).")
+        ),
+        col2_2: h('div', { className:'space-y-2' },
+          h('div', null, "- Le programme prévoit une vérification et une évaluation régulières des procédures mises en place, ainsi que des modalités de traitement particulières des données à caractère sensible."),
+          h('div', null, "- Les conditions de maintien de la conformité sont assurées par l'entretien de l'information et de la sensibilisation des collaborateurs, sous la forme d'un plan de communication concis et synthétisant le type d'actions à mettre en œuvre et leur périodicité.")
+        )
+      }
+    ];
+
+    // ─── TypewriterText ───────────────────────────────────────────────
+    function TypewriterText({ text }) {
+      const [displayed, setDisplayed] = useState('');
+      useEffect(() => {
+        setDisplayed('');
+        let i = 0;
+        const interval = setInterval(() => {
+          setDisplayed(text.slice(0, i + 1));
+          i++;
+          if (i >= text.length) clearInterval(interval);
+        }, 15);
+        return () => clearInterval(interval);
+      }, [text]);
+      return h(React.Fragment, null, displayed);
+    }
+
+    // ─── OkBox ────────────────────────────────────────────────────────
+    function OkBox({ title, body, onNext }) {
+      return h('div', { className:'mt-6 bg-blue-50 border-2 border-blue-200 p-5 rounded-xl animate-slide-up shadow-sm' },
+        h('div', { className:'flex items-center gap-3 mb-3' },
+          h('div', { className:'bg-[#00529A] text-white rounded-full p-1.5 shrink-0 shadow-sm' },
+            h(Check, { className:'w-4 h-4' })
+          ),
+          h('strong', { className:'text-blue-900 text-[19px] font-black tracking-tight' }, title)
+        ),
+        h('p', { className:'text-blue-800 text-[14px] font-medium leading-relaxed mb-6' }, body),
+        h('button', {
+          className:'w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20',
+          onClick: onNext
+        },
+          'ÉTAPE SUIVANTE ',
+          h(ArrowRight, { className:'w-4 h-4' })
+        )
+      );
+    }
+
+    // ─── ErrBox ───────────────────────────────────────────────────────
+    function ErrBox({ text }) {
+      return h('div', { className:'mt-5 p-4 bg-red-50/80 border border-red-200/80 rounded-2xl flex items-start gap-3 animate-slide-up shadow-sm relative z-10' },
+        h('div', { className:'bg-red-100 text-red-600 rounded-full p-1.5 shrink-0 mt-0.5' },
+          h(X, { className:'w-4 h-4' })
+        ),
+        h('p', { className:'text-red-900 text-[15px] font-semibold leading-snug' }, text)
+      );
+    }
+
+    // ─── ScoreDisplay ─────────────────────────────────────────────────
+    function ScoreDisplay({ val, max }) {
+      return h('span', null,
+        val !== ''
+          ? h('span', null, val, ' ', max ? `/ ${max} ` : '', 'pts')
+          : h('span', null, max ? `${max} pts` : '')
+      );
+    }
+
+    // ─── GridTable ────────────────────────────────────────────────────
+    function GridTable({ step, isActionDone, setIsActionDone, scores, setScores, c8Error, setC8Error, totalScore }) {
+      const scrollContainerRef = useRef(null);
+      const [rubberBand, setRubberBand] = useState(0);
+      const wheelTimeout = useRef(null);
+
+      useEffect(() => {
+        if (step === 2 && scrollContainerRef.current) {
+          const rowC8 = document.getElementById('row-C8');
+          if (rowC8) {
+            setTimeout(() => {
+              rowC8.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+          }
+        }
+      }, [step]);
+
+      const handleWheel = (e) => {
+        if (step === 2) {
+          const newY = rubberBand - e.deltaY * 0.3;
+          const clamped = Math.max(-80, Math.min(80, newY));
+          setRubberBand(clamped);
+          if (wheelTimeout.current) clearTimeout(wheelTimeout.current);
+          wheelTimeout.current = setTimeout(() => { setRubberBand(0); }, 150);
+        }
+      };
+
+      return h('div', { className:'mx-auto shrink-0 transition-all duration-500 relative z-10 w-full h-full flex flex-col bg-white rounded-xl overflow-hidden' },
+        // Spotlight overlay
+        h('div', {
+          className:`absolute inset-0 z-30 bg-slate-900/60 ring-1 ring-slate-900/60 transition-all duration-500 pointer-events-none ${step === 2 ? 'opacity-100' : 'opacity-0'}`
+        }),
+        // Header
+        h('div', { className:'h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 relative z-20 transition-all duration-500' },
+          h('div', { className:'flex items-center gap-4 relative z-10' },
+            h('div', { className:'bg-[#00529A] text-white p-2 rounded-lg font-bold text-xs shadow-sm' }, 'IDC'),
+            h('div', null,
+              h('div', { className:'text-xs text-slate-400 font-bold uppercase tracking-wider' }, 'Candidat'),
+              h('div', { className:'font-bold text-sm text-slate-700' }, 'JEAN DUPONT')
+            )
+          ),
+          h('div', { className:'text-right relative z-10' },
+            h('div', { className:'text-xs text-slate-400 font-bold uppercase tracking-wider' }, 'Épreuve'),
+            h('div', { className:'font-semibold text-sm text-[#00529A]' }, 'Mise en conformité RGPD - Écrit')
+          )
+        ),
+        // Scrollable content
+        h('div', {
+          ref: scrollContainerRef,
+          onWheel: handleWheel,
+          className:`flex-1 ${step === 2 ? 'overflow-hidden' : 'overflow-auto'} bg-white relative`
+        },
+          h('div', {
+            className:'p-8 relative min-h-full flex flex-col',
+            style: {
+              top: `${rubberBand}px`,
+              transition: rubberBand === 0 ? 'top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none'
+            }
+          },
+            h('div', { className:'mb-4 relative z-20' },
+              h('img', {
+                src:'https://upload.wikimedia.org/wikipedia/fr/thumb/0/03/Logo_CCI_France.svg/1200px-Logo_CCI_France.svg.png',
+                alt:'CCI',
+                className:'h-8 mb-4 opacity-80'
+              }),
+              h('h1', { className:'text-[15px] font-bold text-black' },
+                "Grille d'évaluation – Epreuve écrite « Piloter un projet de mise en conformité des modalités de traitement et de protection des données en TPE/PME dans le respect du RGPD »"
+              )
+            ),
+            h('table', { className:'w-full border-collapse border border-black bg-white' },
+              h('thead', null,
+                h('tr', null,
+                  h('th', { colSpan:3, className:thClass },
+                    "Epreuve écrite : Projet de mise en conformité des modalités de traitement et de protection des données – 2h30"
+                  )
+                ),
+                h('tr', null,
+                  h('th', { className:thClass, style:{width:'30%'} }, "Critères de notation"),
+                  h('th', { className:thClass, style:{width:'60%'} }, "Critères d'évaluation"),
+                  h('th', { className:thClass, style:{width:'10%'} }, "Points")
+                )
+              ),
+              h('tbody', null,
+                ...GRID_ROWS.map((row) => {
+                  const isC8 = row.id === 'C8';
+                  const isActive = isC8 && step === 2;
+                  return h(React.Fragment, { key: row.id },
+                    h('tr', {
+                      id: isC8 ? 'row-C8' : undefined,
+                      className:`transition-all duration-500 ${isActive ? 'relative z-50 bg-white' : ''}`
+                    },
+                      h('td', { rowSpan:2, className:tdClass },
+                        h('span', { className:'block mb-1' }, row.title),
+                        h('span', { className:'block mb-2' }, row.refText),
+                        h('div', null, row.col1)
+                      ),
+                      h('td', { className:tdClass }, row.col2_1),
+                      h('td', { rowSpan:2, className:ptsClass },
+                        isActive && !isActionDone
+                          ? h('div', { className:'flex items-center gap-1 animate-badge-flash bg-white p-1 rounded' },
+                              h('input', {
+                                type:'text',
+                                maxLength:2,
+                                className:`w-10 h-6 text-center border border-black font-bold text-[13px] focus:outline-none focus:ring-2 ${c8Error ? 'border-red-500 bg-red-50 text-red-700 focus:ring-red-500' : 'focus:ring-blue-500'}`,
+                                value: scores.C8,
+                                autoFocus: true,
+                                onChange: (e) => {
+                                  const val = e.target.value.trim();
+                                  if (!/^\d*$/.test(val)) return;
+                                  setScores(p => ({ ...p, C8: val }));
+                                  if (val === '10') {
+                                    setIsActionDone(true);
+                                    setC8Error(false);
+                                    playSound('correct');
+                                  } else if (val.length > 0) {
+                                    setC8Error(true);
+                                    playSound('click');
+                                  } else {
+                                    setC8Error(false);
+                                  }
+                                }
+                              }),
+                              h('span', { className:'text-[13px]' }, `/ ${row.max} pts`)
+                            )
+                          : h(ScoreDisplay, { val: scores[row.id], max: row.max })
+                      )
+                    ),
+                    h('tr', {
+                      className:`transition-all duration-500 ${isActive ? 'relative z-50 bg-white' : ''}`
+                    },
+                      h('td', { className:tdClass }, row.col2_2)
+                    )
+                  );
+                }),
+                // Connaissance théorique row
+                h('tr', null,
+                  h('td', { colSpan:2, className:`${tdClass} relative z-10 bg-white` },
+                    h('span', null, "Exactitude des réponses de connaissance théorique")
+                  ),
+                  h('td', { className:`${ptsClass} relative z-10` },
+                    h(ScoreDisplay, { val: scores.CT, max:'5' })
+                  )
+                )
+              ),
+              h('tfoot', { className:'relative z-10 bg-white' },
+                h('tr', { id:'total-row' },
+                  h('td', {
+                    colSpan:2,
+                    className:'border border-black p-2 text-left font-bold text-[14px] bg-[#638EC6] text-black uppercase'
+                  }, 'TOTAL'),
+                  h('td', { className:'border border-black p-2 text-left font-bold text-[14px] bg-[#638EC6] text-black' },
+                    h('span', {
+                      className: step === 3 && isActionDone ? 'text-white animate-badge-flash inline-block' : ''
+                    },
+                      totalScore > 0 ? totalScore : ''
+                    ),
+                    totalScore > 0 ? ' Points' : ''
+                  )
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    // ─── OralGridTable ────────────────────────────────────────────────
+    function OralGridTable({ step, isActionDone, setIsActionDone, crossCount, total90, setTotal90, total30, setTotal30 }) {
+      const thClassOral = "border border-black p-2 text-center align-middle text-[14px] font-bold bg-[#f9fafb]";
+      const tdClassOral = "border border-black p-2 text-left align-middle text-[14px]";
+
+      const renderRow = (id, text) => {
+        const isSelected = crossCount && crossCount[id];
+        return h('tr', { key: id },
+          h('td', { className:tdClassOral }, text),
+          h('td', { className:`${tdClassOral} text-center` }, h('div', { className:'flex justify-center' }, isSelected === '--' ? 'X' : '')),
+          h('td', { className:`${tdClassOral} text-center` }, h('div', { className:'flex justify-center' }, isSelected === '-' ? 'X' : '')),
+          h('td', { className:`${tdClassOral} text-center` }, h('div', { className:'flex justify-center' }, isSelected === '+' ? 'X' : '')),
+          h('td', { className:`${tdClassOral} text-center relative` },
+            h('div', { className:'flex justify-center font-bold text-lg' }, isSelected === '++' ? 'X' : '')
+          )
+        );
+      };
+
+      let computedTotal90 = 0;
+      let counts = { '--': 0, '-': 0, '+': 0, '++': 0 };
+      if (crossCount) {
+        Object.values(crossCount).forEach((val) => {
+          if (val === '++') { counts['++']++; computedTotal90 += 10; }
+          if (val === '+') { counts['+']++; computedTotal90 += 7; }
+          if (val === '-') { counts['-']++; computedTotal90 += 3; }
+          if (val === '--') { counts['--']++; computedTotal90 += 0; }
+        });
+      }
+
+      return h('div', { className:'mx-auto shrink-0 transition-all duration-500 relative z-10 w-full h-full flex flex-col bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200' },
+        // Spotlight overlay
+        h('div', {
+          className:`absolute inset-0 z-30 bg-slate-900/60 ring-1 ring-slate-900/60 transition-all duration-500 pointer-events-none ${step >= 5 && step < 9 && step !== 6 ? 'opacity-100' : 'opacity-0'}`
+        }),
+        // Header
+        h('div', { className:'h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 relative z-20 transition-all duration-500' },
+          h('div', { className:'flex items-center gap-4 relative z-10' },
+            h('div', { className:'bg-[#00529A] text-white p-2 rounded-lg font-bold text-xs shadow-sm' }, 'IDC'),
+            h('div', null,
+              h('div', { className:'text-xs text-slate-500 font-bold uppercase tracking-wider' }, 'Évaluateur'),
+              h('div', { className:'font-bold text-sm text-slate-700' }, 'JEAN DUPONT')
+            )
+          ),
+          h('div', { className:'text-right relative z-10' },
+            h('div', { className:'text-xs text-slate-400 font-bold uppercase tracking-wider' }, 'Épreuve'),
+            h('div', { className:'font-semibold text-sm text-[#00529A]' }, 'Mise en conformité RGPD - Oral')
+          )
+        ),
+        // Content
+        h('div', { className:'flex-1 overflow-auto bg-white relative' },
+          h('div', { className:'p-8 relative min-h-full flex flex-col' },
+            h('div', { className:'mb-4 relative z-20' },
+              h('img', { src:'https://upload.wikimedia.org/wikipedia/fr/thumb/0/03/Logo_CCI_France.svg/1200px-Logo_CCI_France.svg.png', alt:'CCI', className:'h-8 mb-4 opacity-80' }),
+              h('h1', { className:'text-[15px] font-bold text-black underline mb-2' }, "Grille d'évaluation de l'épreuve orale")
+            ),
+            h('div', { className:'mb-4 relative z-20 text-sm' },
+              h('p', { className:'font-bold underline mb-2' }, "Pour vous aider à compléter cette grille :"),
+              h('table', { className:'w-auto text-sm mb-4 border-none' },
+                h('tbody', null,
+                  h('tr', null, h('td', { className:'font-bold text-center w-8 border-none' }, '- -'), h('td', { className:'border-none' }, "L'apprenant n'a pas mentionné ce point")),
+                  h('tr', null, h('td', { className:'font-bold text-center w-8 border-none' }, '-'), h('td', { className:'border-none' }, "L'apprenant a tenté maladroitement ou insuffisamment d'aborder ce point")),
+                  h('tr', null, h('td', { className:'font-bold text-center w-8 border-none' }, '+'), h('td', { className:'border-none' }, "L'apprenant a abordé correctement ce point")),
+                  h('tr', null, h('td', { className:'font-bold text-center w-8 border-none' }, '+ +'), h('td', { className:'border-none' }, "L'apprenant a abordé ce point avec la maitrise d'un professionnel"))
+                )
+              )
+            ),
+            // Oral grid table
+            h('table', {
+              id:'oral-grid',
+              className:`w-full border-collapse border border-black bg-white mb-6 relative ${step === 5 ? 'z-40 ring-2 ring-white' : 'z-20'}`
+            },
+              h('thead', null,
+                h('tr', null,
+                  h('th', { className:`${thClassOral} text-left` },
+                    "L'apprenant a été capable de : ",
+                    h('span', { className:'font-normal' }, "(mettre une croix dans la colonne appropriée)")
+                  ),
+                  h('th', { className:'w-12 text-center border border-black' }, '- -'),
+                  h('th', { className:'w-12 text-center border border-black' }, '-'),
+                  h('th', { className:'w-12 text-center border border-black' }, '+'),
+                  h('th', { className:'w-12 text-center border border-black relative z-40 bg-white' }, '++')
+                )
+              ),
+              h('tbody', null,
+                renderRow(1, "1- Se présenter et présenter le contexte de son intervention"),
+                renderRow(2, "2- Présenter le contexte et la problématique de l'entreprise"),
+                renderRow(3, "3- Exposer le sens et l'importance de la démarche à conduire de manière claire, synthétique et convaincante"),
+                renderRow(4, "4- Expliciter de manière claire, synthétique et précise les enjeux associés – contexte règlementaire"),
+                renderRow(5, "5- Présenter son rôle et le périmètre de sa fonction dans la mise en œuvre du projet et présenter le rôle du personnel de l'entreprise dans la démarche"),
+                renderRow(6, "6- Conclure et annoncer le suivi de la présentation"),
+                renderRow(7, "7- Répondre aux interrogations de l'auditoire, gérer les objections"),
+                renderRow(8, "8- Mettre en œuvre l'approche adaptée dans sa présentation pour obtenir la compréhension et l'adhésion de l'auditoire (approche pédagogique)"),
+                renderRow(9, "9- Gérer le temps imparti ; dynamisme de la présentation ; clarté du ou des supports utilisés")
+              )
+            ),
+            // Counts summary
+            h('div', { className:`flex justify-end mb-4 relative ${step === 5 ? 'z-40 bg-white ring-2 ring-white' : 'z-20'}` },
+              h('table', { className:'w-2/3 border-collapse' },
+                h('tbody', null,
+                  h('tr', null,
+                    h('td', { className:'text-right font-bold w-1/2 p-1' }, "Nombre de croix :"),
+                    h('td', { className:'w-12 text-center border border-black' }, counts['--'] || ''),
+                    h('td', { className:'w-12 text-center border border-black' }, counts['-'] || ''),
+                    h('td', { className:'w-12 text-center border border-black' }, counts['+'] || ''),
+                    h('td', { className:'w-12 text-center border border-black font-bold text-lg' }, counts['++'] || '')
+                  ),
+                  h('tr', null,
+                    h('td', { className:'text-right font-bold p-1' }, "Valeur d'une croix :"),
+                    h('td', { className:'text-center border border-black' }, '0'),
+                    h('td', { className:'text-center border border-black' }, '3'),
+                    h('td', { className:'text-center border border-black' }, '7'),
+                    h('td', { className:'text-center border border-black' }, '10')
+                  ),
+                  h('tr', null,
+                    h('td', { className:'text-right font-bold p-1' }, "Total par colonne :"),
+                    h('td', { className:'text-center border border-black' }, step === 5 && !isActionDone ? '' : (counts['--'] * 0 || '')),
+                    h('td', { className:'text-center border border-black' }, step === 5 && !isActionDone ? '' : (counts['-'] * 3 || '')),
+                    h('td', { className:'text-center border border-black' }, step === 5 && !isActionDone ? '' : (counts['+'] * 7 || '')),
+                    h('td', { className:'text-center border border-black font-bold text-lg' }, step === 5 && !isActionDone ? '' : (counts['++'] * 10 || ''))
+                  )
+                )
+              )
+            ),
+            // Total
+            h('div', { id:'oral-total', className:`flex justify-end mb-8 relative ${step === 5 || step === 7 ? 'z-40' : 'z-20'}` },
+              h('div', { className:`border border-black p-2 w-48 flex flex-col font-bold ${step === 5 || step === 7 ? 'bg-white ring-2 ring-white' : ''}` },
+                h('div', { className:'flex justify-between items-center border-b border-gray-300 pb-2 mb-2' },
+                  h('span', null, "Total :"),
+                  h('div', { className:'flex items-center gap-1' },
+                    step >= 5 && !isActionDone && step === 5 && Object.keys(crossCount).length >= 9
+                      ? h('div', { className:'animate-badge-flash bg-white p-1 rounded' },
+                          h('input', {
+                            type:'text',
+                            className:'w-12 border-b-2 border-blue-500 text-center font-bold text-lg outline-none bg-blue-50',
+                            value: total90,
+                            autoFocus: true,
+                            onChange: (e) => {
+                              const v = e.target.value;
+                              setTotal90(v);
+                              if (v === '90') {
+                                setIsActionDone(true);
+                                playSound('done');
+                              }
+                            }
+                          }),
+                          h('span', { className:'text-lg' }, ' /90')
+                        )
+                      : h('span', { className:'text-lg text-blue-800' },
+                          (step > 5 || isActionDone ? '90' : (computedTotal90 > 0 ? computedTotal90 : '')),
+                          (step > 5 || isActionDone || computedTotal90 > 0) ? ' /90' : ''
+                        )
+                  )
+                ),
+                h('div', { className:'flex items-center justify-between' },
+                  h('span', { className:'text-sm font-normal text-slate-500' }, "Note /30 :"),
+                  h('div', { className:'flex items-center gap-1' },
+                    step >= 7 && !isActionDone && step === 7
+                      ? h('div', { className:'animate-badge-flash bg-white p-1 rounded' },
+                          h('input', {
+                            type:'text',
+                            className:'w-12 border-b-2 border-blue-500 text-center font-bold text-lg outline-none bg-blue-50',
+                            value: total30,
+                            autoFocus: true,
+                            onChange: (e) => {
+                              const v = e.target.value;
+                              setTotal30(v);
+                              if (v === '30') {
+                                setIsActionDone(true);
+                                playSound('done');
+                              }
+                            }
+                          })
+                        )
+                      : h('span', { className:'text-lg text-blue-800' },
+                          total30 !== '' ? total30 : '',
+                          total30 !== '' ? ' /30' : ''
+                        )
+                  )
+                )
+              )
+            ),
+            // Signature
+            h('table', {
+              id:'oral-signature',
+              className:`h-32 mt-auto w-full relative ${step === 8 ? 'z-40 bg-white ring-2 ring-white' : 'z-20'}`
+            },
+              h('thead', null,
+                h('tr', null,
+                  h('th', { className:'text-left align-top w-1/2 border border-black p-2 bg-gray-100' }, "Nom des jurys"),
+                  h('th', { className:'text-left align-top w-1/2 border border-black p-2 bg-gray-100' }, "Signatures")
+                )
+              ),
+              h('tbody', null,
+                h('tr', null,
+                  h('td', { className:'border border-black align-top p-2 h-24' },
+                    crossCount && crossCount.signed
+                      ? h('div', { className:'text-[#00529A] font-[cursive] text-lg mt-2', style:{fontFamily:'cursive'} }, "M. Jean Dupont")
+                      : null
+                  ),
+                  h('td', { className:'border border-black align-top p-2 h-24 relative overflow-hidden' },
+                    crossCount && crossCount.signed
+                      ? h('div', { className:'absolute top-2 left-4 text-[#00529A] opacity-80', style:{transform:'rotate(-10deg) scale(1.5)'} },
+                          h('svg', { width:100, height:40, viewBox:'0 0 100 40', fill:'none', stroke:'currentColor', strokeWidth:2 },
+                            h('path', { d:'M10,20 Q30,5 40,20 T70,20 T90,10', strokeLinecap:'round', strokeLinejoin:'round' }),
+                            h('path', { d:'M45,25 Q55,40 65,25', strokeLinecap:'round', strokeLinejoin:'round' })
+                          )
+                        )
+                      : null
+                  )
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    // ─── App ──────────────────────────────────────────────────────────
+    const TOTAL = 10;
+
+    function App() {
+      const [step, setStep] = useState(0);
+      const [isActionDone, setIsActionDone] = useState(false);
+      const [c8Error, setC8Error] = useState(false);
+      const [scores, setScores] = useState({ C1:'', C4:'', C5:'', C7:'', C8:'', C9:'', CT:'' });
+      const [oralCrossCount, setOralCrossCount] = useState({});
+      const [oralTotal90, setOralTotal90] = useState('');
+      const [oralTotal30, setOralTotal30] = useState('');
+      const [step6Error1, setStep6Error1] = useState(false);
+      const [step6Error2, setStep6Error2] = useState(false);
+      const [step9Q1Done, setStep9Q1Done] = useState(false);
+      const [step9Q2Done, setStep9Q2Done] = useState(false);
+      const [step9ErrorQ1, setStep9ErrorQ1] = useState(false);
+      const [step9ErrorQ2, setStep9ErrorQ2] = useState(false);
+
+      const totalScore = Object.values(scores).reduce((acc, val) => acc + (parseInt(val) || 0), 0);
+
+      const advance = () => {
+        setStep(p => {
+          const next = p + 1;
+          playSound(next === 4 ? 'done' : 'advance');
+          return next;
+        });
+        setIsActionDone(false);
+      };
+
+      useEffect(() => {
+        let targetElId = null;
+        if (step === 2) targetElId = 'row-C8';
+        if (step === 3) targetElId = 'total-row';
+        if (step === 5) targetElId = 'oral-grid';
+        if (step === 7) targetElId = 'oral-total';
+        if (step === 8) targetElId = 'oral-signature';
+        if (targetElId) {
+          setTimeout(() => {
+            const el = document.getElementById(targetElId);
+            if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+          }, 150);
+        }
+      }, [step]);
+
+      useEffect(() => {
+        if (step === 3 && !isActionDone) {
+          const delays = [300, 600, 900, 1200, 1500, 1800];
+          const updates = [
+            { k:'C1', v:'3' }, { k:'C4', v:'3' }, { k:'C5', v:'5' },
+            { k:'C7', v:'2' }, { k:'C9', v:'2' }, { k:'CT', v:'0' }
+          ];
+          updates.forEach((u, i) => {
+            setTimeout(() => {
+              setScores(p => ({ ...p, [u.k]: u.v }));
+              playSound('click');
+            }, delays[i]);
+          });
+          setTimeout(() => {
+            setIsActionDone(true);
+            playSound('done');
+          }, delays[delays.length - 1] + 400);
+        }
+
+        if (step === 5 && !isActionDone) {
+          if (Object.keys(oralCrossCount).length === 0) {
+            const numRows = 9;
+            const delays = Array.from({length: numRows}, (_, i) => 300 + i * 200);
+            delays.forEach((delay, i) => {
+              setTimeout(() => {
+                setOralCrossCount(p => ({ ...p, [i + 1]: '++' }));
+                playSound('click');
+              }, delay);
+            });
+          }
+        }
+
+        if (step === 8 && !isActionDone) {
+          setTimeout(() => {
+            setOralCrossCount(p => ({ ...p, signed: true }));
+            playSound('correct');
+            setTimeout(() => {
+              setIsActionDone(true);
+              playSound('done');
+            }, 1000);
+          }, 800);
+        }
+      }, [step, isActionDone]);
+
+      let tutTitle = '', tutBody = '', tutInstruction = null, tutAction = null;
+
+      switch (step) {
+        case 0:
+          tutTitle = "Contexte de l'évaluation";
+          tutBody = "L'évaluation se réalise sous forme de deux épreuves portant sur le même cas d'entreprise :\n\n• Une épreuve écrite\n• Une épreuve orale de présentation du projet et de la démarche définie\n\nLe sujet s'inspire de situations réelles ou fictives correspondant au référentiel métier et secteur d'activité.";
+          tutAction = h('button', {
+            className:'w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 mt-6',
+            onClick: advance
+          }, 'ÉTAPE SUIVANTE ', h(ArrowRight, { className:'w-5 h-5' }));
+          break;
+
+        case 1:
+          tutTitle = "1. Méthodologie";
+          tutBody = "L'étude de cas porte sur un projet de mise en conformité de traitement des données sur un périmètre limité à une activité, une fonction ou un service.\n\nElle évalue :\n• Les connaissances théoriques (obligations, acteurs institutionnels)\n• La capacité d'analyse et de proposition de solutions (diagnostics, actions, conformité)";
+          tutAction = h('button', {
+            className:'w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 mt-6',
+            onClick: advance
+          }, 'PASSER À LA GRILLE ', h(ArrowRight, { className:'w-5 h-5' }));
+          break;
+
+        case 2:
+          tutTitle = "2. Évaluation de la Documentation (C8)";
+          tutBody = "Arrêtons-nous sur le critère : \"Identification de la documentation technique et organisationnelle...\".\n\nLe candidat a très bien réussi cette partie, il n'a fait aucune faute :\n• La documentation obligatoire est conforme et suffisante.\n• Le choix de la documentation non obligatoire est adapté.\nDans la grille à droite (ligne C8), quelle note attribuer pour cette question ?";
+          tutInstruction = "Saisissez la note dans la grille pour continuer.";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"Parfait !", body:"Le candidat obtient bien la note maximale (10/10) pour cette partie.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-8' },
+              c8Error ? h(ErrBox, { text:"Ce n'est pas la note attendue. Le candidat a fait un sans faute !" }) : null,
+              h('p', { className:'text-sm text-slate-500 mt-4 font-medium' },
+                h(Info, { className:'w-4 h-4 inline-block mr-1' }),
+                " Saisissez la note dans la grille pour continuer."
+              )
+            );
+          }
+          break;
+
+        case 3:
+          tutTitle = "3. Bilan de l'épreuve";
+          tutBody = "Le candidat a totalement raté le reste des critères de l'épreuve.\n\nSes autres notes ont été saisies automatiquement dans la grille.\nObservez le total mis à jour en bas de la grille.";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"Total = 25/70", body:"Le total reflète bien sa contre-performance sur le reste de l'épreuve.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm' },
+              h('div', { className:'flex items-center gap-3 mb-3' },
+                h('div', { className:'bg-[#00529A] text-white p-1.5 rounded-full' }, h(PenTool, { className:'w-4 h-4' })),
+                h('span', { className:'text-blue-900 text-[18px] font-black tracking-tight' }, "Saisie en cours...")
+              ),
+              h('p', { className:'text-blue-800 text-[14px] font-medium leading-relaxed' }, "Les autres notes sont en train d'être complétées...")
+            );
+          }
+          break;
+
+        case 4:
+          tutTitle = "Fin de l'épreuve écrite";
+          tutBody = "La partie écrite est maintenant terminée. Le candidat a obtenu une note sur 70.\n\nNous allons maintenant passer à l'évaluation de l'épreuve orale, qui est notée sur 30 points.\n\nL'oral est organisé à la suite et à distance de l'épreuve écrite. Entre les deux épreuves, un temps suffisant de préparation doit être prévu pour le candidat, qui lui permettra d'organiser son épreuve orale (support, plan de présentation…).";
+          tutAction = h('button', {
+            className:'w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 mt-6',
+            onClick: advance
+          }, "PASSER À L'ORAL ", h(ArrowRight, { className:'w-5 h-5' }));
+          break;
+
+        case 5:
+          tutTitle = "4. L'épreuve orale";
+          tutBody = "L'oral s'est déroulé à la perfection ! Le candidat a brillamment présenté son projet et a su répondre avec aisance à toutes les questions.\n\nSes compétences méritent la note maximale. Observez le remplissage de la grille avec des '++' partout.\n\nQuel est alors le total sur 90 ?";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"90/90", body:"Le total de 90 points correspond bien à une performance parfaite lors de cet oral.", onNext: advance });
+          } else if (Object.keys(oralCrossCount).length >= 9) {
+            tutAction = h('div', { className:'mt-8 animate-slide-up' },
+              h('p', { className:'text-sm text-slate-500 mt-4 font-medium' },
+                h(Info, { className:'w-4 h-4 inline-block mr-1' }),
+                " Calculez et saisissez le total sur 90 pour continuer."
+              )
+            );
+          } else {
+            tutAction = h('div', { className:'mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm' },
+              h('div', { className:'flex items-center gap-3 mb-3' },
+                h('div', { className:'bg-[#00529A] text-white p-1.5 rounded-full' }, h(PenTool, { className:'w-4 h-4' })),
+                h('span', { className:'text-blue-900 text-[18px] font-black tracking-tight' }, "Saisie en cours...")
+              ),
+              h('p', { className:'text-blue-800 text-[14px] font-medium leading-relaxed' }, "Le jury attribue la note maximale...")
+            );
+          }
+          break;
+
+        case 6:
+          tutTitle = "5. Conversion de la note";
+          tutBody = "La grille d'évaluation donne un total sur 90 points (9 critères x 10 points max).\n\nCependant, la note finale de l'épreuve orale doit être ramenée sur 30 points dans le référentiel.\n\nComment effectuer cette conversion ?";
+          tutAction = h('div', { className:'mt-6 flex flex-col gap-3' },
+            h('button', {
+              className:`w-full text-left p-4 rounded-xl border transition-colors ${step6Error1 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-[#00529A] hover:bg-blue-50'}`,
+              onClick: () => { playSound('wrong'); setStep6Error1(true); setStep6Error2(false); }
+            },
+              h('span', { className:'font-bold block text-slate-800 mb-1' }, "Je divise par 2"),
+              h('span', { className:'text-sm text-slate-500' }, "90 / 2 = 45")
+            ),
+            step6Error1 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, "Non, la note maximale doit être 30, or 45 > 30.") : null,
+            h('button', {
+              className:'w-full text-left p-4 rounded-xl border border-slate-200 hover:border-[#00529A] hover:bg-blue-50 transition-colors',
+              onClick: () => { playSound('correct'); advance(); }
+            },
+              h('span', { className:'font-bold block text-slate-800 mb-1' }, "Je divise par 3"),
+              h('span', { className:'text-sm text-slate-500' }, "90 / 3 = 30")
+            ),
+            h('button', {
+              className:`w-full text-left p-4 rounded-xl border transition-colors ${step6Error2 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-[#00529A] hover:bg-blue-50'}`,
+              onClick: () => { playSound('wrong'); setStep6Error2(true); setStep6Error1(false); }
+            },
+              h('span', { className:'font-bold block text-slate-800 mb-1' }, "Je retire 60 points"),
+              h('span', { className:'text-sm text-slate-500' }, "90 - 60 = 30")
+            ),
+            step6Error2 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, "Non, si le candidat a 60/90 par exemple, il aurait 0/30 avec cette méthode, ce qui n'est pas proportionnel.") : null
+          );
+          break;
+
+        case 7:
+          tutTitle = "6. Saisie de la note finale";
+          tutBody = "C'est exact ! Il suffit de diviser le total de la grille par 3 pour obtenir la note sur 30.\n\nSachant que le candidat a obtenu 90/90, quelle note sur 30 faut-il inscrire ?";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"Parfait !", body:"Le candidat obtient donc 30/30 à l'oral.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-8' },
+              h('p', { className:'text-sm text-slate-500 mt-4 font-medium' },
+                h(Info, { className:'w-4 h-4 inline-block mr-1' }),
+                " Saisissez la note de 30 dans la grille pour continuer."
+              )
+            );
+          }
+          break;
+
+        case 8:
+          tutTitle = "7. Signature";
+          tutBody = "Pour finaliser l'évaluation, le document doit être signé par le ou les membres du jury.\n\nDans notre cas, M. Jean Dupont valide et signe la grille.";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"Dossier complet !", body:"L'évaluation est maintenant totalement terminée.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm' },
+              h('div', { className:'flex items-center gap-3 mb-3' },
+                h('div', { className:'bg-[#00529A] text-white p-1.5 rounded-full' }, h(PenTool, { className:'w-4 h-4' })),
+                h('span', { className:'text-blue-900 text-[18px] font-black tracking-tight' }, "Signature...")
+              )
+            );
+          }
+          break;
+
+        case 9:
+          tutTitle = "8. Validation globale";
+          tutBody = "L'épreuve est en deux parties portant sur le même cas d'entreprise :\n- Épreuve écrite : notée sur 70 points\n- Épreuve orale : notée sur 30 points\n- Total : 100 points";
+          if (!step9Q1Done) {
+            tutAction = h('div', { className:'mt-6 flex flex-col gap-3' },
+              h('p', { className:'font-bold text-slate-800 mb-2' }, "Les épreuves écrites et orales se compensent-elles ?"),
+              h('button', {
+                className:'w-full text-left p-4 rounded-xl border border-slate-200 hover:border-[#00529A] hover:bg-blue-50 transition-colors',
+                onClick: () => { playSound('correct'); setStep9Q1Done(true); }
+              }, h('span', { className:'font-bold block text-slate-800' }, "Oui")),
+              h('button', {
+                className:`w-full text-left p-4 rounded-xl border transition-colors ${step9ErrorQ1 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-[#00529A] hover:bg-blue-50'}`,
+                onClick: () => { playSound('wrong'); setStep9ErrorQ1(true); }
+              }, h('span', { className:'font-bold block text-slate-800' }, "Non")),
+              step9ErrorQ1 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, "C'est incorrect. Les épreuves se compensent bien, comme indiqué.") : null
+            );
+          } else if (!step9Q2Done) {
+            tutAction = h('div', { className:'mt-6 flex flex-col gap-3 animate-slide-up' },
+              h('div', { className:'text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 mb-2' },
+                h('strong', null, "C'est exact !"),
+                " L'écrit et l'oral se compensent : le seuil de validation est l'obtention de la moyenne globale, soit 50/100 toutes épreuves confondues."
+              ),
+              h('p', { className:'font-bold text-slate-800 mb-2' }, "Le candidat a obtenu 25/70 à l'écrit et 30/30 à l'oral. Valide-t-il sa certification ?"),
+              h('button', {
+                className:'w-full text-left p-4 rounded-xl border border-slate-200 hover:border-[#00529A] hover:bg-blue-50 transition-colors',
+                onClick: () => { playSound('correct'); setStep9Q2Done(true); }
+              }, h('span', { className:'font-bold block text-slate-800' }, "Oui")),
+              h('button', {
+                className:`w-full text-left p-4 rounded-xl border transition-colors ${step9ErrorQ2 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-[#00529A] hover:bg-blue-50'}`,
+                onClick: () => { playSound('wrong'); setStep9ErrorQ2(true); }
+              }, h('span', { className:'font-bold block text-slate-800' }, "Non")),
+              step9ErrorQ2 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, "Réessayez. Calculez la somme des deux notes. 25 + 30 = 55. Le seuil est 50.") : null
+            );
+          } else {
+            tutAction = h('div', { className:'mt-6 animate-slide-up' },
+              h(OkBox, { title:"Parfait !", body:"Le candidat valide avec 55/100. Vous avez terminé l'évaluation.", onNext: advance })
+            );
+          }
+          break;
+
+        case 10:
+          tutTitle = "Activité terminée !";
+          tutBody = "Vous avez terminé ce module d'évaluation avec succès.";
+          tutAction = h('div', { className:'mt-6' },
+            h('button', {
+              className:'w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2',
+              onClick: () => { playSound('advance'); window.location.reload(); }
+            }, "RECOMMENCER L'ACTIVITÉ")
+          );
+          break;
+      }
+
+      const displayNum = Math.min(step, TOTAL);
+
+      return h('div', { className:'flex flex-1 h-screen overflow-hidden bg-[#f3f4f6] relative font-sans text-slate-800' },
+        // Left panel
+        h('div', { className:'w-[320px] bg-white border-r border-slate-200 shadow-xl z-20 flex flex-col shrink-0 relative' },
+          step <= 10 ? h('div', { className:'relative transition-colors duration-500 shrink-0 flex flex-col' },
+            h('div', { className:'p-6 bg-[#00529A] text-white' },
+              h('div', { className:'flex justify-between items-start' },
+                h('div', null,
+                  h('div', { className:'text-[10px] uppercase tracking-widest opacity-80 mb-1' }, "Tutoriel Évaluateur"),
+                  h('h1', { className:'text-[18px] font-bold leading-tight' }, tutTitle)
+                ),
+                h('div', { key:`num-${step}`, className:'flex items-baseline gap-1 bg-white/10 px-2 py-1 rounded' },
+                  h('span', { className:'text-xl font-black tracking-tighter leading-none text-white' }, displayNum),
+                  step > 0 && step < 10 ? h('span', { className:'text-xs font-bold text-white/70 leading-none' }, `/${TOTAL}`) : null
+                )
+              )
+            ),
+            h('div', { className:'px-6 pt-6 pb-2 transition-colors duration-500' },
+              h('div', { key:`text-${step}` },
+                h('p', { className:'text-[14px] text-slate-600 leading-relaxed whitespace-pre-line animate-slide-up', style:{animationDelay:'0.08s'} },
+                  h(TypewriterText, { text: tutBody })
+                ),
+                tutInstruction ? h('div', { className:'mt-6 animate-slide-up bg-blue-50 border-2 border-blue-200 p-4 rounded-xl shadow-sm', style:{animationDelay:'0.15s'} },
+                  h('div', { className:'text-blue-900 font-bold text-[13px] flex items-start gap-3' },
+                    h('span', { className:'leading-relaxed mt-0.5' }, tutInstruction)
+                  )
+                ) : null
+              )
+            )
+          ) : null,
+          h('div', { className:'flex-1 overflow-y-auto px-6 py-4 bg-white min-h-0 flex flex-col custom-scrollbar' },
+            h('div', { key:`action-${step}`, className:'animate-slide-up pb-8 mt-auto w-full' },
+              tutAction
+            )
+          )
+        ),
+        // Right panel
+        h('div', { className:'flex-1 flex flex-col overflow-x-auto overflow-y-auto relative bg-slate-100 custom-scrollbar' },
+          // Overlay for blocked steps
+          h('div', {
+            className:`fixed top-0 bottom-0 z-40 bg-slate-900/60 transition-all duration-500 ${step === 0 || step === 1 || step === 2 || step === 4 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`,
+            style: { left:'320px', right:0 }
+          }),
+          // Center modal for info steps
+          (step === 0 || step === 1 || step === 4) ? h('div', {
+            className:'fixed top-0 bottom-0 right-0 z-50 flex items-center justify-center',
+            style: { left:'320px' }
+          },
+            h('div', { className:'bg-white p-8 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center border border-slate-200 animate-slide-up' },
+              h('div', { className:'w-16 h-16 rounded-full flex items-center justify-center mb-6 text-[#00529A] bg-blue-50 shadow-sm border border-blue-100' },
+                h(LayoutGrid, { className:'w-8 h-8' })
+              ),
+              h('h3', { className:'text-xl font-bold text-slate-900 tracking-tight' }, "La grille d'évaluation"),
+              h('p', { className:'text-slate-600 text-sm mt-3 leading-relaxed font-medium' },
+                step < 4 ? "Elle s'animera dès que vous arriverez à la partie pratique." :
+                step === 4 ? "Nous passons à la grille de l'épreuve orale..." : ""
+              )
+            )
+          ) : null,
+          // Main content area
+          h('div', { className:'min-h-full flex flex-col justify-center p-8' },
+            h('div', {
+              className:`rounded-xl flex flex-col w-full max-w-[1100px] mx-auto transition-all duration-500 relative
+                ${(step === 0 || step === 1 || step === 4) ? 'bg-white opacity-40 grayscale blur-[2px] pointer-events-none overflow-hidden z-30 border border-slate-200 shadow-sm' : ''}
+                ${step === 2 || step === 5 || step === 7 || step === 8 ? 'bg-transparent overflow-visible z-50' : ''}
+                ${step === 3 || step === 6 || step === 9 || step === 10 ? 'bg-white overflow-hidden z-30 border border-slate-200 shadow-sm' : ''}
+                ${step === 2 || step === 3 || step === 5 || step === 6 || step === 7 || step === 8 || step === 9 || step === 10 ? 'scale-[1]' : 'scale-[0.98]'}
+              `
+            },
+              step < 4
+                ? h(GridTable, { step, isActionDone, setIsActionDone, scores, setScores, c8Error, setC8Error, totalScore })
+                : step < 10
+                  ? h(React.Fragment, null,
+                      h(OralGridTable, { step, isActionDone, setIsActionDone, crossCount: oralCrossCount, total90: oralTotal90, setTotal90: setOralTotal90, total30: oralTotal30, setTotal30: setOralTotal30 }),
+                      step === 9 && step9Q2Done
+                        ? h('div', { className:'absolute inset-0 bg-slate-900/40 z-50 flex items-center justify-center animate-fade-in backdrop-blur-sm rounded-xl' },
+                            h('div', { className:'bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 animate-slide-up' },
+                              h('h2', { className:'text-2xl font-black text-slate-900 mb-6 text-center' }, "Bilan de l'évaluation"),
+                              h('div', { className:'space-y-4' },
+                                h('div', { className:'flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100' },
+                                  h('span', { className:'font-bold text-slate-700' }, "Épreuve écrite"),
+                                  h('span', { className:'text-xl font-black text-slate-900' }, "25 ", h('span', { className:'text-sm font-bold text-slate-500' }, "/ 70"))
+                                ),
+                                h('div', { className:'flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100' },
+                                  h('span', { className:'font-bold text-slate-700' }, "Épreuve orale"),
+                                  h('span', { className:'text-xl font-black text-[#00529A]' }, "30 ", h('span', { className:'text-sm font-bold text-blue-300' }, "/ 30"))
+                                ),
+                                h('div', { className:'h-px bg-slate-200 w-full my-2' }),
+                                h('div', { className:'flex justify-between items-center p-4 bg-blue-50 rounded-xl border-2 border-[#00529A]' },
+                                  h('span', { className:'font-black text-blue-900 uppercase tracking-wide' }, "Total Global"),
+                                  h('span', { className:'text-2xl font-black text-blue-900' }, "55 ", h('span', { className:'text-base font-bold text-blue-500' }, "/ 100"))
+                                )
+                              ),
+                              h('div', { className:'mt-8 flex justify-center' },
+                                h('div', { className:'bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold flex items-center gap-2' },
+                                  h(Check, { className:'w-5 h-5' }),
+                                  "Candidat Validé"
+                                )
+                              )
+                            )
+                          )
+                        : null
+                    )
+                  : h('div', { className:'flex-1 flex items-center justify-center p-8 bg-transparent' },
+                      h('div', { className:'bg-white p-10 rounded-2xl shadow-xl max-w-2xl w-full border border-slate-200 animate-slide-up text-center relative z-50' },
+                        h('div', { className:'w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border-4 border-white ring-4 ring-green-50' },
+                          h(Check, { className:'w-10 h-10' })
+                        ),
+                        h('h2', { className:'text-3xl font-black text-slate-900 mb-8 tracking-tight' }, "Félicitations !"),
+                        h('div', { className:'bg-slate-50 rounded-xl p-8 text-left border border-slate-200' },
+                          h('strong', { className:'block mb-6 text-[#00529A] font-black text-[18px] uppercase tracking-wider text-center' }, "Règles à retenir"),
+                          h('ul', { className:'list-disc pl-6 space-y-4 font-medium text-slate-700 text-lg marker:text-[#00529A]' },
+                            h('li', null, "L'oral est évalué selon une grille allant jusqu'à 90 points."),
+                            h('li', null, "Cette note est ensuite divisée par 3 pour obtenir une note sur 30."),
+                            h('li', null, "La grille doit impérativement comporter le nom et la signature des membres du jury."),
+                            h('li', null, "L'écrit (sur 70) et l'oral (sur 30) se compensent pour former une note sur 100."),
+                            h('li', null, "Le seuil de validation est de 50/100, toutes épreuves confondues.")
+                          )
+                        )
+                      )
+                    )
+            )
+          )
+        )
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(h(App, null));
+  })();
+  </script>
+</body>
+</html>

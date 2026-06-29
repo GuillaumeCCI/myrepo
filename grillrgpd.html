@@ -530,19 +530,44 @@
     }
 
     // ─── OralGridTable ────────────────────────────────────────────────
-    function OralGridTable({ step, isActionDone, setIsActionDone, crossCount, total90, setTotal90, total30, setTotal30 }) {
+    function OralGridTable({ step, isActionDone, setIsActionDone, crossCount, setCrossCount, total90, setTotal90, total30, setTotal30 }) {
       const thClassOral = "border border-black p-2 text-center align-middle text-[14px] font-bold bg-[#f9fafb]";
       const tdClassOral = "border border-black p-2 text-left align-middle text-[14px]";
 
+      const VALUES = ['--', '-', '+', '++'];
+      // Whether the grid is interactive (step 5, not yet done)
+      const isInteractive = step === 5 && !isActionDone;
+
+      const handleCellClick = (rowId, colVal) => {
+        if (!isInteractive) return;
+        setCrossCount(p => {
+          const current = p[rowId];
+          // If this col is already selected, deselect; otherwise select it
+          const next = current === colVal ? undefined : colVal;
+          const updated = { ...p };
+          if (next === undefined) delete updated[rowId];
+          else updated[rowId] = next;
+          playSound('click');
+          return updated;
+        });
+      };
+
       const renderRow = (id, text) => {
         const isSelected = crossCount && crossCount[id];
-        return h('tr', { key: id },
+        const rowDone = isSelected !== undefined && isSelected !== null && isSelected !== '';
+        return h('tr', { key: id, className: isInteractive ? 'cursor-pointer' : '' },
           h('td', { className:tdClassOral }, text),
-          h('td', { className:`${tdClassOral} text-center` }, h('div', { className:'flex justify-center' }, isSelected === '--' ? 'X' : '')),
-          h('td', { className:`${tdClassOral} text-center` }, h('div', { className:'flex justify-center' }, isSelected === '-' ? 'X' : '')),
-          h('td', { className:`${tdClassOral} text-center` }, h('div', { className:'flex justify-center' }, isSelected === '+' ? 'X' : '')),
-          h('td', { className:`${tdClassOral} text-center relative` },
-            h('div', { className:'flex justify-center font-bold text-lg' }, isSelected === '++' ? 'X' : '')
+          ...VALUES.map(colVal =>
+            h('td', {
+              key: colVal,
+              className:`${tdClassOral} text-center ${isInteractive ? 'hover:bg-blue-50 transition-colors' : ''} ${isSelected === colVal ? 'bg-blue-100' : ''}`,
+              onClick: isInteractive ? () => handleCellClick(id, colVal) : undefined,
+              style: isInteractive ? { cursor:'pointer' } : {}
+            },
+              h('div', { className:'flex justify-center font-bold text-lg' },
+                isSelected === colVal ? 'X' : (isInteractive ? h('span', { className:'text-slate-200 text-sm select-none' }, '·') : '')
+              )
+            )
           )
         );
       };
@@ -559,9 +584,9 @@
       }
 
       return h('div', { className:'mx-auto shrink-0 transition-all duration-500 relative z-10 w-full h-full flex flex-col bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200' },
-        // Spotlight overlay
+        // Spotlight overlay — not shown at step 5 (user interacts freely)
         h('div', {
-          className:`absolute inset-0 z-30 bg-slate-900/60 ring-1 ring-slate-900/60 transition-all duration-500 pointer-events-none ${step >= 5 && step < 9 && step !== 6 ? 'opacity-100' : 'opacity-0'}`
+          className:`absolute inset-0 z-30 bg-slate-900/60 ring-1 ring-slate-900/60 transition-all duration-500 pointer-events-none ${step > 5 && step < 9 && step !== 6 ? 'opacity-100' : 'opacity-0'}`
         }),
         // Header
         h('div', { className:'h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 relative z-20 transition-all duration-500' },
@@ -658,7 +683,7 @@
                 h('div', { className:'flex justify-between items-center border-b border-gray-300 pb-2 mb-2' },
                   h('span', null, "Total :"),
                   h('div', { className:'flex items-center gap-1' },
-                    step >= 5 && !isActionDone && step === 5 && Object.keys(crossCount).length >= 9
+                    step >= 5 && !isActionDone && step === 5 && Object.keys(crossCount).filter(k => k !== 'signed').length >= 9
                       ? h('div', { className:'animate-badge-flash bg-white p-1 rounded' },
                           h('input', {
                             type:'text',
@@ -668,7 +693,7 @@
                             onChange: (e) => {
                               const v = e.target.value;
                               setTotal90(v);
-                              if (v === '90') {
+                              if (v !== '' && parseInt(v) === computedTotal90) {
                                 setIsActionDone(true);
                                 playSound('done');
                               }
@@ -677,7 +702,7 @@
                           h('span', { className:'text-lg' }, ' /90')
                         )
                       : h('span', { className:'text-lg text-blue-800' },
-                          (step > 5 || isActionDone ? '90' : (computedTotal90 > 0 ? computedTotal90 : '')),
+                          (step > 5 || isActionDone ? (total90 || computedTotal90) : (computedTotal90 > 0 ? computedTotal90 : '')),
                           (step > 5 || isActionDone || computedTotal90 > 0) ? ' /90' : ''
                         )
                   )
@@ -695,7 +720,8 @@
                             onChange: (e) => {
                               const v = e.target.value;
                               setTotal30(v);
-                              if (v === '30') {
+                              const expected = Math.round(computedTotal90 / 3);
+                              if (v !== '' && parseInt(v) === expected) {
                                 setIsActionDone(true);
                                 playSound('done');
                               }
@@ -809,19 +835,6 @@
           }, delays[delays.length - 1] + 400);
         }
 
-        if (step === 5 && !isActionDone) {
-          if (Object.keys(oralCrossCount).length === 0) {
-            const numRows = 9;
-            const delays = Array.from({length: numRows}, (_, i) => 300 + i * 200);
-            delays.forEach((delay, i) => {
-              setTimeout(() => {
-                setOralCrossCount(p => ({ ...p, [i + 1]: '++' }));
-                playSound('click');
-              }, delay);
-            });
-          }
-        }
-
         if (step === 8 && !isActionDone) {
           setTimeout(() => {
             setOralCrossCount(p => ({ ...p, signed: true }));
@@ -899,23 +912,27 @@
 
         case 5:
           tutTitle = "4. L'épreuve orale";
-          tutBody = "L'oral s'est déroulé à la perfection ! Le candidat a brillamment présenté son projet et a su répondre avec aisance à toutes les questions.\n\nSes compétences méritent la note maximale. Observez le remplissage de la grille avec des '++' partout.\n\nQuel est alors le total sur 90 ?";
+          tutBody = "L'oral s'est déroulé à la perfection ! Le candidat a brillamment présenté son projet et a su répondre avec aisance à toutes les questions.\n\nSes compétences méritent la note maximale.\n\nCochez la colonne '++' pour chaque critère dans la grille, puis calculez et saisissez le total sur 90.";
           if (isActionDone) {
-            tutAction = h(OkBox, { title:"90/90", body:"Le total de 90 points correspond bien à une performance parfaite lors de cet oral.", onNext: advance });
-          } else if (Object.keys(oralCrossCount).length >= 9) {
-            tutAction = h('div', { className:'mt-8 animate-slide-up' },
-              h('p', { className:'text-sm text-slate-500 mt-4 font-medium' },
-                h(Info, { className:'w-4 h-4 inline-block mr-1' }),
-                " Calculez et saisissez le total sur 90 pour continuer."
-              )
-            );
+            tutAction = h(OkBox, { title:`${oralTotal90}/90`, body:`Le total saisi correspond bien au score calculé.`, onNext: advance });
           } else {
-            tutAction = h('div', { className:'mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm' },
-              h('div', { className:'flex items-center gap-3 mb-3' },
-                h('div', { className:'bg-[#00529A] text-white p-1.5 rounded-full' }, h(PenTool, { className:'w-4 h-4' })),
-                h('span', { className:'text-blue-900 text-[18px] font-black tracking-tight' }, "Saisie en cours...")
+            const checkedCount = Object.keys(oralCrossCount).filter(k => k !== 'signed').length;
+            tutAction = h('div', { className:'mt-8 animate-slide-up' },
+              h('div', { className:'flex items-center gap-2 mb-3' },
+                h('div', { className:`w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold ${checkedCount === 9 ? 'bg-green-500' : 'bg-slate-300'}` }, checkedCount === 9 ? '✓' : checkedCount),
+                h('span', { className:`text-sm font-medium ${checkedCount === 9 ? 'text-green-700' : 'text-slate-500'}` },
+                  checkedCount < 9 ? `${checkedCount}/9 critères cochés` : 'Tous les critères cochés !'
+                )
               ),
-              h('p', { className:'text-blue-800 text-[14px] font-medium leading-relaxed' }, "Le jury attribue la note maximale...")
+              checkedCount === 9
+                ? h('p', { className:'text-sm text-slate-500 font-medium' },
+                    h(Info, { className:'w-4 h-4 inline-block mr-1' }),
+                    " Calculez et saisissez le total sur 90 pour continuer."
+                  )
+                : h('p', { className:'text-sm text-slate-500 font-medium' },
+                    h(Info, { className:'w-4 h-4 inline-block mr-1' }),
+                    " Cliquez sur la colonne '++' pour chaque ligne de la grille."
+                  )
             );
           }
           break;
@@ -952,14 +969,14 @@
 
         case 7:
           tutTitle = "6. Saisie de la note finale";
-          tutBody = "C'est exact ! Il suffit de diviser le total de la grille par 3 pour obtenir la note sur 30.\n\nSachant que le candidat a obtenu 90/90, quelle note sur 30 faut-il inscrire ?";
+          tutBody = `C'est exact ! Il suffit de diviser le total de la grille par 3 pour obtenir la note sur 30.\n\nSachant que le candidat a obtenu ${oralTotal90}/90, quelle note sur 30 faut-il inscrire ?`;
           if (isActionDone) {
-            tutAction = h(OkBox, { title:"Parfait !", body:"Le candidat obtient donc 30/30 à l'oral.", onNext: advance });
+            tutAction = h(OkBox, { title:"Parfait !", body:`Le candidat obtient donc ${oralTotal30}/30 à l'oral.`, onNext: advance });
           } else {
             tutAction = h('div', { className:'mt-8' },
               h('p', { className:'text-sm text-slate-500 mt-4 font-medium' },
                 h(Info, { className:'w-4 h-4 inline-block mr-1' }),
-                " Saisissez la note de 30 dans la grille pour continuer."
+                ` Saisissez la note (${oralTotal90}/3) dans la grille pour continuer.`
               )
             );
           }
@@ -997,12 +1014,15 @@
               step9ErrorQ1 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, "C'est incorrect. Les épreuves se compensent bien, comme indiqué.") : null
             );
           } else if (!step9Q2Done) {
+            const oral30 = parseInt(oralTotal30) || 0;
+            const ecrit25 = totalScore; // already computed (25)
+            const total100 = ecrit25 + oral30;
             tutAction = h('div', { className:'mt-6 flex flex-col gap-3 animate-slide-up' },
               h('div', { className:'text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 mb-2' },
                 h('strong', null, "C'est exact !"),
                 " L'écrit et l'oral se compensent : le seuil de validation est l'obtention de la moyenne globale, soit 50/100 toutes épreuves confondues."
               ),
-              h('p', { className:'font-bold text-slate-800 mb-2' }, "Le candidat a obtenu 25/70 à l'écrit et 30/30 à l'oral. Valide-t-il sa certification ?"),
+              h('p', { className:'font-bold text-slate-800 mb-2' }, `Le candidat a obtenu ${ecrit25}/70 à l'écrit et ${oral30}/30 à l'oral. Valide-t-il sa certification ?`),
               h('button', {
                 className:'w-full text-left p-4 rounded-xl border border-slate-200 hover:border-[#00529A] hover:bg-blue-50 transition-colors',
                 onClick: () => { playSound('correct'); setStep9Q2Done(true); }
@@ -1011,11 +1031,13 @@
                 className:`w-full text-left p-4 rounded-xl border transition-colors ${step9ErrorQ2 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-[#00529A] hover:bg-blue-50'}`,
                 onClick: () => { playSound('wrong'); setStep9ErrorQ2(true); }
               }, h('span', { className:'font-bold block text-slate-800' }, "Non")),
-              step9ErrorQ2 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, "Réessayez. Calculez la somme des deux notes. 25 + 30 = 55. Le seuil est 50.") : null
+              step9ErrorQ2 ? h('div', { className:'text-red-600 text-sm font-medium animate-slide-up px-2' }, `Réessayez. Calculez la somme des deux notes. ${ecrit25} + ${oral30} = ${total100}. Le seuil est 50.`) : null
             );
           } else {
+            const oral30 = parseInt(oralTotal30) || 0;
+            const total100 = totalScore + oral30;
             tutAction = h('div', { className:'mt-6 animate-slide-up' },
-              h(OkBox, { title:"Parfait !", body:"Le candidat valide avec 55/100. Vous avez terminé l'évaluation.", onNext: advance })
+              h(OkBox, { title:"Parfait !", body:`Le candidat valide avec ${total100}/100. Vous avez terminé l'évaluation.`, onNext: advance })
             );
           }
           break;
@@ -1106,24 +1128,24 @@
                 ? h(GridTable, { step, isActionDone, setIsActionDone, scores, setScores, c8Error, setC8Error, totalScore })
                 : step < 10
                   ? h(React.Fragment, null,
-                      h(OralGridTable, { step, isActionDone, setIsActionDone, crossCount: oralCrossCount, total90: oralTotal90, setTotal90: setOralTotal90, total30: oralTotal30, setTotal30: setOralTotal30 }),
+                      h(OralGridTable, { step, isActionDone, setIsActionDone, crossCount: oralCrossCount, setCrossCount: setOralCrossCount, total90: oralTotal90, setTotal90: setOralTotal90, total30: oralTotal30, setTotal30: setOralTotal30 }),
                       step === 9 && step9Q2Done
-                        ? h('div', { className:'fixed inset-0 bg-slate-900/40 z-[100] flex items-start justify-center animate-fade-in overflow-y-auto py-12', style:{left:'320px'} },
+                        ? h('div', { className:'fixed inset-0 bg-slate-900/40 z-[100] flex items-start justify-center animate-fade-in overflow-y-auto py-12', style:{paddingLeft:'320px'} },
                             h('div', { className:'bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full mx-4 border border-slate-200 animate-slide-up' },
                               h('h2', { className:'text-2xl font-black text-slate-900 mb-6 text-center' }, "Bilan de l'évaluation"),
                               h('div', { className:'space-y-4' },
                                 h('div', { className:'flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100' },
                                   h('span', { className:'font-bold text-slate-700' }, "Épreuve écrite"),
-                                  h('span', { className:'text-xl font-black text-slate-900' }, "25 ", h('span', { className:'text-sm font-bold text-slate-500' }, "/ 70"))
+                                  h('span', { className:'text-xl font-black text-slate-900' }, `${totalScore} `, h('span', { className:'text-sm font-bold text-slate-500' }, "/ 70"))
                                 ),
                                 h('div', { className:'flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100' },
                                   h('span', { className:'font-bold text-slate-700' }, "Épreuve orale"),
-                                  h('span', { className:'text-xl font-black text-[#00529A]' }, "30 ", h('span', { className:'text-sm font-bold text-blue-300' }, "/ 30"))
+                                  h('span', { className:'text-xl font-black text-[#00529A]' }, `${oralTotal30} `, h('span', { className:'text-sm font-bold text-blue-300' }, "/ 30"))
                                 ),
                                 h('div', { className:'h-px bg-slate-200 w-full my-2' }),
                                 h('div', { className:'flex justify-between items-center p-4 bg-blue-50 rounded-xl border-2 border-[#00529A]' },
                                   h('span', { className:'font-black text-blue-900 uppercase tracking-wide' }, "Total Global"),
-                                  h('span', { className:'text-2xl font-black text-blue-900' }, "55 ", h('span', { className:'text-base font-bold text-blue-500' }, "/ 100"))
+                                  h('span', { className:'text-2xl font-black text-blue-900' }, `${totalScore + (parseInt(oralTotal30)||0)} `, h('span', { className:'text-base font-bold text-blue-500' }, "/ 100"))
                                 )
                               ),
                               h('div', { className:'mt-8 flex justify-center' },

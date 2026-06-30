@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activité - Référent Cybersécurité TPE/PME</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Figtree', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    @keyframes badgePulse {
+      0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.1); }
+      50%  { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(0,0,0,0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+    }
+    .animate-badge-flash { animation: badgePulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fadein 0.3s ease both; }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .spotlight-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pulse-ring {
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      border: 2px solid rgba(0,82,154,0.6);
+      animation: pulse-ring 1.8s ease-out infinite;
+    }
+    .pulse-ring-2 {
+      animation-delay: 0.9s;
+    }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 2px solid transparent; background-clip: padding-box; }
+
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
+    html, body, #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script>
+  // ─── Fullscreen hook + components (module scope, avoids remount bugs) ───
+  function useFullscreen() {
+    const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+    React.useEffect(() => {
+      const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+      document.addEventListener('fullscreenchange', onChange);
+      return () => document.removeEventListener('fullscreenchange', onChange);
+    }, []);
+
+    const toggleFullscreen = React.useCallback(() => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }, []);
+
+    return { isFullscreen, toggleFullscreen };
+  }
+
+  function FullscreenButton({ isFullscreen, toggleFullscreen }) {
+    const e = React.createElement;
+    const MaximizeIcon = () => e('svg', { xmlns:"http://www.w3.org/2000/svg", width:18, height:18, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+      e('path', { d:"M8 3H5a2 2 0 0 0-2 2v3" }),
+      e('path', { d:"M21 8V5a2 2 0 0 0-2-2h-3" }),
+      e('path', { d:"M3 16v3a2 2 0 0 0 2 2h3" }),
+      e('path', { d:"M16 21h3a2 2 0 0 0 2-2v-3" })
+    );
+    const MinimizeIcon = () => e('svg', { xmlns:"http://www.w3.org/2000/svg", width:18, height:18, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+      e('path', { d:"M8 3v3a2 2 0 0 1-2 2H3" }),
+      e('path', { d:"M21 8h-3a2 2 0 0 1-2-2V3" }),
+      e('path', { d:"M3 16h3a2 2 0 0 1 2 2v3" }),
+      e('path', { d:"M16 21v-3a2 2 0 0 1 2-2h3" })
+    );
+
+    return e('button', {
+      onClick: toggleFullscreen,
+      className: "fixed top-4 right-5 z-[200] bg-white border border-gray-200 rounded px-4 py-2.5 cursor-pointer flex items-center gap-2 text-[14px] font-bold text-gray-500 transition-all hover:bg-gray-50 hover:text-[#00529B] hover:border-gray-300 shadow-sm uppercase tracking-wider",
+      title: isFullscreen ? "Quitter le plein écran" : "Plein écran"
+    },
+      isFullscreen ? e(MinimizeIcon) : e(MaximizeIcon),
+      isFullscreen ? "Quitter" : "Plein écran"
+    );
+  }
+
+  function SpotlightIntro({ onDismiss, toggleFullscreen }) {
+    const e = React.createElement;
+
+    const handleEnterFullscreen = () => {
+      toggleFullscreen();
+      onDismiss();
+    };
+
+    return e('div', { className: "spotlight-overlay animate-fade-in" },
+      e('div', { className: "animate-scale-in max-w-md w-full mx-4 relative" },
+        e('div', { className: "bg-white rounded-sm p-8 text-center shadow-2xl relative overflow-hidden border-t-8 border-[#1D54A7]" },
+          e('div', { className: "relative inline-flex items-center justify-center w-20 h-20 mx-auto mb-5 mt-2" },
+            e('div', { className: "pulse-ring" }),
+            e('div', { className: "pulse-ring pulse-ring-2" }),
+            e('div', { className: "relative w-20 h-20 bg-[#F2F2F2] rounded-full flex items-center justify-center text-[#1D54A7] border border-gray-300" },
+              e('svg', { xmlns:"http://www.w3.org/2000/svg", width:34, height:34, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:1.8, strokeLinecap:"round", strokeLinejoin:"round" },
+                e('path', { d:"M8 3H5a2 2 0 0 0-2 2v3" }),
+                e('path', { d:"M21 8V5a2 2 0 0 0-2-2h-3" }),
+                e('path', { d:"M3 16v3a2 2 0 0 0 2 2h3" }),
+                e('path', { d:"M16 21h3a2 2 0 0 0 2-2v-3" })
+              )
+            )
+          ),
+          e('h2', { className: "text-[22px] font-bold text-[#00529B] mb-3" }, "Meilleure expérience en plein écran"),
+          e('p', { className: "text-gray-600 text-[16px] leading-relaxed mb-7" },
+            "Pour profiter pleinement de cette activité, nous vous recommandons de l'afficher en plein écran. Vous pouvez aussi continuer en mode fenêtré."
+          ),
+          e('div', { className: "flex flex-col gap-3" },
+            e('button', {
+              onClick: handleEnterFullscreen,
+              className: "w-full bg-[#1D54A7] hover:bg-[#00529B] text-white font-bold py-3.5 px-5 rounded transition-colors flex items-center justify-center gap-2 shadow-sm text-[15px] uppercase"
+            },
+              e('svg', { xmlns:"http://www.w3.org/2000/svg", width:18, height:18, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round" },
+                e('path', { d:"M8 3H5a2 2 0 0 0-2 2v3" }),
+                e('path', { d:"M21 8V5a2 2 0 0 0-2-2h-3" }),
+                e('path', { d:"M3 16v3a2 2 0 0 0 2 2h3" }),
+                e('path', { d:"M16 21h3a2 2 0 0 0 2-2v-3" })
+              ),
+              "Passer en plein écran"
+            ),
+            e('button', {
+              onClick: onDismiss,
+              className: "w-full text-gray-500 hover:text-gray-700 font-bold py-3 px-5 rounded transition-colors text-[14px] uppercase hover:bg-gray-50 border border-transparent hover:border-gray-200"
+            }, "Continuer en mode fenêtré")
+          )
+        )
+      )
+    );
+  }
+
+  // TypewriterText at module scope to avoid remount bugs across renders
+  function TypewriterText({ text }) {
+    const [displayed, setDisplayed] = React.useState('');
+    React.useEffect(() => {
+      setDisplayed('');
+      let i = 0;
+      const interval = setInterval(() => {
+        setDisplayed(text.slice(0, i + 1));
+        i++;
+        if (i >= text.length) clearInterval(interval);
+      }, 15);
+      return () => clearInterval(interval);
+    }, [text]);
+    return React.createElement(React.Fragment, null, displayed);
+  }
+
+  (function() {
+    const { useState, useEffect, useRef } = React;
+    const h = React.createElement;
+
+    // ─── Icons ──────────────────────────────────────────────────────
+    const ArrowRight = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M5 12h14' }),
+        h('path', { d:'m12 5 7 7-7 7' })
+      );
+
+    const LayoutGrid = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('rect', { width:7, height:7, x:3, y:3, rx:1 }),
+        h('rect', { width:7, height:7, x:14, y:3, rx:1 }),
+        h('rect', { width:7, height:7, x:14, y:14, rx:1 }),
+        h('rect', { width:7, height:7, x:3, y:14, rx:1 })
+      );
+
+    const PenTool = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M12 19l7-7 3 3-7 7-3-3z' }),
+        h('path', { d:'M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z' }),
+        h('path', { d:'M2 2l7.586 7.586' }),
+        h('circle', { cx:11, cy:11, r:2 })
+      );
+
+    const Check = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M20 6 9 17l-5-5' })
+      );
+
+    const X = ({ className }) =>
+      h('svg', { className, xmlns:'http://www.w3.org/2000/svg', width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round' },
+        h('path', { d:'M18 6 6 18' }),
+        h('path', { d:'m6 6 12 12' })
+      );
+
+    // ─── playSound ────────────────────────────────────────────────────
+    const playSound = (type) => {
+      const _ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (_ac.state === 'suspended') _ac.resume();
+      const t = _ac.currentTime;
+      const g = _ac.createGain();
+      g.connect(_ac.destination);
+
+      if (type === 'click') {
+        const o = _ac.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(1200, t);
+        o.frequency.exponentialRampToValueAtTime(900, t + 0.03);
+        g.gain.setValueAtTime(0.06, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        o.connect(g);
+        o.start(t); o.stop(t + 0.05);
+      } else if (type === 'correct') {
+        [0, 0.13].forEach((delay, i) => {
+          const o = _ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(i === 0 ? 520 : 780, t + delay);
+          const gn = _ac.createGain();
+          gn.gain.setValueAtTime(0.22, t + delay);
+          gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.18);
+          o.connect(gn); gn.connect(_ac.destination);
+          o.start(t + delay); o.stop(t + delay + 0.2);
+        });
+      } else if (type === 'wrong') {
+        [0, 0.1].forEach((delay) => {
+          const o = _ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(220, t + delay);
+          const gn = _ac.createGain();
+          gn.gain.setValueAtTime(0.10, t + delay);
+          gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.08);
+          o.connect(gn); gn.connect(_ac.destination);
+          o.start(t + delay); o.stop(t + delay + 0.09);
+        });
+      } else if (type === 'advance') {
+        const o = _ac.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(520, t);
+        o.frequency.exponentialRampToValueAtTime(780, t + 0.08);
+        g.gain.setValueAtTime(0.07, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        o.connect(g);
+        o.start(t); o.stop(t + 0.11);
+      } else if (type === 'done') {
+        [[0, 660], [0.15, 880], [0.3, 1100]].forEach(([delay, freq]) => {
+          const o = _ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(freq, t + delay);
+          const gn = _ac.createGain();
+          gn.gain.setValueAtTime(0.12, t + delay);
+          gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.25);
+          o.connect(gn); gn.connect(_ac.destination);
+          o.start(t + delay); o.stop(t + delay + 0.28);
+        });
+      }
+    };
+
+    // ─── Data (GRID_ROWS) — sizes increased throughout ────────────────
+    const tdClass = "border border-[#5B82C1] p-5 text-left align-top text-[18px] text-gray-800 leading-snug";
+    const thClass = "border border-[#5B82C1] p-5 text-left align-middle text-[19px] font-bold text-white bg-[#5B82C1]";
+    const ptsClass = "border border-[#5B82C1] p-5 text-center align-middle text-[19px] text-gray-800 bg-white font-bold";
+
+    const GRID_ROWS = [
+      {
+        id: 'R1', max: 20,
+        title: "Identification de la problématique de cybersécurité de l'entreprise",
+        refText: "C1, C2 et C3",
+        col1: h('div', null,
+          h('div', { className:'italic mb-1' }, "Identification des enjeux de cybersécurité propre à l'entreprise"),
+          h('div', { className:'italic mb-1' }, "Définition des besoins spécifiques à l'entreprise en matière de cybersécurité"),
+          h('div', { className:'italic mb-1' }, "Identification des différents types de menaces technologiques potentielles et leurs risques pour l'entreprise"),
+          h('div', { className:'italic' }, "Prise en compte de l'environnement juridique et technologique de l'entreprise")
+        ),
+        col2: h('div', null,
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les enjeux de cybersécurité et leur articulation avec ceux de sécurité et d'intelligence économiques propres à l'entreprise sont identifiés.", h('br'),
+            "- Les besoins spécifiques à l'entreprise en matière de cybersécurité sont définis.", h('br'),
+            "- Les métiers impactés par les enjeux de cybersécurité au sein de l'entreprise sont identifiés."
+          ),
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les techniques de cyber-attaques et d'intrusion existantes et émergentes sont repérées.", h('br'),
+            "- Les différents types de menaces technologiques potentielles sont identifiés.", h('br'),
+            "- Les risques pour l'entreprise résultants des menaces potentielles sont identifiées."
+          ),
+          h('div', null,
+            "- Le paysage et les acteurs institutionnels de la cybersécurité sont repérés.", h('br'),
+            "- Les dispositions légales et règlementaires ayant un impact sur la cybersécurité sont identifiées.", h('br'),
+            "- Les responsabilités juridiques et les obligations actuelles en résultant pour l'entreprise en matière de cybersécurité et protection des données sont identifiées."
+          )
+        )
+      },
+      {
+        id: 'R2', max: 20,
+        title: "Etat des lieux du niveau de sécurité de l'entreprise",
+        refText: "C4, C5 et C6",
+        col1: h('div', null,
+          h('div', { className:'italic mb-1' }, "Identification de l'organisation interne et le système d'information de l'entreprise"),
+          h('div', { className:'italic mb-1' }, "Identification des vulnérabilités de l'entreprise et de son niveau de sécurisation"),
+          h('div', { className:'italic' }, "Identification des obligations réglementaires de l'entreprise respectées et insuffisantes")
+        ),
+        col2: h('div', null,
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les éléments digitalisés porteurs de création de valeur et ayant une dimension stratégique pour l'entreprise sont identifiés.", h('br'),
+            "- Le patrimoine immatériel de l'entreprise est clairement identifié et défini.", h('br'),
+            "- Le périmètre couvert par l'évaluation est délimité et suffisant au regard de la problématique et des spécificités de l'entreprise."
+          ),
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les méthodes et outils de diagnostic choisis sont adaptés au contexte et aux spécificités de l'entreprise ; le cas échéant, des outils préexistants sont mobilisés.", h('br'),
+            "- Les éventuelles vulnérabilités du système d'information sont détectées.", h('br'),
+            "- Les insuffisances d'usage et de respect des règles d'hygiène fondamentales de la part des utilisateurs sont repérées.", h('br'),
+            "- Les insuffisances au regard des obligations règlementaires de l'entreprise en matière de cybersécurité sont identifiées."
+          ),
+          h('div', null,
+            "- Les bonnes pratiques capitalisables sont identifiées.", h('br'),
+            "- Le niveau de sécurité de l'entreprise en matière de cybersécurité est qualifié.", h('br'),
+            "- Les menaces, risques et vulnérabilités avérées de l'entreprise sont qualifiées."
+          )
+        )
+      },
+      {
+        id: 'R3', max: 40,
+        title: "Plan des actions à mettre en œuvre défini et argumenté - comprend l'identification de la documentation et les outils associés.",
+        refText: "C7, C8, C9 et C10",
+        col1: h('div', null,
+          h('div', { className:'italic mb-1' }, "Identification des objectifs visés et des actions à mettre en œuvre"),
+          h('div', { className:'italic mb-1' }, "Planification de l'atteinte des objectifs et des actions"),
+          h('div', { className:'italic mb-1' }, "Définition des bonnes pratiques et des règles d'hygiène de la cybersécurité"),
+          h('div', { className:'italic mb-1' }, "Définition des choix de sous-traitance et de supports documentaires"),
+          h('div', { className:'italic' }, "Définition des critères de suivi et d'évaluation et d'outils de suivi")
+        ),
+        col2: h('div', null,
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les objectifs visés sont définis, qualifiés et quantifiés.", h('br'),
+            "- Les objectifs sont atteignables et leur atteinte est planifiée.", h('br'),
+            "- Le choix des actions est cohérent au regard de la problématique de l'entreprise et des constats tirés de l'évaluation des pratiques et du niveau de sécurité de l'entreprise.", h('br'),
+            "- Les actions sélectionnées sont complémentaires et correctement dimensionnées au regard des moyens et des enjeux de cybersécurité de l'entreprise."
+          ),
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les actions sont planifiées et leur articulation dans le temps est cohérente.", h('br'),
+            "- Les spécificités des collaborateurs impliqués sont prises en compte et des adaptations sont identifiées pour garantir l'inclusivité de la démarche, notamment concernant le personnel en situation de handicap."
+          ),
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les mesures d'hygiène préconisées sont adaptées à l'organisation du système d'information (SI) de l'entreprise et correctement dimensionnées au regard des enjeux que la cybersécurité revêt pour elle. Elles prévoient notamment :", h('br'),
+            "\u00A0\u00A0\u00A0- la limitation des accès aux différentes ressources du SI et sa protection au moyen d'un système d'authentification,", h('br'),
+            "\u00A0\u00A0\u00A0- la mise en place de protections des postes de travail (firewall, antivirus), des supports amovibles et des appareils nomades,", h('br'),
+            "\u00A0\u00A0\u00A0- la sécurisation du réseau informatique de l'entreprise (segmentation, protection des accès Wi-Fi, séparation des usages, protection des messageries…),", h('br'),
+            "\u00A0\u00A0\u00A0- la mise à jour régulière des logiciels et composants du système d'information."
+          ),
+          h('div', { className:'border-b border-[#5B82C1] pb-3 mb-3' },
+            "- Les choix de sous-traitance et de supports documentaires sont en adéquation avec les besoins, les moyens et la problématique de l'entreprise.", h('br'),
+            "- Les supports documentaires choisis sont adaptés à leur cible d'utilisateurs."
+          ),
+          h('div', null,
+            "- Les critères de suivi et d'évaluation du plan d'action sont justes.", h('br'),
+            "- Les critères sont formalisés dans des outils de suivi et d'évaluation permettant le contrôle et l'amélioration continue de la démarche."
+          )
+        )
+      }
+    ];
+
+    // ─── OkBox ────────────────────────────────────────────────────────
+    function OkBox({ title, body, onNext }) {
+      return h('div', { className:'mt-6 bg-white border border-gray-200 p-5 rounded shadow-sm animate-slide-up' },
+        h('div', { className:'flex items-center gap-3 mb-4' },
+          h('div', { className:'bg-[#1D54A7] text-white rounded-full p-2 shrink-0 shadow-sm' },
+            h(Check, { className:'w-5 h-5' })
+          ),
+          h('strong', { className:'text-[#00529B] text-[18px] font-bold tracking-tight' }, title)
+        ),
+        h('p', { className:'text-gray-800 text-[16px] leading-relaxed mb-6 whitespace-pre-line' }, body),
+        h('button', {
+          className:'w-full bg-[#1D54A7] hover:bg-[#00529B] text-white font-bold py-3.5 rounded transition-colors flex items-center justify-center gap-2 shadow-sm text-[15px] uppercase tracking-wider',
+          onClick: onNext
+        },
+          'ÉTAPE SUIVANTE',
+          h(ArrowRight, { className:'w-4 h-4' })
+        )
+      );
+    }
+
+    // ─── ErrBox ───────────────────────────────────────────────────────
+    function ErrBox({ text }) {
+      return h('div', { className:'mt-5 p-4 bg-red-50 border border-red-200 rounded flex items-start gap-3 animate-slide-up shadow-sm relative z-10' },
+        h('div', { className:'bg-red-100 text-red-600 rounded-full p-1.5 shrink-0 mt-0.5' },
+          h(X, { className:'w-5 h-5' })
+        ),
+        h('p', { className:'text-red-900 text-[16px] font-semibold leading-snug' }, text)
+      );
+    }
+
+    // ─── ScoreDisplay ─────────────────────────────────────────────────
+    function ScoreDisplay({ val, max }) {
+      return h('span', null,
+        val !== ''
+          ? h('span', null, val, ' ', max ? `/ ${max} ` : '', 'pts')
+          : h('span', null, max ? `${max} pts` : '')
+      );
+    }
+
+    // ─── CorrigeView ──────────────────────────────────────────────────
+    function CorrigeView() {
+      return h('div', { className:'flex-1 overflow-auto bg-white p-12 font-sans text-gray-800 text-[19px] leading-relaxed custom-scrollbar' },
+        h('div', { className:'max-w-[900px] mx-auto' },
+          h('div', { className:'flex flex-col items-center mb-12 text-center' },
+            h('h2', { className:"text-[#00529B] font-bold text-3xl leading-tight mb-2" }, "Initiative", h('br'), "Data Compétences"),
+            h('div', { className:"text-[#00529B] text-base font-bold border-b-2 border-[#00529B] inline-block mb-5 uppercase tracking-tighter" }, "Un réseau"),
+            h('div', { className:"bg-[#1D54A7] text-white rounded-full px-5 py-2 inline-flex items-center text-base font-bold shadow-sm" },
+              h('div', { className:"mr-2 border-[1.5px] border-white rounded-full w-6 h-6 flex items-center justify-center relative" }, h('span', { className:"text-[12px] font-extrabold" }, "C")),
+              "CCI FRANCE"
+            )
+          ),
+          h('div', { className:'space-y-10' },
+            h('div', null,
+              h('p', { className:'font-bold mb-1' }, "17) Pourquoi le dirigeant devrait souscrire à une cyber-assurance ? Qu'est-ce que cela peut couvrir ?"),
+              h('p', { className:'italic mb-3' }, "0.5 point"),
+              h('div', { className:'text-[#5B9BD5]' },
+                h('p', { className:'mb-3' }, "L'entreprise peut souscrire à ce type de contrat pour, par exemple, traiter le risque résiduel après avoir fait le maximum de réduction possible au niveau de l'infrastructure et des employés. L'assurance pourra par exemple :"),
+                h('ul', { className:'list-disc pl-7 space-y-1.5' },
+                  h('li', null, "Couvrir l'éventuelle perte de chiffre d'affaires suite à une attaque"),
+                  h('li', null, "Prendre ne charge les frais d'interventions de consultants et d'experts suite à une attaque"),
+                  h('li', null, "Financer le rachat de matériel suite à une attaque."),
+                  h('li', null, "Financer une protection auprès de personnes ayant été impactées par l'attaque de l'entreprise.")
+                )
+              )
+            ),
+            h('div', null,
+              h('p', { className:'font-bold mb-1' }, "18) Certains organismes ont été identifiés par l'État comme des « OIV ». Qu'est-ce qu'un « OIV » ?"),
+              h('p', { className:'italic mb-3' }, "0.5 point"),
+              h('ul', { className:'pl-7 space-y-2.5', style:{listStyleType:'lower-alpha'} },
+                h('li', null, "Une organisation ayant des activités à risques sur le territoire où elle se trouve pouvant mettre en danger la population."),
+                h('li', { className:'text-[#5B9BD5]' }, "Une organisation ayant des activités indispensables à la survie de la nation."),
+                h('li', null, "Une organisation qui a des intérêts à pouvoir agir dans l'illégalité pour préserver les intérêts de la France."),
+                h('li', null, "Une organisation ayant un rôle dans le domaine de l'alimentaire et/ou de l'accès à l'eau potable.")
+              )
+            ),
+            h('div', null,
+              h('p', { className:'font-bold mb-1' }, "19) Quels sont les risques à externaliser le support informatique de l'entreprise ? Quels sont les points d'attention ?"),
+              h('p', { className:'italic mb-3' }, "1 point"),
+              h('div', { className:'text-[#5B9BD5]' },
+                h('p', { className:'mb-3' }, "La société se repose alors sur un sous-traitant qui devient un acteur très important de l'activité, et qui en cas de défaillance, remettra en cause l'activité dans son ensemble."),
+                h('p', null, "Cette externalisation représentant un transfert de responsabilité, on cherche souvent le moins cher mais il faut faire attention aux engagements en termes de sécurité (DIC) du sous-traitant, et également à sa localisation (pour rester conforme au RGPD).")
+              )
+            ),
+            h('div', null,
+              h('p', { className:'font-bold mb-1' }, "20) Décrivez le déroulement d'une attaque avancée classique qui pourrait cibler l'entreprise."),
+              h('p', { className:'italic mb-3' }, "3 points"),
+              h('ol', { className:'list-decimal pl-7 space-y-1.5 text-[#5B9BD5]' },
+                h('li', null, "Envoi d'un courriel contenant une pièce jointe piégée"),
+                h('li', null, "Annonce de la compromission de la machine cible à l'attaquant"),
+                h('li', null, "L'attaquant prend le contrôle de la machine compromise"),
+                h('li', null, "Le serveur de contrôle et de commande intègre la machine compromise dans son périmètre et la contrôle"),
+                h('li', null, "La machine compromise exfiltre malgré elle toutes les données utiles (fichiers, mots de passe,...)"),
+                h('li', null, "L'attaquant reçoit les données de la machine compromise et rebondit grâce à ça sur d'autres machines"),
+                h('li', null, "L'attaquant prend le contrôle des autres machines"),
+                h('li', null, "L'attaquant découvre d'autres ressources (données, partages, réseaux,...)"),
+                h('li', null, "L'attaquant récupère le contenu des autres machines compromises et ressources accessibles"),
+                h('li', null, "L'attaquant efface ses traces.")
+              )
+            ),
+            h('div', null,
+              h('p', { className:'font-bold mb-1' }, "21) Un assistant de direction de l'entreprise reçoit un email du fournisseur indiquant que la facture d'acier du mois dernier n'a toujours pas été réglée. Dans l'email, le chargé de compte a joint le document FACT0023568.xlsm à solder, et propose un lien de paiement CB. De quoi s'agit-il et comment déceler un éventuel comportement malveillant ?"),
+              h('p', { className:'italic mb-3' }, "1 point"),
+              h('div', { className:'text-[#5B9BD5]' },
+                h('p', { className:'mb-3' }, "Il s'agit vraisemblablement d'une attaque par « phishing », un hameçonnage visant à leurrer le destinataire en se faisant passer pour un acteur connu (le fournisseur d'acier en l'occurrence) pour lui faire ouvrir des documents infectés, et/ou renseigner des coordonnées bancaires sur un site illégitime en vue de réaliser des paiements frauduleux."),
+                h('p', null, "On fera attention à vérifier l'adresse réelle de l'expéditeur (en accédant aux détails on découvre parfois une adresse différente), à ne pas ouvrir de pièce jointe suspecte (ici la facture est en fait un Excel avec des macros), et à se méfier des liens dans les emails (on pourra survoler les liens pour débusquer un éventuel lien malicieux).")
+              )
+            ),
+            h('div', null,
+              h('p', { className:'font-bold mb-1' }, "22) Qu'est-ce que la « fraude interne » ? Donnez un exemple de cette menace dans l'entreprise présentée."),
+              h('p', { className:'italic mb-3' }, "2 points"),
+              h('div', { className:'text-[#5B9BD5]' },
+                h('p', { className:'mb-3' }, "Les employés de la société pourraient, dans certains cas, être tentés par du vol, de l'escroquerie ou l'abus de confiance, la divulgation de secrets de fabrication et d'autres actes illicites intentionnels. Ici :"),
+                h('ul', { className:'list-disc pl-7 space-y-1.5' },
+                  h('li', null, "Les commerciaux pourraient partir chez le concurrent avec la base de données clients/prospects"),
+                  h('li', null, "Un employé pourrait récupérer et tenter de revendre un secret de fabrication")
+                )
+              )
+            ),
+            h('div', { className:'text-right text-gray-500 font-bold italic mt-10 text-xl' }, "6/10"),
+            h('div', { className:'border-t-2 border-gray-300 pt-7 mt-7 pb-24' },
+              h('h3', { className:'text-gray-500 font-bold italic text-xl uppercase tracking-wide' }, "CORRIGÉ - Evaluation Référent cybersécurité TPE/PME – CCI France")
+            )
+          )
+        )
+      );
+    }
+
+    // ─── GridTable ────────────────────────────────────────────────────
+    function GridTable({ step, isActionDone, setIsActionDone, scores, setScores, r2Error, setR2Error, totalScore, isSigned, step5QDone, setStep5QDone, setStep5Error, validationChecked, setValidationChecked }) {
+      const scrollContainerRef = useRef(null);
+      const [rubberBand, setRubberBand] = useState(0);
+      const wheelTimeout = useRef(null);
+
+      const isR2Active = step === 3;
+      const isValidationActive = step === 5;
+      const isSpotlightActive = isR2Active || isValidationActive;
+
+      useEffect(() => {
+        if (isR2Active && scrollContainerRef.current) {
+          const rowR2 = document.getElementById('row-R2');
+          if (rowR2) {
+            setTimeout(() => {
+              rowR2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+          }
+        }
+      }, [step, isR2Active]);
+
+      useEffect(() => {
+        if (step >= 4 && scrollContainerRef.current) {
+          setTimeout(() => {
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.scrollTo({
+                top: scrollContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+            }
+          }, 300);
+        }
+      }, [step, step5QDone]);
+
+      const handleWheel = (e) => {
+        if (isR2Active) {
+          const newY = rubberBand - e.deltaY * 0.3;
+          const clamped = Math.max(-80, Math.min(80, newY));
+          setRubberBand(clamped);
+          if (wheelTimeout.current) clearTimeout(wheelTimeout.current);
+          wheelTimeout.current = setTimeout(() => { setRubberBand(0); }, 150);
+        }
+      };
+
+      return h('div', { className:'mx-auto shrink-0 transition-all duration-500 relative z-10 w-full h-full flex flex-col bg-white overflow-hidden' },
+        h('div', {
+          className:`absolute inset-0 z-30 bg-gray-900/40 ring-1 ring-gray-900/40 transition-all duration-500 pointer-events-none ${isSpotlightActive ? 'opacity-100' : 'opacity-0'}`
+        }),
+        // Header
+        h('div', { className:'h-20 bg-[#F8F9FA] border-b border-gray-200 flex items-center justify-between px-7 shrink-0 relative z-20 transition-all duration-500' },
+          h('div', { className:'flex items-center gap-5 relative z-10' },
+            h('div', { className:'bg-[#1D54A7] text-white px-4 py-1.5 rounded-full text-base font-bold shadow-sm flex items-center' },
+              h('div', { className:'mr-2 border-[1.5px] border-white rounded-full w-6 h-6 flex items-center justify-center relative' }, h('span', { className:'text-[12px] font-extrabold' }, 'C')),
+              'CCI FRANCE'
+            ),
+            h('div', { className:'flex flex-col justify-center' },
+              h('div', { className:'text-[15px] text-gray-500 font-bold uppercase tracking-wider leading-none mb-1.5' }, 'Candidat'),
+              h('div', { className:'font-bold text-[18px] text-gray-800 leading-none' }, 'JEAN DUPONT')
+            )
+          ),
+          h('div', { className:'text-right relative z-10 flex flex-col justify-center' },
+            h('div', { className:'text-[15px] text-gray-500 font-bold uppercase tracking-wider leading-none mb-1.5' }, 'Épreuve'),
+            h('div', { className:'font-bold text-[18px] text-[#0070C0] leading-none' }, 'Référent cybersécurité TPE/PME - Écrit')
+          )
+        ),
+        // Scrollable content
+        h('div', {
+          ref: scrollContainerRef,
+          onWheel: handleWheel,
+          className:`flex-1 ${isR2Active ? 'overflow-hidden' : 'overflow-auto'} bg-white relative p-7`
+        },
+          h('div', {
+            className:'relative min-h-full flex flex-col',
+            style: {
+              top: `${rubberBand}px`,
+              transition: rubberBand === 0 ? 'top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none'
+            }
+          },
+            h('div', { className:'mb-7 relative z-20 flex justify-between items-baseline' },
+              h('div', { className:'text-[21px] font-bold border-b border-black w-[65%] pb-1.5' },
+                'Nom Prénom Candidat : ',
+                h('span', { className:'font-normal text-gray-500 ml-2 uppercase italic' }, 'Jean Dupont')
+              ),
+              h('div', { className:'text-[19px] font-bold bg-[#B4C6E7] px-5 py-2.5 rounded text-gray-900 border border-[#5B82C1]' },
+                `TOTAL : ${totalScore}/100 PTS`
+              )
+            ),
+            h('table', { className:'w-full border-collapse border border-[#5B82C1] bg-white text-[19px]' },
+              h('thead', null,
+                h('tr', null,
+                  h('th', { colSpan:3, className:thClass },
+                    "Epreuve : Construction d'un plan d'amélioration en matière de cybersécurité – 3 h"
+                  )
+                ),
+                h('tr', null,
+                  h('th', { className:thClass, style:{width:'25%'} }, 'Critères de notation'),
+                  h('th', { className:thClass, style:{width:'65%'} }, "Critères d'évaluation"),
+                  h('th', { className:`${thClass} text-center`, style:{width:'10%'} }, 'Points')
+                )
+              ),
+              h('tbody', null,
+                ...GRID_ROWS.map((row) => {
+                  const isR2 = row.id === 'R2';
+                  const isActive = isR2 && isR2Active;
+                  return h('tr', {
+                    key: row.id,
+                    id: isR2 ? 'row-R2' : undefined,
+                    className:`transition-all duration-500 border-b border-[#5B82C1] ${isActive ? 'relative z-50 bg-white' : ''}`
+                  },
+                    h('td', { className:`${tdClass} bg-gray-50` },
+                      h('div', { className:'font-bold mb-1' }, row.title, ' ', h('span', { className:'font-normal text-gray-500' }, `(${row.refText})`)),
+                      h('div', { className:'italic opacity-80 text-[16px] mt-2 border-t border-gray-200 pt-2' }, row.col1)
+                    ),
+                    h('td', { className:tdClass }, row.col2),
+                    h('td', { className:`${ptsClass} ${isActive ? 'bg-white' : 'bg-gray-50'}` },
+                      isActive && !isActionDone
+                        ? h('div', { className:'flex flex-col items-center gap-1 animate-badge-flash bg-white p-1 rounded border border-blue-200' },
+                            h('input', {
+                              type:'text',
+                              maxLength:2,
+                              className:`w-20 h-12 text-center border font-bold text-[19px] rounded-sm focus:outline-none focus:ring-2 ${r2Error ? 'border-red-500 bg-red-50 text-red-700 focus:ring-red-500' : 'border-[#5B82C1] focus:ring-[#1D54A7]'}`,
+                              value: scores.R2,
+                              autoFocus: true,
+                              onChange: (e) => {
+                                const val = e.target.value.trim();
+                                if (!/^\d*$/.test(val)) return;
+                                setScores(p => ({ ...p, R2: val }));
+                                if (val === '20') {
+                                  setIsActionDone(true);
+                                  setR2Error(false);
+                                  playSound('correct');
+                                } else if (val.length > 0) {
+                                  setR2Error(true);
+                                  playSound('click');
+                                } else {
+                                  setR2Error(false);
+                                }
+                              }
+                            }),
+                            h('span', { className:'text-[13px] text-gray-500' }, `/ ${row.max} pts`)
+                          )
+                        : h(ScoreDisplay, { val: scores[row.id], max: row.max })
+                    )
+                  );
+                }),
+                h('tr', { className:'bg-[#F5F8FF]' },
+                  h('td', { colSpan:2, className:'border border-[#5B82C1] p-5 font-bold text-[19px] text-gray-800 relative z-10' },
+                    "Exactitude des connaissances théoriques (QCM/Questions directes)"
+                  ),
+                  h('td', { className:'border border-[#5B82C1] p-5 text-center font-bold text-[19px] text-gray-800 relative z-10' },
+                    h(ScoreDisplay, { val: scores.R4, max: 20 })
+                  )
+                )
+              )
+            ),
+            // Validation Table
+            h('div', { className:`mt-7 grid grid-cols-2 gap-5 relative ${step >= 5 ? 'z-40 bg-white ring-2 ring-white rounded' : 'z-20'}` },
+              h('table', { className:'w-full border border-black text-[18px] h-fit' },
+                h('tbody', null,
+                  h('tr', { className:'bg-[#B4C6E7]' },
+                    h('td', { className:'border border-black p-3 font-bold' }, 'VALIDATION DU CERTIFICAT'),
+                    h('td', { className:'border border-black p-2 font-bold' },
+                      h('button', {
+                        className:`mr-4 px-3 py-1.5 rounded transition-colors ${step === 5 && !step5QDone ? 'hover:bg-[#1D54A7]/10 cursor-pointer text-[#1D54A7]' : 'cursor-default'}`,
+                        onClick: () => {
+                          if (step === 5 && !step5QDone) {
+                            setValidationChecked('oui');
+                            if (totalScore >= 50) {
+                              setStep5QDone(true);
+                              setStep5Error(false);
+                              playSound('correct');
+                            } else {
+                              setStep5Error(true);
+                              playSound('wrong');
+                            }
+                          }
+                        }
+                      }, ((step5QDone && totalScore >= 50) || validationChecked === 'oui') ? '☑' : '☐', ' OUI'),
+                      h('button', {
+                        className:`px-3 py-1.5 rounded transition-colors ${step === 5 && !step5QDone ? 'hover:bg-[#1D54A7]/10 cursor-pointer text-[#1D54A7]' : 'cursor-default'}`,
+                        onClick: () => {
+                          if (step === 5 && !step5QDone) {
+                            setValidationChecked('non');
+                            if (totalScore < 50) {
+                              setStep5QDone(true);
+                              setStep5Error(false);
+                              playSound('correct');
+                            } else {
+                              setStep5Error(true);
+                              playSound('wrong');
+                            }
+                          }
+                        }
+                      }, ((step5QDone && totalScore < 50) || validationChecked === 'non') ? '☑' : '☐', ' NON')
+                    )
+                  ),
+                  h('tr', null,
+                    h('td', { className:'border border-black p-3 font-bold' }, 'Moyenne requise'),
+                    h('td', { className:'border border-black p-3' }, 'Min. 50/100 points')
+                  ),
+                  h('tr', null,
+                    h('td', { className:'border border-black p-3 font-bold' }, 'Commentaires'),
+                    h('td', { className:'border border-black p-3 h-20 italic text-gray-600' },
+                      step >= 6 ? "Très bonne analyse des vulnérabilités." : ""
+                    )
+                  )
+                )
+              ),
+              h('div', { className:'border border-black p-5 flex flex-col justify-between text-[17px] bg-white' },
+                h('div', { className:'flex justify-between font-bold mb-5' },
+                  h('span', null, `Évaluateur : ${step >= 6 ? "Jean Dupont" : "_ _ _ _ _ _ _ _ _"}`),
+                  h('span', null, `Date : ${step >= 6 ? new Date().toLocaleDateString('fr-FR') : "_ _ / _ _ / 202_"}`)
+                ),
+                h('div', { className:'mt-auto relative' },
+                  h('div', { className:'text-[14px] uppercase font-bold text-gray-500 mb-2' }, 'Signature et Cachet'),
+                  h('div', { className:'bg-[#E4ECF7] border border-dashed border-gray-400 h-28 w-full rounded flex items-center justify-center text-[16px] text-gray-400 italic font-medium relative overflow-hidden' },
+                    "Espace réservé à l'évaluateur",
+                    isSigned ? h('div', { className:'absolute top-1 left-1/2 -translate-x-1/2 text-[#1D54A7] opacity-80', style:{transform:'rotate(-10deg) scale(1.3)'} },
+                      h('svg', { width:100, height:40, viewBox:'0 0 100 40', fill:'none', stroke:'currentColor', strokeWidth:2 },
+                        h('path', { d:'M10,20 Q30,5 40,20 T70,20 T90,10', strokeLinecap:'round', strokeLinejoin:'round' }),
+                        h('path', { d:'M45,25 Q55,40 65,25', strokeLinecap:'round', strokeLinejoin:'round' })
+                      )
+                    ) : null
+                  )
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    // ─── App ──────────────────────────────────────────────────────────
+    const TOTAL_STEPS = 7;
+
+    function App() {
+      const [step, setStep] = useState(0);
+      const [isActionDone, setIsActionDone] = useState(false);
+      const [r2Error, setR2Error] = useState(false);
+      const [scores, setScores] = useState({ R1:'', R2:'', R3:'', R4:'' });
+      const [isSigned, setIsSigned] = useState(false);
+      const [step5QDone, setStep5QDone] = useState(false);
+      const [step5Error, setStep5Error] = useState(false);
+      const [validationChecked, setValidationChecked] = useState(null);
+      const [showSpotlight, setShowSpotlight] = useState(true);
+      const { isFullscreen, toggleFullscreen } = useFullscreen();
+
+      const totalScore = Object.values(scores).reduce((acc, val) => acc + (parseInt(val) || 0), 0);
+
+      const advance = () => {
+        setStep(p => {
+          const next = p + 1;
+          playSound(next === 4 ? 'done' : 'advance');
+          return next;
+        });
+        setIsActionDone(false);
+      };
+
+      useEffect(() => {
+        if (step === 4 && !isActionDone) {
+          const delays = [300, 600, 900];
+          const updates = [
+            { k:'R1', v:'10' }, { k:'R3', v:'10' }, { k:'R4', v:'10' }
+          ];
+          updates.forEach((u, i) => {
+            setTimeout(() => {
+              setScores(p => ({ ...p, [u.k]: u.v }));
+              playSound('click');
+            }, delays[i]);
+          });
+          setTimeout(() => {
+            setIsActionDone(true);
+            playSound('done');
+          }, delays[delays.length - 1] + 400);
+        }
+
+        if (step === 6 && !isActionDone) {
+          setTimeout(() => {
+            setIsSigned(true);
+            playSound('correct');
+            setTimeout(() => {
+              setIsActionDone(true);
+              playSound('done');
+            }, 1000);
+          }, 800);
+        }
+      }, [step, isActionDone]);
+
+      let tutTitle = '', tutBody = '', tutInstruction = null, tutAction = null;
+
+      switch (step) {
+        case 0:
+          tutTitle = "Contexte de l'évaluation";
+          tutBody = "L'évaluation se réalise sous la forme d'une épreuve écrite de 3h.\n\nLe sujet, sous forme d'étude de cas d'entreprise, s'inspire de situations réelles ou fictives correspondantes au référentiel métier.\n\nNotation : 100 points.";
+          tutAction = h('button', {
+            className:'w-full bg-[#1D54A7] hover:bg-[#00529B] text-white font-bold py-3.5 rounded transition-colors shadow-sm flex items-center justify-center gap-2 mt-6 text-[15px] uppercase tracking-wider',
+            onClick: advance
+          }, 'ÉTAPE SUIVANTE', h(ArrowRight, { className:'w-5 h-5' }));
+          break;
+
+        case 1:
+          tutTitle = "1. Méthodologie";
+          tutBody = "L'évaluation se base sur un plan d'amélioration pour la mise en place d'une démarche de prévention des risques liés à la cybersécurité.\n\nAttentes des évaluateurs :\n- Evaluer les usages et le niveau de sécurité\n- Identifier la problématique\n- Définir le plan d'amélioration\n- Identifier les outils de suivi";
+          tutAction = h('button', {
+            className:'w-full bg-[#1D54A7] hover:bg-[#00529B] text-white font-bold py-3.5 rounded transition-colors shadow-sm flex items-center justify-center gap-2 mt-6 text-[15px] uppercase tracking-wider',
+            onClick: advance
+          }, 'PASSER À LA GRILLE', h(ArrowRight, { className:'w-5 h-5' }));
+          break;
+
+        case 2:
+          tutTitle = "2. Le Corrigé";
+          tutBody = "L'évaluateur dispose d'un corrigé pour évaluer les réponses du candidat.\n\nVous pouvez le consulter ici avant de passer à la notation.";
+          tutAction = h('button', {
+            className:'w-full bg-[#1D54A7] hover:bg-[#00529B] text-white font-bold py-3.5 rounded transition-colors shadow-sm flex items-center justify-center gap-2 mt-6 text-[15px] uppercase tracking-wider',
+            onClick: advance
+          }, 'PASSER À LA NOTATION', h(ArrowRight, { className:'w-5 h-5' }));
+          break;
+
+        case 3:
+          tutTitle = "3. État des lieux (C4-C6)";
+          tutBody = "Arrêtons-nous sur le critère : \"Etat des lieux du niveau de sécurité de l'entreprise\".\n\nLe candidat a fourni une excellente analyse :\n- Identification claire du patrimoine immatériel\n- Vulnérabilités détectées avec précision\n- Bonnes pratiques bien qualifiées\n\nDans la grille à droite, quelle note attribuer pour cette question sur 20 ?";
+          tutInstruction = "Saisissez la note dans la grille pour continuer.";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"Parfait !", body:"Le candidat obtient bien la note maximale (20/20) pour cette partie.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-6' },
+              r2Error ? h(ErrBox, { text:"Ce n'est pas la note attendue. L'analyse est excellente !" }) : null,
+              h('p', { className:'text-[16px] text-gray-500 mt-3 font-medium' }, "Saisissez la note dans la grille pour continuer.")
+            );
+          }
+          break;
+
+        case 4:
+          tutTitle = "4. Bilan de l'épreuve";
+          tutBody = "Le reste de l'évaluation a été corrigé.\n\nSes autres notes sont saisies automatiquement dans la grille.\nObservez le total mis à jour en bas de la grille.";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:`Total = ${totalScore}/100`, body:"Le total de l'épreuve est calculé automatiquement.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-6 p-5 bg-white border border-gray-200 rounded animate-slide-up shadow-sm' },
+              h('div', { className:'flex items-center gap-3 mb-3' },
+                h('div', { className:'bg-[#1D54A7] text-white p-1.5 rounded-full' }, h(PenTool, { className:'w-5 h-5' })),
+                h('span', { className:'text-[#00529B] text-[18px] font-bold tracking-tight' }, 'Saisie en cours...')
+              ),
+              h('p', { className:'text-gray-800 text-[16px] leading-relaxed' }, "Les autres notes sont en train d'être complétées...")
+            );
+          }
+          break;
+
+        case 5:
+          tutTitle = "5. Validation globale";
+          tutBody = "L'épreuve est notée sur 100 points. Il est demandé d'obtenir au moins la moyenne sur la note de l'épreuve pour la valider.";
+          tutInstruction = "Cochez la case correspondante dans la grille (en bas à droite).";
+          if (step5QDone) {
+            tutAction = h('div', { className:'mt-6 animate-slide-up' },
+              h(OkBox, { title:"Parfait !", body:`Le candidat valide avec ${totalScore}/100.`, onNext: advance })
+            );
+          } else {
+            tutAction = h('div', { className:'mt-6' },
+              step5Error ? h(ErrBox, { text:"C'est incorrect. La moyenne est de 50/100." }) : null
+            );
+          }
+          break;
+
+        case 6:
+          tutTitle = "6. Signature";
+          tutBody = "Pour finaliser l'évaluation, le document doit être signé par l'évaluateur.\n\nDans notre cas, M. Jean Dupont valide et signe la grille.";
+          if (isActionDone) {
+            tutAction = h(OkBox, { title:"Dossier signé", body:"L'évaluation est finalisée.", onNext: advance });
+          } else {
+            tutAction = h('div', { className:'mt-6 p-5 bg-white border border-gray-200 rounded animate-slide-up shadow-sm' },
+              h('div', { className:'flex items-center gap-3 mb-3' },
+                h('div', { className:'bg-[#1D54A7] text-white p-1.5 rounded-full' }, h(PenTool, { className:'w-5 h-5' })),
+                h('span', { className:'text-[#00529B] text-[18px] font-bold tracking-tight' }, 'Signature...')
+              )
+            );
+          }
+          break;
+
+        case 7:
+          tutTitle = "Activité terminée !";
+          tutBody = "Vous avez terminé ce module d'évaluation avec succès.";
+          tutAction = h('div', { className:'mt-6' },
+            h('button', {
+              className:'w-full bg-[#1D54A7] hover:bg-[#00529B] text-white font-bold py-3.5 rounded transition-colors shadow-sm flex items-center justify-center gap-2 text-[15px] uppercase tracking-wider',
+              onClick: () => { playSound('advance'); window.location.reload(); }
+            }, "RECOMMENCER L'ACTIVITÉ")
+          );
+          break;
+      }
+
+      const displayNum = Math.min(step, TOTAL_STEPS);
+
+      return h(React.Fragment, null,
+        showSpotlight && h(SpotlightIntro, {
+          onDismiss: () => setShowSpotlight(false),
+          toggleFullscreen
+        }),
+        h(FullscreenButton, { isFullscreen, toggleFullscreen }),
+        h('div', { className:`flex flex-1 h-screen overflow-hidden bg-gray-200 relative font-sans text-gray-800 items-center justify-center ${isFullscreen ? 'p-0' : 'p-7'}` },
+          h('div', { className:`w-full h-full bg-white flex shadow-2xl overflow-hidden transition-all duration-300 border-t-8 border-[#1D54A7] ${isFullscreen ? 'rounded-none' : 'rounded-sm'}` },
+
+            // Left Panel
+            h('div', { className:'w-1/3 border-r border-gray-200 flex flex-col p-9 overflow-hidden bg-gray-50 relative' },
+              h('div', {
+                className:`absolute inset-0 z-40 bg-white/60 backdrop-blur-[1px] transition-all duration-500 ${step === TOTAL_STEPS + 1 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`
+              }),
+              h('div', { className:'mb-7 flex justify-between items-start relative z-20' },
+                h('div', null,
+                  h('div', { className:'text-[#00529B] font-bold text-3xl leading-tight mb-2' }, 'Initiative', h('br'), 'Data Compétences'),
+                  h('div', { className:'text-[#00529B] text-base font-bold border-b-2 border-[#00529B] inline-block mb-4 uppercase tracking-tighter' }, 'Un réseau'),
+                  h('div', { className:'bg-[#1D54A7] text-white rounded-full px-4 py-1.5 inline-flex items-center text-base font-bold shadow-sm mt-1' },
+                    h('div', { className:'mr-2 border-[1.5px] border-white rounded-full w-6 h-6 flex items-center justify-center relative' }, h('span', { className:'text-[12px] font-extrabold' }, 'C')),
+                    'CCI FRANCE'
+                  )
+                ),
+                h('div', { className:'flex items-baseline gap-1.5 bg-white border border-gray-200 px-5 py-3.5 rounded shadow-sm' },
+                  h('span', { className:'text-4xl font-black tracking-tighter leading-none text-[#1D54A7]' }, displayNum),
+                  (step > 0 && step < TOTAL_STEPS) ? h('span', { className:'text-base font-bold text-gray-400 leading-none' }, `/${TOTAL_STEPS}`) : null
+                )
+              ),
+
+              h('h1', { className:'text-[26px] font-bold text-[#0070C0] leading-tight mb-5 relative z-20' }, tutTitle),
+
+              h('div', { className:'flex-1 overflow-y-auto custom-scrollbar relative z-20' },
+                h('p', { className:'text-[18px] text-gray-800 leading-relaxed whitespace-pre-line animate-slide-up', style:{animationDelay:'0.08s'} },
+                  h(TypewriterText, { text: tutBody })
+                ),
+                tutInstruction ? h('div', { className:'mt-6 animate-slide-up bg-white border border-gray-200 p-5 rounded shadow-sm', style:{animationDelay:'0.15s'} },
+                  h('div', { className:'text-[#1D54A7] font-bold text-[18px] flex items-start gap-2' },
+                    h('span', { className:'leading-relaxed mt-0.5' }, tutInstruction)
+                  )
+                ) : null,
+                h('div', { className:'animate-slide-up pb-5 w-full mt-5 relative z-20' }, tutAction)
+              ),
+
+              h('div', { className:'mt-auto pt-5 relative z-20 border-t border-gray-200' },
+                h('div', { className:'bg-[#F2F2F2] p-5 text-gray-500 font-bold text-center border border-gray-300 text-[17px] tracking-wider uppercase' },
+                  'Tutoriel Évaluateur'
+                )
+              )
+            ),
+
+            // Right panel
+            h('div', { className:'w-2/3 flex flex-col relative bg-white overflow-hidden' },
+              h('div', {
+                className:`absolute inset-0 z-40 bg-gray-900/10 backdrop-blur-[1px] transition-all duration-500 ${(step === 0 || step === 1) ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`
+              }),
+
+              (step === 0 || step === 1) ? h('div', { className:'absolute inset-0 z-50 flex items-center justify-center' },
+                h('div', { className:'bg-white p-8 rounded-sm shadow-2xl flex flex-col items-center max-w-sm text-center border-t-4 border-[#1D54A7] animate-slide-up' },
+                  h('div', { className:'w-14 h-14 rounded-full flex items-center justify-center mb-5 text-[#1D54A7] bg-[#F2F2F2] shadow-sm border border-gray-300' },
+                    h(LayoutGrid, { className:'w-7 h-7' })
+                  ),
+                  h('h3', { className:'text-[21px] font-bold text-[#00529B] tracking-tight' }, "La grille d'évaluation"),
+                  h('p', { className:'text-gray-600 text-[16px] mt-4 leading-relaxed' }, "Elle s'animera dès que vous arriverez à la partie pratique.")
+                )
+              ) : null,
+
+              h('div', { className:`h-full flex flex-col ${(step === 0 || step === 1) ? 'opacity-40 grayscale blur-[1px]' : ''}` },
+                step === 2
+                  ? h(CorrigeView, null)
+                  : h(GridTable, {
+                      step, isActionDone, setIsActionDone, scores, setScores, r2Error, setR2Error,
+                      totalScore, isSigned, step5QDone, setStep5QDone, setStep5Error,
+                      validationChecked, setValidationChecked
+                    }),
+                (step === 7 && step5QDone) ? h('div', { className:'absolute inset-0 bg-gray-900/40 z-[100] flex items-center justify-center animate-fade-in p-7' },
+                  h('div', { className:'bg-white p-8 rounded-sm shadow-2xl w-full max-w-md border-t-4 border-[#1D54A7] animate-slide-up text-center' },
+                    h('h2', { className:'text-[21px] font-bold text-[#00529B] mb-5' }, "Bilan de l'évaluation"),
+                    h('div', { className:'space-y-5' },
+                      h('div', { className:'flex justify-between items-center p-4 bg-gray-50 rounded border border-gray-200 shadow-sm' },
+                        h('span', { className:'font-bold text-gray-700 text-[14px] uppercase' }, 'Total Global'),
+                        h('span', { className:'text-[24px] font-black text-[#1D54A7]' }, totalScore, ' ', h('span', { className:'text-[14px] font-bold text-gray-400' }, '/ 100'))
+                      )
+                    ),
+                    h('div', { className:'mt-7 flex justify-center' },
+                      h('div', { className:'bg-green-100 text-green-800 px-5 py-2.5 rounded font-bold flex items-center gap-2 text-[14px] uppercase tracking-wider border border-green-200' },
+                        h(Check, { className:'w-5 h-5' }),
+                        'Candidat Validé'
+                      )
+                    )
+                  )
+                ) : null
+              )
+            )
+          )
+        )
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(h(App, null));
+  })();
+  </script>
+</body>
+</html>

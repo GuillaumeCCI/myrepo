@@ -1,0 +1,1411 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+
+    <!-- Tailwind CSS (remplace le build "@import tailwindcss" du projet original) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Styles personnalisés issus de src/index.css -->
+    <style>
+
+    .custom-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.125rem;
+        height: 1.125rem;
+        border: 2px solid #94a3b8;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        position: relative;
+        vertical-align: middle;
+        background-color: white;
+        margin: 0;
+        transition: all 0.2s;
+    }
+    .custom-checkbox:checked {
+        background-color: #00529A;
+        border-color: #00529A;
+    }
+    .custom-checkbox:checked::after {
+        content: '';
+        position: absolute;
+        left: 32%;
+        top: 10%;
+        width: 35%;
+        height: 60%;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+    .custom-checkbox.radio-mode {
+        border-radius: 50%;
+    }
+    .custom-checkbox.radio-mode:checked::after {
+        border: none;
+        background: white;
+        width: 40%;
+        height: 40%;
+        border-radius: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .table-grid {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+    .table-grid th, .table-grid td {
+        border: 1px solid #374151;
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        vertical-align: middle;
+    }
+    .bg-header {
+        background-color: #e5e7eb;
+        font-weight: 600;
+    }
+    .bg-competence-header {
+        background-color: #dbeafe;
+        font-weight: 600;
+        color: #00529A;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fadein 0.3s ease both; }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .pulse-ring {
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      border: 2px solid rgba(0,82,154,0.6);
+      animation: pulse-ring 1.8s ease-out infinite;
+    }
+    .pulse-ring-2 {
+      animation-delay: 0.9s;
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 2px solid transparent; background-clip: padding-box; }
+    </style>
+
+    <!-- Import map : résout les imports "react", "react-dom" et "lucide-react" utilisés tels quels dans le code -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@19.0.1",
+        "react/jsx-runtime": "https://esm.sh/react@19.0.1/jsx-runtime",
+        "react/jsx-dev-runtime": "https://esm.sh/react@19.0.1/jsx-dev-runtime",
+        "react-dom": "https://esm.sh/react-dom@19.0.1",
+        "react-dom/client": "https://esm.sh/react-dom@19.0.1/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.546.0?external=react"
+      }
+    }
+    </script>
+
+    <!-- Babel standalone : transpile le JSX directement dans le navigateur -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!--
+      Le code ci-dessous est la fusion exacte, sans aucune modification de contenu ni de logique, de :
+      src/data.ts + src/components/Helpers.tsx + src/components/CertifIAGrid.tsx +
+      src/components/CertifIAOralGrid.tsx + src/App.tsx + src/main.tsx
+      (les instructions "import"/"export" reliant ces fichiers entre eux ont simplement été retirées
+      puisqu'il s'agit maintenant d'un seul et même script, et les annotations de types TypeScript
+      ont été retirées puisque le navigateur exécute du JavaScript. Aucun texte, style, comportement
+      ou règle métier n'a été changé.)
+    -->
+    <script type="text/babel" data-type="module" data-presets="react">
+import React, { useState, useEffect, useCallback, StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ArrowRight, Info, PenTool, LayoutGrid, Check, AlertTriangle } from 'lucide-react';
+
+/* =========================================================
+   Contenu de src/data.ts
+   ========================================================= */
+const GRID_ROWS = [
+  {
+    id: 'C1',
+    title: "C1 - Analyser l'opportunité d'utilisation de l'IAg",
+    criteria: [
+      "Formulation claire de la tâche et des objectifs visés",
+      "Identification pertinente de 2 à 3 outils d'IAg comparés",
+      "Analyse des bénéfices potentiels et risques (données, biais, environnement)",
+      "Vérification explicite de la conformité RGPD / charte interne",
+      "Justification du choix final d'outil IAg"
+    ],
+    statusOptions: ['Validée', 'Non validée']
+  },
+  {
+    id: 'C2',
+    title: "C2 - Formuler une requête claire et contextualisée",
+    criteria: [
+      "Démarche structurée pour élaborer le prompt",
+      "Pertinence des consignes intégrées (objectif, style, format...)",
+      "Prise en compte des données d'entrée / contexte",
+      "Lisibilité et adaptation du prompt à l'outil sélectionné"
+    ],
+    statusOptions: ['Validée', 'Non validée']
+  },
+  {
+    id: 'C3',
+    title: "C3 - Améliorer par itération les résultats produits",
+    criteria: [
+      "Nombre d'itérations documentées (min. 2)",
+      "Justification des ajustements successifs",
+      "Optimisation paramètres (style, longueur, température, etc.)",
+      "Réduction progressive des imprécisions ou biais"
+    ],
+    statusOptions: ['Validée', 'Non validée']
+  },
+  {
+    id: 'C4',
+    title: "C4 - Contrôler la fiabilité et la qualité des contenus générés",
+    criteria: [
+      "Vérification de l'exactitude des informations produites",
+      "Identification d'au moins 2 sources fiables",
+      "Elimination de biais explicites (genre, origine, etc.)",
+      "Amélioration concrète du livrable (nettoyage, reformulation)"
+    ],
+    statusOptions: ['Validée', 'Non validée']
+  },
+  {
+    id: 'C5',
+    title: "C5 - Protéger et sécuriser les données mobilisées",
+    criteria: [
+      "Identification correcte des données sensibles",
+      "Classification claire selon leur nature (perso, stratégique...)",
+      "Précautions prises lors de la formulation du prompt (anonymisation, floutage)",
+      "Mention explicite des politiques IA utilisées (conditions d'usage, stockage)"
+    ],
+    statusOptions: ['Validée', 'Non validée']
+  },
+  {
+    id: 'C6',
+    title: "C6 - Garantir l'accessibilité des productions IA",
+    criteria: [
+      "Connaissance des normes d'accessibilité RGAA/WCAG",
+      "Application de principes de clarté, structure, visibilité",
+      "Intégration formats alternatifs (sous-titres, texte descriptif, etc.)"
+    ],
+    statusOptions: ['Validée', 'Partiellement validée', 'Non validée']
+  },
+  {
+    id: 'C7',
+    title: "C7 - Pérenniser les modalités d'usage",
+    criteria: [
+      "Personnalisation de l'environnement IA (interface, historiques)",
+      "Rédaction d'une documentation reproductible (template, process)",
+      "Proposition de KPI d'usage / valeur ajoutée IA",
+      "Prise en compte de solutions souveraines (FR / UE)"
+    ],
+    statusOptions: ['Validée', 'Partiellement validée', 'Non validée']
+  }
+];
+
+const ORAL_GRID_ROWS = [
+  {
+    id: 'O1',
+    title: "1-Présenter l'étude de cas",
+    criteria: [
+      "Clarté et concision",
+      "Contextualiser son intervention orale",
+      "Capacité à introduire ses productions"
+    ]
+  },
+  {
+    id: 'O2',
+    title: "2-Développer une analyse de ses prompts",
+    criteria: [
+      "Qualité de la restitution",
+      "Description de sa méthodologie",
+      "Exposition du sens et de l'importance de sa démarche"
+    ]
+  },
+  {
+    id: 'O3',
+    title: "3-Argumenter le travail réalisé",
+    criteria: [
+      "Cohérence et structuration des prompts",
+      "Justification stratégique et opérationnelle des choix",
+      "Intégration des reformulations"
+    ]
+  },
+  {
+    id: 'O4',
+    title: "4-Mettre en perspective ses travaux",
+    criteria: [
+      "Conclusion et perspectives",
+      "Réponses aux interrogations du jury",
+      "Capacité à capter l'intérêt du jury"
+    ]
+  },
+  {
+    id: 'O5',
+    title: "5-Respecter les exigences de formalisme d'un oral",
+    criteria: [
+      "Gestion du temps imparti",
+      "Présentation de supports de qualité"
+    ]
+  }
+];
+
+/* =========================================================
+   Contenu de src/components/Helpers.tsx
+   ========================================================= */
+const playSound = (type) => {
+  const AudioContextClass = window.AudioContext || (window).webkitAudioContext;
+  if (!AudioContextClass) return;
+  const _ac = new AudioContextClass();
+  if (_ac.state === 'suspended') _ac.resume();
+  const t = _ac.currentTime;
+  const g = _ac.createGain();
+  g.connect(_ac.destination);
+
+  if (type === 'click') {
+    const o = _ac.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1200, t);
+    o.frequency.exponentialRampToValueAtTime(900, t + 0.03);
+    g.gain.setValueAtTime(0.06, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+    o.connect(g);
+    o.start(t); o.stop(t + 0.05);
+  } else if (type === 'correct') {
+    [0, 0.13].forEach((delay, i) => {
+      const o = _ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(i === 0 ? 520 : 780, t + delay);
+      const gn = _ac.createGain();
+      gn.gain.setValueAtTime(0.22, t + delay);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.18);
+      o.connect(gn); gn.connect(_ac.destination);
+      o.start(t + delay); o.stop(t + delay + 0.2);
+    });
+  } else if (type === 'wrong') {
+    [0, 0.1].forEach((delay) => {
+      const o = _ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(220, t + delay);
+      const gn = _ac.createGain();
+      gn.gain.setValueAtTime(0.10, t + delay);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.08);
+      o.connect(gn); gn.connect(_ac.destination);
+      o.start(t + delay); o.stop(t + delay + 0.09);
+    });
+  } else if (type === 'advance') {
+    const o = _ac.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(520, t);
+    o.frequency.exponentialRampToValueAtTime(780, t + 0.08);
+    g.gain.setValueAtTime(0.07, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o.connect(g);
+    o.start(t); o.stop(t + 0.11);
+  } else if (type === 'done') {
+    [[0, 660], [0.15, 880], [0.3, 1100]].forEach(([delay, freq]) => {
+      const o = _ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, t + delay);
+      const gn = _ac.createGain();
+      gn.gain.setValueAtTime(0.12, t + delay);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.25);
+      o.connect(gn); gn.connect(_ac.destination);
+      o.start(t + delay); o.stop(t + delay + 0.28);
+    });
+  }
+};
+
+function OkBox({ title, body, onNext }) {
+  return (
+    <div className="mt-6 bg-blue-50 border-2 border-blue-200 p-5 rounded-xl animate-slide-up shadow-sm">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="bg-[#00529A] text-white rounded-full p-1.5 shrink-0 shadow-sm">
+          <Check className="w-4 h-4" />
+        </div>
+        <strong className="text-[#00529A] text-[19px] font-black tracking-tight">{title}</strong>
+      </div>
+      <p className="text-blue-800 text-[14px] font-medium leading-relaxed mb-6 whitespace-pre-line">{body}</p>
+      <button 
+        className="w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
+        onClick={onNext}
+      >
+        ÉTAPE SUIVANTE <ArrowRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function TypewriterText({ text }) {
+  const [displayed, setDisplayed] = useState('');
+  useEffect(() => {
+    setDisplayed('');
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayed(text.slice(0, i + 1));
+      i++;
+      if (i >= text.length) clearInterval(interval);
+    }, 15);
+    return () => clearInterval(interval);
+  }, [text]);
+  return <>{displayed}</>;
+}
+
+function useFullscreen() {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  return { isFullscreen, toggleFullscreen };
+}
+
+function FullscreenButton({ isFullscreen, toggleFullscreen }) {
+  return (
+    <button
+      onClick={toggleFullscreen}
+      className="fixed top-[14px] right-[16px] z-[200] bg-white border-[1.5px] border-slate-200 rounded-[10px] py-[7px] px-[9px] cursor-pointer flex items-center gap-[6px] text-[12px] font-semibold text-slate-500 transition-all shadow-sm hover:bg-slate-50 hover:text-[#00529A] hover:border-blue-300"
+      title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+    >
+      {isFullscreen ? (
+        <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3" />
+          <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+          <path d="M3 16h3a2 2 0 0 1 2 2v3" />
+          <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+          <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+          <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+          <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+      )}
+      {isFullscreen ? "Quitter" : "Plein écran"}
+    </button>
+  );
+}
+
+function SpotlightIntro({ onDismiss, toggleFullscreen }) {
+  const handleEnterFullscreen = () => {
+    toggleFullscreen();
+    onDismiss();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/88 backdrop-blur-md z-[9999] flex items-center justify-center animate-fade-in">
+      <div className="animate-scale-in max-w-sm w-full mx-4 relative">
+        <div className="bg-white rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl" style={{ background: "linear-gradient(90deg, #00529A, #3b82f6, #93c5fd)" }} />
+          
+          <div className="relative inline-flex items-center justify-center w-20 h-20 mx-auto mb-6 mt-2">
+            <div className="pulse-ring" />
+            <div className="pulse-ring pulse-ring-2" />
+            <div className="relative w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="#00529A" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-extrabold text-slate-900 mb-2">Meilleure expérience en plein écran</h2>
+          <p className="text-slate-500 text-sm leading-relaxed mb-8">
+            Pour profiter pleinement de cette activité, nous vous recommandons de l'afficher en plein écran. Vous pouvez aussi continuer en mode fenêtré.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleEnterFullscreen}
+              className="w-full bg-[#00529A] hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+              </svg>
+              Passer en plein écran
+            </button>
+            <button
+              onClick={onDismiss}
+              className="w-full text-slate-500 hover:text-slate-700 font-medium py-2.5 px-6 rounded-xl transition-colors text-sm hover:bg-slate-50"
+            >
+              Continuer en mode fenêtré
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   Contenu de src/components/CertifIAGrid.tsx
+   ========================================================= */
+function CertifIAGrid({
+  step,
+  step4Q1Done,
+  evaluations,
+  handleCriterionChange,
+  handleStatusChange,
+  finalDecision,
+  setFinalDecision,
+}) {
+  return (
+    <div className="bg-white p-12 shadow-xl border border-slate-200 text-slate-800 relative z-20 w-full max-w-5xl mx-auto">
+      
+      {/* Dimming overlay OVER the A4 grid */}
+      <div className={`absolute inset-0 z-30 bg-slate-900/60 rounded-xl transition-all duration-500 pointer-events-none ${(step === 2 || (step === 4 && step4Q1Done) || step === 5) ? 'opacity-100' : 'opacity-0'}`} />
+      
+      {/* Logos & Header */}
+      <div className="flex justify-between items-center mb-6 relative z-20">
+          <div className="font-bold text-xl text-blue-900 tracking-wider leading-tight">
+              Initiative<br/>
+              <span className="text-slate-700 text-lg">Data Compétences</span>
+          </div>
+          <div className="text-right">
+              <span className="text-sm font-semibold text-slate-500">Un réseau</span><br/>
+              <span className="font-bold text-2xl text-blue-800">CCI FRANCE</span>
+          </div>
+      </div>
+
+      <div className="text-center mb-8 relative z-20">
+          <h1 className="text-2xl font-bold uppercase mb-2">Grille d'évaluation écrit pour le jury</h1>
+          <div className="border-2 border-blue-900 p-3 bg-blue-50 text-blue-900 font-semibold text-sm inline-block">
+              Certification : « Utiliser l'intelligence artificielle générative (IAg) pour améliorer son efficacité professionnelle par un usage responsable »
+          </div>
+      </div>
+      
+      {/* Candidate Info */}
+      <table className="table-grid w-full mb-6 relative z-20">
+        <tbody>
+          <tr>
+            <td className="bg-header w-1/3">Date de l'épreuve</td>
+            <td><input type="date" className="w-full bg-transparent outline-none" defaultValue="2024-06-30" readOnly/></td>
+          </tr>
+          <tr>
+            <td className="bg-header">Nom et prénom candidat</td>
+            <td><input type="text" className="w-full bg-transparent outline-none font-bold" defaultValue="JEAN DUPONT" readOnly/></td>
+          </tr>
+          <tr>
+            <td className="bg-header">Etablissement de la formation</td>
+            <td><input type="text" className="w-full bg-transparent outline-none" defaultValue="CCI Campus" readOnly/></td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Rules summary */}
+      <div className="mb-6 text-base space-y-2 relative z-20">
+          <p><strong>Nombre de compétences évaluées : 7</strong></p>
+          <p><strong>Seuil de réussite recommandé :</strong> maîtrise globale des 7 compétences (niveau 4 : atteint) et sans échec majeur sur les compétences critiques (C1, C2, C3, C4, C5).</p>
+      </div>
+
+      {/* Levels Table */}
+      <table className="table-grid w-full mb-8 relative z-20">
+        <tbody>
+            <tr>
+                <td className="font-bold whitespace-nowrap w-24">Niveau 1</td>
+                <td className="font-bold w-48">Non évaluable</td>
+                <td>Le candidat n'a pas mobilisé les compétences lors de l'écrit, le jury ne peut donc l'évaluer</td>
+            </tr>
+            <tr>
+                <td className="font-bold whitespace-nowrap">Niveau 2</td>
+                <td className="font-bold">Non atteint</td>
+                <td>Réponses incomplètes ou erreurs majeures, maîtrise non démontrée</td>
+            </tr>
+            <tr>
+                <td className="font-bold whitespace-nowrap">Niveau 3</td>
+                <td className="font-bold">Partiellement atteint</td>
+                <td>Maîtrise partielle, incomplet ou amélioration nécessaire</td>
+            </tr>
+            <tr>
+                <td className="font-bold whitespace-nowrap">Niveau 4</td>
+                <td className="font-bold text-green-700">Atteint</td>
+                <td>Réalisation correcte et conforme, répondant aux attendus</td>
+            </tr>
+            <tr>
+                <td className="font-bold whitespace-nowrap">Niveau 5</td>
+                <td className="font-bold text-[#00529A]">Dépassé</td>
+                <td>Réalisation exemplaire, argumentée, transférable, au-delà des attendus</td>
+            </tr>
+        </tbody>
+      </table>
+
+      <h2 className="text-xl font-bold mt-8 mb-4 border-b-2 border-slate-800 pb-1 relative z-20">Grille d'évaluation par compétences :</h2>
+
+      {GRID_ROWS.map((row) => {
+        const isC5 = row.id === 'C5';
+        const isHighlightC5 = step === 2 && isC5;
+        const isCritical = ['C1', 'C2', 'C3', 'C4', 'C5'].includes(row.id);
+        
+        return (
+          <div key={row.id} id={`comp-${row.id}`} className={`transition-all duration-500 mb-8 ${isHighlightC5 ? 'relative z-50 bg-white ring-4 ring-blue-400 rounded-lg shadow-xl' : 'relative z-20'}`}>
+            <table className="table-grid w-full m-0 border-b-0">
+              <thead>
+                  <tr>
+                      <th className="bg-competence-header w-2/5 p-3">
+                        <div className="text-lg mb-2">{row.title}</div>
+                        <div>
+                          {isCritical ? (
+                            <span className="inline-flex items-center gap-1 bg-white text-red-700 px-2 py-1 rounded shadow-sm border border-red-200 font-bold text-sm">
+                              <AlertTriangle className="w-3.5 h-3.5" /> Compétence critique : le niveau 1 ou 2 est éliminatoire
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-white text-yellow-700 px-2 py-1 rounded shadow-sm border border-yellow-200 font-bold text-sm">
+                              <Info className="w-3.5 h-3.5" /> Le niveau 3 est toléré (Partiellement validée)
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                      <th className="bg-header text-center text-sm w-24">Non évaluable</th>
+                      <th className="bg-header text-center text-sm w-24">Non atteint</th>
+                      <th className="bg-header text-center text-sm w-24">Partiellement atteint</th>
+                      <th className="bg-header text-center text-sm w-24">Atteint</th>
+                      <th className="bg-header text-center text-sm w-24">Dépassé</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {row.criteria.map((crit, idx) => (
+                    <tr key={idx}>
+                        <td className="text-base font-medium">{crit}</td>
+                        {[1,2,3,4,5].map(lvl => (
+                          <td key={lvl} className={`text-center transition-colors ${evaluations[row.id]?.[idx] === lvl ? 'bg-blue-50' : ''}`}>
+                             <input 
+                                type="radio" 
+                                name={`${row.id}_${idx}`} 
+                                className="custom-checkbox radio-mode"
+                                checked={evaluations[row.id]?.[idx] === lvl}
+                                onChange={() => handleCriterionChange(row.id, idx, lvl)}
+                                disabled={step > 5}
+                             />
+                          </td>
+                        ))}
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            <div className="p-4 bg-slate-50 border border-slate-300 border-t-0 rounded-b-lg">
+                <div className="flex items-center gap-6 mb-3 font-semibold">
+                    <span>Compétence {row.id} :</span>
+                    {row.statusOptions.map(opt => (
+                      <label key={opt} className={`flex items-center gap-2 cursor-pointer transition-opacity ${evaluations[row.id]?.status && evaluations[row.id]?.status !== opt ? 'opacity-50' : ''} ${opt === 'Validée' ? 'text-green-700' : opt === 'Non validée' ? 'text-red-700' : 'text-yellow-600'}`}>
+                        <input 
+                            type="radio" 
+                            name={`${row.id}_status`} 
+                            className="custom-checkbox radio-mode"
+                            checked={evaluations[row.id]?.status === opt}
+                            onChange={() => handleStatusChange(row.id, opt)}
+                            disabled={step > 5}
+                        /> {opt}
+                      </label>
+                    ))}
+                </div>
+                <div>
+                    <label className="block text-base font-semibold mb-1 text-slate-600">Commentaires :</label>
+                    <textarea 
+                      className="w-full border border-slate-300 rounded p-2 text-base bg-white resize-none h-16" 
+                      placeholder="Saisir un commentaire..."
+                      readOnly={step < 5}
+                    ></textarea>
+                </div>
+            </div>
+          </div>
+        )
+      })}
+
+      {/* Résultat Final */}
+      <div id="final-result" className={`border-t-4 border-[#00529A] pt-6 mt-10 transition-all duration-500 ${step === 4 && step4Q1Done ? 'relative z-50 bg-white ring-4 ring-blue-400 p-4 rounded-lg shadow-xl' : 'relative z-20'}`}>
+          <h2 className="text-2xl font-bold mb-4">Résultat final de l'écrit</h2>
+
+          <div className="flex items-center gap-8 mb-6 p-4 bg-slate-100 border border-slate-300 rounded-lg font-bold text-lg">
+              <span>Avis du jury pour l'écrit :</span>
+              {['Validée', 'Non validée'].map(opt => (
+                <label key={opt} className={`flex items-center gap-2 cursor-pointer transition-opacity ${finalDecision && finalDecision !== opt ? 'opacity-50' : ''} ${opt === 'Validée' ? 'text-green-700' : 'text-red-700'}`}>
+                    <input 
+                      type="radio" 
+                      name="final_status" 
+                      className="custom-checkbox radio-mode"
+                      checked={finalDecision === opt}
+                      onChange={() => {
+                        if(step === 4 && step4Q1Done) {
+                          setFinalDecision(opt);
+                          // Sound played in App.tsx
+                        }
+                      }}
+                      disabled={step !== 4 || !step4Q1Done}
+                    /> Épreuve {opt.toLowerCase()}
+                </label>
+              ))}
+          </div>
+
+          <div className="mb-8">
+              <label className="block text-base font-bold mb-2 uppercase text-slate-700">COMMENTAIRE GLOBAL DES PRODUCTIONS (ÉCRIT) :</label>
+              <textarea className="w-full h-24 border border-slate-300 rounded p-3 bg-white" placeholder="Saisir le commentaire global du jury..." readOnly></textarea>
+          </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   Contenu de src/components/CertifIAOralGrid.tsx
+   ========================================================= */
+function CertifIAOralGrid({
+  step,
+  oralEvaluations,
+  handleOralCriterionChange,
+  oralDecision,
+  setOralDecision,
+  signature,
+  setSignature
+}) {
+  return (
+    <div className="bg-white p-12 shadow-xl border border-slate-200 text-slate-800 relative z-20 w-full max-w-5xl mx-auto">
+      {/* Overlay logic for focus */}
+      <div className={`absolute inset-0 z-30 bg-slate-900/60 rounded-xl transition-all duration-500 pointer-events-none ${
+         (step === 6 || step === 8 || step === 9) ? 'opacity-100' : 'opacity-0'
+      }`} />
+
+      <div className="flex justify-between items-center mb-6 relative z-20">
+          <div className="font-bold text-xl text-blue-900 tracking-wider leading-tight">
+              Initiative<br/>
+              <span className="text-slate-700 text-lg">Data Compétences</span>
+          </div>
+          <div className="text-right">
+              <span className="text-sm font-semibold text-slate-500">Un réseau</span><br/>
+              <span className="font-bold text-2xl text-blue-800">CCI FRANCE</span>
+          </div>
+      </div>
+
+      <div className="text-center mb-8 relative z-20">
+          <h1 className="text-2xl font-bold uppercase mb-2">Grille d'évaluation orale</h1>
+          <div className="border-2 border-blue-900 p-3 bg-blue-50 text-blue-900 font-semibold text-sm inline-block">
+              Certification : « Utiliser l'intelligence artificielle générative (IAg) pour améliorer son efficacité professionnelle par un usage responsable »
+          </div>
+      </div>
+
+      <table className="table-grid w-full mb-8 relative z-20">
+         <tbody>
+            <tr>
+               <td className="bg-header w-1/3">Date de l'épreuve</td>
+               <td><input type="date" className="w-full bg-transparent outline-none" defaultValue="2024-06-30" readOnly/></td>
+            </tr>
+            <tr>
+               <td className="bg-header">Nom et prénom candidat</td>
+               <td><input type="text" className="w-full bg-transparent outline-none font-bold" defaultValue="JEAN DUPONT" readOnly/></td>
+            </tr>
+         </tbody>
+      </table>
+
+      <div className="mb-6 text-base space-y-2 relative z-20">
+          <p><strong>Afin de valider l'épreuve orale, le candidat devra avoir obtenu a minima :</strong></p>
+          <ul className="list-disc pl-5">
+             <li>Les résultats « Atteint » ou « Dépassé » concernant les items 2, 3 et 4 ;</li>
+             <li>Les résultats « Partiellement atteint », « Atteint » ou « Dépassé » concernant les items 1 et 5.</li>
+          </ul>
+      </div>
+
+      <table className="table-grid w-full mb-0 relative z-20">
+         <colgroup>
+            <col className="w-2/5" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
+         </colgroup>
+         <thead>
+            <tr>
+               <th className="bg-[#00529A] text-white py-3 border-[#00529A]">Le candidat a été capable de :</th>
+               <th className="bg-[#00529A] text-white text-center text-sm border-[#00529A]">Non évaluable</th>
+               <th className="bg-[#00529A] text-white text-center text-sm border-[#00529A]">Non atteint</th>
+               <th className="bg-[#00529A] text-white text-center text-sm border-[#00529A]">Partiellement atteint</th>
+               <th className="bg-[#00529A] text-white text-center text-sm border-[#00529A]">Atteint</th>
+               <th className="bg-[#00529A] text-white text-center text-sm border-[#00529A]">Dépassé</th>
+            </tr>
+         </thead>
+      </table>
+
+      {ORAL_GRID_ROWS.map((row, index) => {
+         const isHighlight = step === 6 && row.id === 'O2';
+         const isMinPartial = ['O1', 'O5'].includes(row.id);
+         return (
+            <div key={row.id} id={`comp-${row.id}`} className={`transition-all duration-500 ${isHighlight ? 'relative z-50 bg-white ring-4 ring-blue-400 rounded-lg shadow-xl' : 'relative z-20'}`}>
+               <table className={`table-grid w-full m-0 ${isHighlight ? 'border-transparent' : 'border-t-0'}`}>
+                  <colgroup>
+                     <col className="w-2/5" />
+                     <col className="w-[12%]" />
+                     <col className="w-[12%]" />
+                     <col className="w-[12%]" />
+                     <col className="w-[12%]" />
+                     <col className="w-[12%]" />
+                  </colgroup>
+                  <tbody>
+                     <tr>
+                        <td colSpan={6} className={`bg-[#e0e7ff] font-bold text-[#00529A] border-[#93c5fd] py-3 relative pl-4 ${isHighlight ? 'rounded-t-lg' : ''}`}>
+                          {row.title}
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm bg-white px-2 py-1 rounded shadow-sm border border-blue-200">
+                            {isMinPartial ? (
+                              <span className="text-yellow-700 inline-flex items-center gap-1"><Info className="w-3.5 h-3.5" /> Minimum requis : Partiellement atteint</span>
+                            ) : (
+                              <span className="text-red-700 inline-flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Minimum requis : Atteint</span>
+                            )}
+                          </span>
+                        </td>
+                     </tr>
+                     {row.criteria.map((crit, idx) => (
+                        <tr key={`${row.id}-${idx}`}>
+                           <td className="text-base font-medium pl-6 border-slate-300">▪ {crit}</td>
+                           {[1,2,3,4,5].map(lvl => (
+                              <td key={lvl} className={`text-center border-slate-300 transition-colors ${oralEvaluations[row.id]?.[idx] === lvl ? 'bg-blue-50' : ''} ${isHighlight && idx === row.criteria.length - 1 && lvl === 5 ? 'rounded-br-lg' : ''}`}>
+                                 <input
+                                    type="radio"
+                                    className="custom-checkbox radio-mode"
+                                    checked={oralEvaluations[row.id]?.[idx] === lvl}
+                                    onChange={() => handleOralCriterionChange(row.id, idx, lvl)}
+                                    disabled={step !== 6}
+                                 />
+                              </td>
+                           ))}
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
+            </div>
+         )
+      })}
+
+      {/* Decision and Signature block */}
+      <div id="oral-result" className={`mt-8 transition-all duration-500 ${step === 8 ? 'relative z-50 bg-white ring-4 ring-blue-400 p-4 rounded-lg shadow-xl' : 'relative z-20'}`}>
+          <div className="flex items-center gap-8 mb-6 p-4 bg-slate-100 border border-slate-300 rounded-lg font-bold text-lg">
+              <span>Avis du jury pour l'oral :</span>
+              {['Validée', 'Non validée'].map(opt => (
+                <label key={opt} className={`flex items-center gap-2 cursor-pointer transition-opacity ${oralDecision && oralDecision !== opt ? 'opacity-50' : ''} ${opt === 'Validée' ? 'text-green-700' : 'text-red-700'}`}>
+                    <input
+                      type="radio"
+                      className="custom-checkbox radio-mode"
+                      checked={oralDecision === opt}
+                      onChange={() => {
+                        if(step === 8) {
+                          setOralDecision(opt);
+                          playSound('click');
+                        }
+                      }}
+                      disabled={step !== 8}
+                    /> Épreuve {opt.toLowerCase()}
+                </label>
+              ))}
+          </div>
+      </div>
+
+      <div id="signature-block" className={`mt-8 transition-all duration-500 ${step === 9 ? 'relative z-50 bg-white ring-4 ring-blue-400 p-4 rounded-lg shadow-xl' : 'relative z-20'}`}>
+          <table className="table-grid w-full mb-0">
+              <thead>
+                  <tr>
+                      <th className="bg-header w-1/3">Noms des jurys</th>
+                      <th className="bg-header w-1/3">Qualité</th>
+                      <th className="bg-header w-1/3">Signature</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr className="h-20 cursor-pointer" onClick={() => { if(step === 9 && !signature) { setSignature(true); playSound('correct'); } }}>
+                      <td className="align-top font-bold text-slate-800">M. Jean Dupont</td>
+                      <td className="align-top text-slate-600">Jury certificateur</td>
+                      <td className="align-top relative overflow-hidden bg-slate-50 hover:bg-blue-50 transition-colors group">
+                        {!signature && step === 9 && <div className="absolute inset-0 flex items-center justify-center text-blue-500 opacity-80 font-bold tracking-wide">CLIQUEZ POUR SIGNER</div>}
+                        {signature && (
+                          <div className="absolute top-4 left-6 text-[#00529A] opacity-90 animate-scale-in" style={{transform:'rotate(-8deg) scale(1.4)'}}>
+                              <svg width={100} height={40} viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                                <path d="M10,20 Q30,5 40,20 T70,20 T90,10" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M45,25 Q55,40 65,25" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                          </div>
+                        )}
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
+    </div>
+  )
+}
+
+/* =========================================================
+   Contenu de src/App.tsx
+   ========================================================= */
+const TOTAL = 10;
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [isActionDone, setIsActionDone] = useState(false);
+  
+  // Written State
+  const [writtenEvaluations, setWrittenEvaluations] = useState({});
+  const [writtenDecision, setWrittenDecision] = useState('');
+  const [step4Q1Done, setStep4Q1Done] = useState(false);
+  const [step4ErrorQ1, setStep4ErrorQ1] = useState(false);
+
+  // Oral State
+  const [oralEvaluations, setOralEvaluations] = useState({});
+  const [oralDecision, setOralDecision] = useState('');
+  const [step8Q1Done, setStep8Q1Done] = useState(false);
+  const [step8ErrorQ1, setStep8ErrorQ1] = useState(false);
+  const [signature, setSignature] = useState(false);
+
+  const [showSpotlight, setShowSpotlight] = useState(true);
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
+
+  const advance = () => {
+    setStep(p => {
+      const next = p + 1;
+      playSound(next === 10 ? 'done' : 'advance');
+      return next;
+    });
+    setIsActionDone(false);
+  };
+
+  // Written Handlers
+  const handleCriterionChange = (compId, critIdx, level) => {
+    if (step === 2 && compId !== 'C5') return;
+    if (step > 2) return;
+
+    setWrittenEvaluations(prev => {
+      const comp = prev[compId] || {};
+      return { ...prev, [compId]: { ...comp, [critIdx]: level } };
+    });
+    playSound('click');
+  };
+
+  const handleStatusChange = (compId, status) => {
+    if (step === 2 && compId !== 'C5') return;
+    if (step > 2) return;
+
+    setWrittenEvaluations(prev => {
+      const comp = prev[compId] || {};
+      return { ...prev, [compId]: { ...comp, status } };
+    });
+    playSound('click');
+  };
+
+  // Oral Handlers
+  const handleOralCriterionChange = (compId, critIdx, level) => {
+    if (step === 6 && compId !== 'O2') return;
+    if (step > 6) return;
+
+    setOralEvaluations(prev => {
+      const comp = prev[compId] || {};
+      return { ...prev, [compId]: { ...comp, [critIdx]: level } };
+    });
+    playSound('click');
+  };
+
+  // Step scrolling
+  useEffect(() => {
+    let targetElId = null;
+    if (step === 2) targetElId = 'comp-C5';
+    if (step === 4 && step4Q1Done) targetElId = 'final-result';
+    if (step === 6) targetElId = 'comp-O2';
+    if (step === 8 && step8Q1Done) targetElId = 'oral-result';
+    if (step === 9) targetElId = 'signature-block';
+    
+    if (targetElId) {
+      setTimeout(() => {
+        const el = document.getElementById(targetElId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
+  }, [step, step4Q1Done, step8Q1Done]);
+
+  // Step 2 Logic: Check C5
+  useEffect(() => {
+    if (step === 2) {
+      const c5 = writtenEvaluations['C5'];
+      if (c5 && c5[0] === 4 && c5[1] === 4 && c5[2] === 4 && c5[3] === 4 && c5.status === 'Validée') {
+        setIsActionDone(true);
+        playSound('correct');
+      } else {
+        setIsActionDone(false);
+      }
+    }
+  }, [writtenEvaluations, step]);
+
+  // Step 3 Logic: Auto-fill Written
+  useEffect(() => {
+    if (step === 3 && !isActionDone) {
+      const fillPlan = [
+        { id: 'C1', levels: [4, 4, 4, 4, 4], status: 'Validée' },
+        { id: 'C2', levels: [4, 4, 4, 4], status: 'Validée' },
+        { id: 'C3', levels: [3, 3, 3, 3], status: 'Partiellement validée' }, // critical with 3
+        { id: 'C4', levels: [3, 3, 3, 3], status: 'Partiellement validée' }, // critical with 3
+        { id: 'C6', levels: [3, 3, 3], status: 'Partiellement validée' },
+        { id: 'C7', levels: [4, 4, 4, 4], status: 'Validée' },
+      ];
+      let time = 400;
+      fillPlan.forEach((comp) => {
+        setTimeout(() => {
+          setWrittenEvaluations(prev => {
+            const updatedLevels = {};
+            comp.levels.forEach((l, i) => (updatedLevels[i] = l));
+            return { ...prev, [comp.id]: { ...updatedLevels, status: comp.status } };
+          });
+          playSound('click');
+        }, time);
+        time += 500;
+      });
+
+      setTimeout(() => {
+        const el = document.getElementById('comp-C3');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, time - 1500);
+
+      setTimeout(() => {
+        setIsActionDone(true);
+        playSound('done');
+      }, time + 400);
+    }
+  }, [step, isActionDone]);
+
+  // Step 4 Logic: Written Decision
+  useEffect(() => {
+    if (step === 4 && step4Q1Done && !isActionDone) {
+      if (writtenDecision === 'Validée') {
+        setIsActionDone(true);
+        playSound('correct');
+      }
+    }
+  }, [step, step4Q1Done, writtenDecision, isActionDone]);
+
+  // Step 6 Logic: Check O2
+  useEffect(() => {
+    if (step === 6) {
+      const o2 = oralEvaluations['O2'];
+      if (o2 && o2[0] === 3 && o2[1] === 3 && o2[2] === 3) {
+        setIsActionDone(true);
+        playSound('correct');
+      } else {
+        setIsActionDone(false);
+      }
+    }
+  }, [oralEvaluations, step]);
+
+  // Step 7 Logic: Auto-fill Oral
+  useEffect(() => {
+    if (step === 7 && !isActionDone) {
+      const fillPlan = [
+        { id: 'O1', levels: [4, 4, 4] },
+        { id: 'O3', levels: [4, 4, 4] },
+        { id: 'O4', levels: [4, 4, 4] },
+        { id: 'O5', levels: [4, 4] },
+      ];
+      let time = 400;
+      fillPlan.forEach((comp) => {
+        setTimeout(() => {
+          setOralEvaluations(prev => {
+            const updatedLevels = {};
+            comp.levels.forEach((l, i) => (updatedLevels[i] = l));
+            return { ...prev, [comp.id]: { ...updatedLevels } };
+          });
+          playSound('click');
+        }, time);
+        time += 500;
+      });
+
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, time - 500);
+
+      setTimeout(() => {
+        setIsActionDone(true);
+        playSound('done');
+      }, time + 400);
+    }
+  }, [step, isActionDone]);
+
+  // Step 8 Logic: Oral Decision
+  useEffect(() => {
+    if (step === 8 && step8Q1Done && !isActionDone) {
+      if (oralDecision === 'Non validée') {
+        setIsActionDone(true);
+        playSound('correct');
+      }
+    }
+  }, [step, step8Q1Done, oralDecision, isActionDone]);
+
+  // Step 9 Logic: Signature
+  useEffect(() => {
+    if (step === 9 && !isActionDone) {
+      if (signature) {
+        setIsActionDone(true);
+        playSound('done');
+      }
+    }
+  }, [step, signature, isActionDone]);
+
+  let tutTitle = '';
+  let tutBody = '';
+  let tutInstruction = null;
+  let tutAction = null;
+
+  switch (step) {
+    case 0:
+      tutTitle = "Contexte de l'évaluation";
+      tutBody = "L'évaluation de la certification IA se compose de deux parties :\n\n• Une épreuve écrite (7 compétences)\n• Une épreuve orale de 30 min (5 critères)\n\nLa validation finale repose à 50% sur l'écrit et 50% sur l'oral. Tout doit être validé par le jury.";
+      tutAction = (
+        <button className="w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2 mt-6" onClick={advance}>
+          ÉTAPE SUIVANTE <ArrowRight className="w-5 h-5 ml-2"/>
+        </button>
+      );
+      break;
+
+    case 1:
+      tutTitle = "1. Règles de l'écrit";
+      tutBody = "Pour valider l'écrit (C1 à C7) :\n\n• Le seuil de réussite recommandé est d'atteindre le niveau 4 « Atteint ».\n• C1 à C5 sont des compétences critiques : un niveau 2 (« Non atteint ») est un échec majeur éliminatoire.\n• Un niveau 3 sur C1-C5 est toléré si la maîtrise globale est jugée suffisante par le jury.\n• Pour C6 et C7, un niveau 3 est toléré et permet de cocher explicitement la case « Partiellement validée ».";
+      tutAction = (
+        <button className="w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2 mt-6" onClick={advance}>
+          PASSER À LA GRILLE <ArrowRight className="w-5 h-5 ml-2"/>
+        </button>
+      );
+      break;
+
+    case 2:
+      tutTitle = "2. Évaluation de C5 (Données)";
+      tutBody = "Arrêtons-nous sur la compétence C5 : « Protéger et sécuriser les données ».\n\nLe candidat a parfaitement sécurisé les données sensibles, répondant exactement aux attendus, sans les dépasser.";
+      tutInstruction = "Cochez le niveau « Atteint » pour les 4 critères de C5, puis sélectionnez « Validée » pour la compétence.";
+      if (isActionDone) {
+        tutAction = <OkBox title="Parfait !" body="Le candidat valide avec succès cette compétence critique." onNext={advance} />;
+      } else {
+        tutAction = (
+          <div className="mt-8">
+            <p className="text-sm text-slate-500 font-medium">
+              <Info className="w-4 h-4 inline-block mr-1"/> Saisissez la notation dans la grille pour continuer.
+            </p>
+          </div>
+        );
+      }
+      break;
+
+    case 3:
+      tutTitle = "3. Suite de l'évaluation écrite";
+      tutBody = "Le jury a complété le reste de la grille écrite.\n\nObservez les résultats : le candidat a obtenu un niveau 3 « Partiellement atteint » sur les compétences critiques C3 et C4.";
+      if (isActionDone) {
+        tutAction = <OkBox title="Saisie terminée" body="La grille a été entièrement complétée." onNext={advance} />;
+      } else {
+        tutAction = (
+          <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-[#00529A] text-white p-1.5 rounded-full"><PenTool className="w-4 h-4"/></div>
+              <span className="text-[#00529A] text-[18px] font-black">Saisie en cours...</span>
+            </div>
+          </div>
+        );
+      }
+      break;
+
+    case 4:
+      tutTitle = "4. Bilan de l'écrit";
+      tutBody = "La grille est complétée. Le candidat a obtenu un niveau 3 sur deux compétences critiques (C3 et C4).";
+      if (!step4Q1Done) {
+        tutAction = (
+          <div className="mt-6 flex flex-col gap-3">
+            <p className="font-bold text-slate-800 mb-2">Avec deux niveaux 3 sur des compétences critiques, le candidat est-il automatiquement éliminé ?</p>
+            <button 
+              className={`w-full text-left p-4 rounded-xl border transition-colors ${step4ErrorQ1 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-blue-900 hover:bg-blue-50'}`}
+              onClick={() => { playSound('wrong'); setStep4ErrorQ1(true); }}
+            >
+              <span className="font-bold block text-slate-800">Oui, c'est éliminatoire.</span>
+            </button>
+            {step4ErrorQ1 && <div className="text-red-600 text-sm font-medium animate-slide-up px-2">Faux. Un niveau 3 sur C1-C5 n'est pas bloquant en soi. Le jury décide si la maîtrise globale reste suffisante.</div>}
+            <button 
+              className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-900 hover:bg-blue-50 transition-colors"
+              onClick={() => { playSound('correct'); setStep4Q1Done(true); setStep4ErrorQ1(false); }}
+            >
+              <span className="font-bold block text-slate-800">Non, le jury évalue la maîtrise globale.</span>
+            </button>
+          </div>
+        );
+      } else if (!isActionDone) {
+        tutInstruction = "Exact ! Le jury a décidé de tolérer ces faiblesses. Les autres compétences étant bien maîtrisées, le candidat valide cette épreuve.\n\nSaisissez « Validée » pour le résultat final de l'écrit tout en bas.";
+        tutAction = (
+          <div className="mt-8">
+            <p className="text-sm text-slate-500 font-medium">
+              <Info className="w-4 h-4 inline-block mr-1"/> Saisissez la décision finale dans la grille.
+            </p>
+          </div>
+        );
+      } else {
+        tutAction = <OkBox title="Parfait !" body="L'épreuve écrite est officiellement validée." onNext={advance} />;
+      }
+      break;
+
+    case 5:
+      tutTitle = "5. Règles de l'oral";
+      tutBody = "Passons à l'oral (30 min).\n\nPour valider l'oral, le candidat doit obtenir a minima le niveau :\n• « Atteint » (ou « Dépassé ») pour les compétences 2, 3 et 4.\n• « Partiellement atteint » pour les compétences 1 et 5.\n\nLa grille est plus simple et se concentre sur la présentation et l'argumentation.";
+      tutAction = (
+        <button className="w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2 mt-6" onClick={advance}>
+          PASSER À L'ORAL <ArrowRight className="w-5 h-5 ml-2"/>
+        </button>
+      );
+      break;
+
+    case 6:
+      tutTitle = "6. Évaluation de la présentation";
+      tutBody = "Le candidat a eu du mal à analyser ses prompts. Sa restitution était très partielle.";
+      tutInstruction = "Pour la compétence « 2-Développer une analyse de ses prompts », cochez la colonne « Partiellement atteint » pour ses 3 critères.";
+      if (isActionDone) {
+        tutAction = <OkBox title="Parfait !" body="La notation est prise en compte." onNext={advance} />;
+      } else {
+        tutAction = (
+          <div className="mt-8">
+            <p className="text-sm text-slate-500 font-medium">
+              <Info className="w-4 h-4 inline-block mr-1"/> Saisissez la notation dans la grille pour continuer.
+            </p>
+          </div>
+        );
+      }
+      break;
+      
+    case 7:
+      tutTitle = "7. Suite de l'oral";
+      tutBody = "Le jury complète le reste de la grille orale.\n\nLe candidat s'est très bien rattrapé par la suite et a obtenu le niveau « Atteint » partout ailleurs.";
+      if (isActionDone) {
+        tutAction = <OkBox title="Saisie terminée" body="La grille orale a été entièrement complétée." onNext={advance} />;
+      } else {
+        tutAction = (
+          <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl animate-slide-up shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-[#00529A] text-white p-1.5 rounded-full"><PenTool className="w-4 h-4"/></div>
+              <span className="text-[#00529A] text-[18px] font-black">Saisie en cours...</span>
+            </div>
+          </div>
+        );
+      }
+      break;
+
+    case 8:
+      tutTitle = "8. Bilan de l'oral";
+      tutBody = "La grille est complétée. Le candidat a obtenu un très bon score partout, sauf pour la compétence « 2-Développer une analyse de ses prompts » (évaluée à « Partiellement atteint »).";
+      if (!step8Q1Done) {
+        tutAction = (
+          <div className="mt-6 flex flex-col gap-3">
+            <p className="font-bold text-slate-800 mb-2">L'oral est-il validé avec ce résultat ?</p>
+            <button 
+              className={`w-full text-left p-4 rounded-xl border transition-colors ${step8ErrorQ1 ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-blue-900 hover:bg-blue-50'}`}
+              onClick={() => { playSound('wrong'); setStep8ErrorQ1(true); }}
+            >
+              <span className="font-bold block text-slate-800">Oui, car il a le niveau « Atteint » partout ailleurs.</span>
+            </button>
+            {step8ErrorQ1 && <div className="text-red-600 text-sm font-medium animate-slide-up px-2">Faux. La compétence 2 exige un niveau « Atteint » minimum.</div>}
+            <button 
+              className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-900 hover:bg-blue-50 transition-colors"
+              onClick={() => { playSound('correct'); setStep8Q1Done(true); setStep8ErrorQ1(false); }}
+            >
+              <span className="font-bold block text-slate-800">Non, car la compétence 2 exige un niveau « Atteint ».</span>
+            </button>
+          </div>
+        );
+      } else if (!isActionDone) {
+        tutInstruction = "Exact ! La compétence 2 exigeant le niveau « Atteint », ce résultat partiel est éliminatoire pour l'oral.\n\nSaisissez « Non validée » pour le résultat final de l'épreuve orale tout en bas.";
+        tutAction = (
+          <div className="mt-8">
+            <p className="text-sm text-slate-500 font-medium">
+              <Info className="w-4 h-4 inline-block mr-1"/> Saisissez la décision finale dans la grille.
+            </p>
+          </div>
+        );
+      } else {
+        tutAction = <OkBox title="Parfait !" body="La décision a bien été enregistrée." onNext={advance} />;
+      }
+      break;
+
+    case 9:
+      tutTitle = "9. Bilan Global et Signature";
+      tutBody = "Rappel des résultats :\n• Écrit : Validé (niveaux 3 tolérés sur C3 et C4).\n• Oral : Non validé (niveau insuffisant sur la compétence 2).\n\nPour obtenir la certification, le candidat doit obligatoirement valider ces deux épreuves. L'oral étant échoué, la certification IA n'est donc pas acquise.\n\nIl ne reste plus qu'à signer la grille orale pour officialiser le résultat du jury.";
+      if (!isActionDone) {
+        tutInstruction = "Cliquez sur la zone de signature dans la grille pour clôturer l'évaluation.";
+        tutAction = (
+          <div className="mt-8">
+            <p className="text-sm text-slate-500 font-medium">
+              <Info className="w-4 h-4 inline-block mr-1"/> En attente de signature...
+            </p>
+          </div>
+        );
+      } else {
+        tutAction = <OkBox title="Dossier complet !" body="Félicitations, l'évaluation est terminée." onNext={advance} />;
+      }
+      break;
+
+    case 10:
+      tutTitle = "Activité terminée !";
+      tutBody = "Vous avez terminé ce module d'évaluation avec succès.";
+      tutAction = (
+        <div className="mt-6">
+          <button 
+            className="w-full bg-[#00529A] hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+            onClick={() => { playSound('advance'); window.location.reload(); }}
+          >
+            RECOMMENCER L'ACTIVITÉ
+          </button>
+        </div>
+      );
+      break;
+  }
+
+  const displayNum = Math.min(step, TOTAL);
+  const showWritten = step <= 4;
+
+  return (
+    <>
+      {showSpotlight && <SpotlightIntro onDismiss={() => setShowSpotlight(false)} toggleFullscreen={toggleFullscreen} />}
+      <FullscreenButton isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} />
+      
+      <div className="flex flex-1 h-screen overflow-hidden bg-[#f3f4f6] relative font-sans text-slate-800">
+        
+        {/* Left Panel */}
+        <div className="w-[360px] bg-white border-r border-slate-200 shadow-xl z-50 flex flex-col shrink-0 relative">
+          {step <= 10 && (
+            <div className="relative transition-colors duration-500 shrink-0 flex flex-col">
+              <div className="p-6 bg-[#00529A] text-white">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest opacity-80 mb-1">Tutoriel Évaluateur</div>
+                    <h1 className="text-[18px] font-bold leading-tight">{tutTitle}</h1>
+                  </div>
+                  <div key={`num-${step}`} className="flex items-baseline gap-1 bg-white/10 px-2 py-1 rounded">
+                    <span className="text-xl font-black tracking-tighter leading-none text-white">{displayNum}</span>
+                    {step > 0 && step < TOTAL && <span className="text-xs font-bold text-white/70 leading-none">/{TOTAL}</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="px-6 pt-6 pb-2 transition-colors duration-500">
+                <div key={`text-${step}`}>
+                  <p className="text-base text-slate-700 leading-relaxed whitespace-pre-line animate-slide-up" style={{ animationDelay: '0.08s' }}>
+                    <TypewriterText text={tutBody} />
+                  </p>
+                  {tutInstruction && (
+                    <div className="mt-6 animate-slide-up bg-blue-50 border-2 border-blue-200 p-4 rounded-xl shadow-sm" style={{ animationDelay: '0.15s' }}>
+                      <div className="text-[#00529A] font-bold text-sm flex items-start gap-3">
+                        <span className="leading-relaxed mt-0.5 whitespace-pre-line">{tutInstruction}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto px-6 py-4 bg-white min-h-0 flex flex-col custom-scrollbar">
+            <div key={`action-${step}`} className="animate-slide-up pb-8 w-full">
+              {tutAction}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel */}
+        <div className="flex-1 flex flex-col overflow-x-auto overflow-y-auto relative bg-slate-100 custom-scrollbar">
+          
+          {/* Blocking Overlay for steps 0, 1, 5 */}
+          <div className={`fixed top-0 bottom-0 right-0 z-40 bg-slate-900/60 transition-all duration-500 ${(step === 0 || step === 1 || step === 5) ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} style={{ left: '360px' }} />
+
+          {/* Center Modal for steps 0, 1, 5 */}
+          {(step === 0 || step === 1 || step === 5) && (
+            <div className="fixed top-0 bottom-0 right-0 z-50 flex items-center justify-center" style={{ left: '360px' }}>
+              <div className="bg-white p-8 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center border border-slate-200 animate-slide-up">
+                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 text-[#00529A] bg-blue-50 shadow-sm border border-blue-100">
+                    <LayoutGrid className="w-8 h-8" />
+                 </div>
+                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">La grille d'évaluation</h3>
+                 <p className="text-slate-600 text-sm mt-3 leading-relaxed font-medium">
+                    {step === 5 ? "Nous passons maintenant à la grille d'évaluation orale..." : "Elle s'animera dès que vous arriverez à la partie pratique."}
+                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Scrollable Container with the Grids */}
+          <div className="min-h-full flex flex-col p-8 pt-12 relative">
+             <div 
+                className={`rounded-xl flex flex-col w-full max-w-5xl mx-auto transition-all duration-500 relative
+                ${(step === 0 || step === 1 || step === 5) ? 'bg-white opacity-40 grayscale blur-[2px] pointer-events-none overflow-hidden z-30 border border-slate-200 shadow-sm' : ''}
+                ${(step >= 2 && step !== 5) ? 'z-40' : ''}
+             `}
+             >
+                {showWritten ? (
+                  <CertifIAGrid 
+                    step={step}
+                    step4Q1Done={step4Q1Done}
+                    evaluations={writtenEvaluations}
+                    handleCriterionChange={handleCriterionChange}
+                    handleStatusChange={handleStatusChange}
+                    finalDecision={writtenDecision}
+                    setFinalDecision={setWrittenDecision}
+                  />
+                ) : (
+                  <CertifIAOralGrid 
+                    step={step}
+                    oralEvaluations={oralEvaluations}
+                    handleOralCriterionChange={handleOralCriterionChange}
+                    oralDecision={oralDecision}
+                    setOralDecision={setOralDecision}
+                    signature={signature}
+                    setSignature={setSignature}
+                  />
+                )}
+             </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* =========================================================
+   Contenu de src/main.tsx
+   ========================================================= */
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+    </script>
+  </body>
+</html>

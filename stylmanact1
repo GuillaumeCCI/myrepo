@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style managérial ou trait de caractère ?</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#000099', // The requested color
+                            light: '#e6e6ff',
+                            hover: '#0000cc',
+                            muted: '#3333b3'
+                        },
+                        success: {
+                            DEFAULT: '#10b981',
+                            bg: '#ecfdf5',
+                            text: '#065f46',
+                            border: '#6ee7b7'
+                        },
+                        error: {
+                            DEFAULT: '#ef4444',
+                            bg: '#fef2f2',
+                            text: '#991b1b',
+                            border: '#fca5a5'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-choix {
+                @apply flex flex-col gap-1 p-5 border-2 border-slate-200 rounded-2xl bg-slate-50 cursor-pointer transition-all duration-300 text-left w-full;
+            }
+            .btn-choix:hover:not(:disabled) {
+                @apply border-brand bg-brand-light/30 transform -translate-y-1 shadow-[0_8px_20px_rgba(0,0,153,0.08)];
+            }
+            .btn-choix:disabled {
+                @apply cursor-default;
+            }
+            
+            /* Etats après réponse */
+            .btn-choix.juste {
+                @apply border-success bg-success-bg transform-none shadow-none ring-2 ring-success/20;
+            }
+            .btn-choix.juste .choix-titre {
+                @apply text-success;
+            }
+            .btn-choix.faux {
+                @apply border-error bg-error-bg opacity-80;
+            }
+            .btn-choix.faux .choix-titre {
+                @apply text-error;
+            }
+            .btn-choix.neutre-apres {
+                @apply opacity-40 grayscale-[50%] bg-slate-100 border-slate-200;
+            }
+
+            .serie-dot {
+                @apply w-2.5 h-2.5 rounded-full bg-slate-200 transition-all duration-300;
+            }
+            .serie-dot.juste { @apply bg-success shadow-[0_0_8px_rgba(16,185,129,0.5)]; }
+            .serie-dot.faux { @apply bg-error; }
+            .serie-dot.actif { @apply bg-brand ring-4 ring-brand-light scale-110; }
+        }
+
+        /* Fallback pour Genially (Pseudo Plein-Ecran) */
+        body.pseudo-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            margin: 0 !important;
+            overflow-y: auto !important;
+            border-radius: 0 !important;
+        }
+
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center">
+
+    <!-- Bouton Plein Écran -->
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <!-- Icône Entrer Plein écran -->
+        <svg id="icon-fs-enter" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <!-- Icône Quitter Plein écran -->
+        <svg id="icon-fs-exit" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 hidden"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <!-- Overlay Spotlight -->
+    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Passer en plein écran</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <main class="w-full max-w-3xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+        
+        <!-- BANDEAU EN-TETE -->
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <!-- Decorative circle -->
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="w-14 h-14 min-w-[56px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-sm z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="z-10">
+                <div class="text-brand-light text-xs font-bold tracking-widest uppercase mb-1">Fondamentaux • Styles de management</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold leading-tight mb-2">Qu'est-ce qu'un style managérial ?</h1>
+                <div class="text-white/80 text-sm font-medium">Activité préparatoire • 8 observations à analyser</div>
+            </div>
+        </header>
+
+        <!-- INTRO -->
+        <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-brand"></div>
+            <div class="inline-flex items-center gap-2 bg-brand-light text-brand text-xs font-bold tracking-wider uppercase px-3 py-1.5 rounded-full mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg> Contexte
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+                Au sein de <strong>votre organisation</strong>, vous observez le comportement de différents managers au fil de leurs journées. Pour chaque observation, déterminez si elle décrit une <strong class="text-brand">signature comportementale</strong> (quelque chose qui se voit, qui s'apprend et peut évoluer) ou un <strong class="text-brand">trait de caractère</strong> (une disposition personnelle stable, indépendante de la situation).
+            </p>
+        </section>
+
+        <!-- BARRE DE PROGRESSION -->
+        <div class="w-full flex flex-col gap-3" id="progression-wrap">
+            <div class="flex justify-between items-end text-sm">
+                <span class="font-semibold text-slate-500 uppercase tracking-wider text-xs" id="progression-label">Observation 1 sur 8</span>
+                <span class="font-bold text-brand bg-brand-light px-3 py-1 rounded-full text-xs" id="progression-score">Score : 0 / 8</span>
+            </div>
+            <div class="h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                <div class="h-full bg-brand rounded-full transition-all duration-500 ease-out relative" id="barre-fill" style="width:0%">
+                    <div class="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+                </div>
+            </div>
+            <div class="flex gap-2 justify-center mt-2" id="series-dots"></div>
+        </div>
+
+        <!-- ZONE PRINCIPALE -->
+        <div id="zone-question" class="w-full min-h-[400px]"></div>
+        
+        <!-- DEBRIEF FINAL -->
+        <div id="debrief" class="hidden"></div>
+        
+    </main>
+
+    <script>
+        const CARTES = [
+            {
+                difficulte: "net",
+                diffLabel: "Cas net",
+                scenario: "Lundi matin, brief d'équipe",
+                observation: "Sophie, responsable d'équipe, reformule systématiquement chaque consigne à l'oral en fin de brief : elle reprend les points clés, vérifie la compréhension de chacun et note les actions dans un carnet partagé.",
+                reponse: "comportement",
+                feedbackJuste: "Exact. Ce que vous observez, ce sont des actions concrètes et répétables : reformuler, vérifier, noter. Ces pratiques sont visibles, donc analysables, et elles peuvent s'acquérir ou s'améliorer. C'est la définition du style managérial.",
+                feedbackFaux: "Attention. Reformuler, vérifier la compréhension, noter : ce sont des actions que l'on peut observer, décrire et reproduire. Il ne s'agit pas d'une disposition intérieure mais d'un comportement professionnel. C'est bien le style qui se manifeste ici."
+            },
+            {
+                difficulte: "net",
+                diffLabel: "Cas net",
+                scenario: "Discussion en salle de pause",
+                observation: "Karim, chef de vente, est de nature optimiste : il voit naturellement le côté positif dans chaque situation, ce qui irradie sur son entourage.",
+                reponse: "caractere",
+                feedbackJuste: "Bien vu. 'Être de nature optimiste' désigne une disposition intérieure stable. On ne peut pas l'observer directement ni la modifier par la formation. C'est un trait de personnalité, pas un style managérial.",
+                feedbackFaux: "Ce n'est pas tout à fait ça. L'optimisme naturel est une prédisposition interne, pas un comportement observable. On ne peut pas 'mesurer' ni 'régler' l'optimisme comme on le ferait avec une pratique professionnelle. C'est bien un trait de caractère."
+            },
+            {
+                difficulte: "net",
+                diffLabel: "Cas net",
+                scenario: "Bilan de fin de semaine",
+                observation: "Lors des debriefs du vendredi, Yasmine commence toujours par demander à chaque membre de l'équipe ce qui a bien fonctionné avant d'aborder les difficultés rencontrées.",
+                reponse: "comportement",
+                feedbackJuste: "Oui. Commencer par les réussites avant les difficultés, c'est un choix de méthode repérable et enseignable. Ce rituel de management peut être appris, adopté ou abandonné selon les contextes. C'est une pratique, donc un élément du style.",
+                feedbackFaux: "Reconsidérez. La séquence 'réussites d'abord, difficultés ensuite' est une décision consciente et reproductible. On peut la décrire, l'enseigner et l'évaluer. Ce n'est pas une qualité naturelle : c'est un choix comportemental."
+            },
+            {
+                difficulte: "nuance",
+                diffLabel: "Cas nuancé",
+                scenario: "Période de forte charge d'activité",
+                observation: "David, responsable logistique, est reconnu pour son calme en situation de crise : il ne s'affole jamais, maintient une voix posée et décompose méthodiquement les problèmes.",
+                reponse: "comportement",
+                feedbackJuste: "Bonne analyse. Le calme de David se manifeste par des comportements concrets : une voix posée, une décomposition méthodique des problèmes. Même si ce calme lui vient plus facilement qu'à d'autres, les pratiques qui en découlent sont observables et reproductibles. C'est le style qui opère ici.",
+                feedbackFaux: "Ce cas mérite une lecture plus fine. Même si le calme peut sembler un trait de personnalité, ce que l'on observe concrètement, c'est une voix posée, une méthode de résolution : des comportements visibles. C'est bien le style managérial qui se manifeste, même si le tempérament facilite son expression."
+            },
+            {
+                difficulte: "nuance",
+                diffLabel: "Cas nuancé",
+                scenario: "Entretien de recrutement interne",
+                observation: "Nadia est impatiente. Lorsqu'un collaborateur met du temps à expliquer un problème, elle termine ses phrases et propose rapidement des solutions sans laisser la personne finir.",
+                reponse: "comportement",
+                feedbackJuste: "Juste, même si c'est une subtilité. L'impatience peut être un trait de caractère, mais couper la parole et proposer des solutions avant la fin de l'exposé sont des comportements observables. C'est cette dimension comportementale qui définit le style, et c'est sur elle que le manager peut travailler.",
+                feedbackFaux: "Ce cas est subtil. L'impatience en elle-même est une prédisposition intérieure, mais couper la parole et proposer des solutions prématurément sont des comportements concrets et observables. C'est cette traduction en actes qui relève du style, et sur laquelle un manager peut travailler."
+            },
+            {
+                difficulte: "nuance",
+                diffLabel: "Cas nuancé",
+                scenario: "Réunion de planning hebdomadaire",
+                observation: "Alexis a un sens naturel du leadership : les gens l'écoutent spontanément et le suivent sans qu'il ait besoin de s'imposer.",
+                reponse: "caractere",
+                feedbackJuste: "Correct. Avoir un 'sens naturel du leadership' et inspirer la confiance spontanément relève ici d'un charisme personnel, d'une prédisposition. Cela reste vague, non mesurable, non enseignable tel quel. Pour parler de style, il faudrait décrire les comportements concrets par lesquels ce leadership se manifeste.",
+                feedbackFaux: "Attention à la formulation. L'observation ne décrit aucun comportement précis : ni parole, ni geste, ni pratique. 'Les gens le suivent spontanément' désigne une qualité personnelle, pas une conduite observable. Sans comportement identifiable, on reste dans le domaine du caractère."
+            },
+            {
+                difficulte: "piege",
+                diffLabel: "Cas piège",
+                scenario: "Formation d'un nouveau collaborateur",
+                observation: "Laure est bienveillante : elle prend le temps de féliciter son équipe après un projet difficile, pose des questions pour comprendre les blocages et propose son aide avant qu'on la lui demande.",
+                reponse: "comportement",
+                feedbackJuste: "Bien vu. La bienveillance semble un trait de caractère, mais regardez comment elle est décrite ici : féliciter après un projet difficile, poser des questions, proposer son aide de manière proactive. Ce sont des actes précis, visibles et reproductibles. C'est le style managérial, nourri par une disposition personnelle mais exprimé en comportements.",
+                feedbackFaux: "C'est le piège classique. 'Bienveillance' évoque un trait de personnalité, mais regardez la suite : féliciter après un projet difficile, poser des questions, proposer son aide en anticipation. Ce sont des comportements concrets, observables et enseignables. C'est le style qui opère, pas simplement le caractère."
+            },
+            {
+                difficulte: "piege",
+                diffLabel: "Cas piège",
+                scenario: "Période de tension avec un fournisseur",
+                observation: "Marc est autoritaire. On le sait, c'est sa nature : il a toujours besoin d'avoir le dernier mot et n'apprécie pas qu'on remette ses décisions en question.",
+                reponse: "caractere",
+                feedbackJuste: "Très bonne lecture. La formulation 'c'est sa nature, il a toujours besoin d'avoir le dernier mot' ancre cette description dans la personnalité, pas dans des pratiques observables. Remarquez l'absence de comportements précis. En management situationnel, si l'on voulait travailler avec Marc sur son style, il faudrait d'abord identifier ce que cela produit en comportements concrets.",
+                feedbackFaux: "Le mot 'autoritaire' peut suggérer un style, mais lisez l'observation en entier : 'c'est sa nature', 'il a toujours besoin'. Ces formulations ancrent la description dans une prédisposition stable et interne. Il n'y a aucun comportement précis identifié, seulement une qualification du caractère."
+            }
+        ];
+
+        let indexActuel = 0;
+        let score = 0;
+        let reponses = [];
+
+        function initDots() {
+            const wrap = document.getElementById("series-dots");
+            wrap.innerHTML = "";
+            CARTES.forEach((_, i) => {
+                const d = document.createElement("div");
+                d.className = "serie-dot" + (i === 0 ? " actif" : "");
+                d.id = "dot-" + i;
+                wrap.appendChild(d);
+            });
+        }
+
+        function majBarre() {
+            const pct = ((indexActuel) / CARTES.length) * 100;
+            document.getElementById("barre-fill").style.width = pct + "%";
+            document.getElementById("progression-label").textContent = "Observation " + (indexActuel + 1) + " sur " + CARTES.length;
+            document.getElementById("progression-score").textContent = "Score : " + score + " / " + CARTES.length;
+        }
+
+        function majDot(index, etat) {
+            const d = document.getElementById("dot-" + index);
+            if (d) { 
+                d.className = "serie-dot " + etat; 
+            }
+            const next = document.getElementById("dot-" + (index + 1));
+            if (next) next.classList.add("actif");
+        }
+
+        function afficherQuestion(index) {
+            const c = CARTES[index];
+            const zone = document.getElementById("zone-question");
+
+            let diffStyles = "";
+            if(c.difficulte === "net") diffStyles = "bg-green-100 text-green-700 border-green-200";
+            else if(c.difficulte === "nuance") diffStyles = "bg-amber-100 text-amber-700 border-amber-200";
+            else diffStyles = "bg-rose-100 text-rose-700 border-rose-200";
+
+            zone.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden animate-slide-up">
+                    
+                    <!-- Card Header -->
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                        <span class="text-xs font-bold tracking-widest uppercase text-slate-400">Scénario ${index + 1}</span>
+                        <span class="text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border ${diffStyles}">${c.diffLabel}</span>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="p-6 md:p-8">
+                        <div class="text-xs font-bold tracking-widest uppercase text-brand mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            ${c.scenario}
+                        </div>
+                        
+                        <p class="text-lg md:text-xl text-slate-800 font-medium italic leading-relaxed border-l-4 border-brand/40 pl-5 mb-8 py-2">
+                            &laquo;&thinsp;${c.observation}&thinsp;&raquo;
+                        </p>
+                        
+                        <!-- Choices -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button class="btn-choix group" id="btn-comportement" onclick="valider('comportement')">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-brand group-hover:bg-brand group-hover:text-white transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </div>
+                                    <span class="choix-titre font-bold text-slate-700">Signature comportementale</span>
+                                </div>
+                                <span class="text-sm text-slate-500 pl-13">Observable, descriptible, apprenable</span>
+                            </button>
+                            
+                            <button class="btn-choix group" id="btn-caractere" onclick="valider('caractere')">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-brand group-hover:bg-brand group-hover:text-white transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/></svg>
+                                    </div>
+                                    <span class="choix-titre font-bold text-slate-700">Trait de caractère</span>
+                                </div>
+                                <span class="text-sm text-slate-500 pl-13">Disposition interne, difficile à modifier</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Feedback Area -->
+                        <div class="mt-6 rounded-xl p-5 text-sm leading-relaxed hidden animate-fade-in" id="feedback"></div>
+                        
+                        <button class="hidden mt-6 w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md shadow-brand/20 items-center justify-center gap-2" id="btn-suivant" onclick="suivant()">
+                            ${index < CARTES.length - 1 ? "Observation suivante" : "Voir mon bilan"}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            majBarre();
+
+            setTimeout(() => {
+                const progressionWrap = document.getElementById("progression-wrap");
+                if (progressionWrap) {
+                    progressionWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 50);
+        }
+
+        function valider(choix) {
+            const c = CARTES[indexActuel];
+            const estJuste = choix === c.reponse;
+
+            if (estJuste) score++;
+            reponses.push(estJuste);
+
+            const btnComp = document.getElementById("btn-comportement");
+            const btnChar = document.getElementById("btn-caractere");
+            const fb = document.getElementById("feedback");
+            const btnSuiv = document.getElementById("btn-suivant");
+
+            btnComp.disabled = true;
+            btnChar.disabled = true;
+
+            if (estJuste) {
+                document.getElementById("btn-" + choix).classList.add("juste");
+                const autre = choix === "comportement" ? "btn-caractere" : "btn-comportement";
+                document.getElementById(autre).classList.add("neutre-apres");
+                
+                fb.className = "mt-6 rounded-xl p-5 text-sm leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text";
+                fb.innerHTML = `<div class="font-bold text-success mb-1 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Correct !</div>${c.feedbackJuste}`;
+                majDot(indexActuel, "juste");
+            } else {
+                document.getElementById("btn-" + choix).classList.add("faux");
+                document.getElementById("btn-" + c.reponse).classList.add("juste");
+                
+                fb.className = "mt-6 rounded-xl p-5 text-sm leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+                fb.innerHTML = `<div class="font-bold text-error mb-1 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Pas tout à fait...</div>${c.feedbackFaux}`;
+                majDot(indexActuel, "faux");
+            }
+
+            document.getElementById("progression-score").textContent = "Score : " + score + " / " + CARTES.length;
+            btnSuiv.classList.remove("hidden");
+            btnSuiv.classList.add("flex");
+
+            setTimeout(() => {
+                btnSuiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function suivant() {
+            indexActuel++;
+            if (indexActuel < CARTES.length) {
+                afficherQuestion(indexActuel);
+            } else {
+                afficherDebrief();
+            }
+        }
+
+        function afficherDebrief() {
+            document.getElementById("zone-question").style.display = "none";
+            document.getElementById("progression-wrap").style.display = "none";
+
+            const pct = Math.round((score / CARTES.length) * 100);
+            let tonalite = "";
+            let iconSvg = "";
+            if (score >= 7) {
+                tonalite = "Excellente lecture comportementale. Vous distinguez avec précision ce qui relève du style et ce qui relève du caractère.";
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 mx-auto"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
+            }
+            else if (score >= 5) {
+                tonalite = "Bonne maîtrise globale. Portez une attention particulière aux cas nuancés, où la personnalité et le comportement se mêlent.";
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 mx-auto"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>`;
+            }
+            else {
+                tonalite = "Ces distinctions sont subtiles. Le bilan ci-dessous vous donnera les repères essentiels pour les consolider.";
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 mx-auto"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>`;
+            }
+
+            const debrief = document.getElementById("debrief");
+            debrief.className = "block animate-slide-up w-full max-w-3xl";
+            
+            // Force progress bar to full for visual completion
+            document.getElementById("barre-fill").style.width = "100%";
+
+            debrief.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                    
+                    <div class="bg-brand p-8 text-white text-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4 text-white">${iconSvg}</div>
+                            <h2 class="text-2xl font-bold mb-2">Bilan de l'activité</h2>
+                            <div class="flex items-baseline justify-center gap-1 mb-4">
+                                <span class="text-6xl font-black text-brand-light">${score}</span>
+                                <span class="text-xl text-white/60 font-medium">/ ${CARTES.length}</span>
+                            </div>
+                            <p class="text-white/80 max-w-lg mx-auto text-sm leading-relaxed">${tonalite}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-8">
+                        <div class="bg-slate-50 border-l-4 border-brand rounded-r-xl p-6 mb-8 text-slate-700 leading-relaxed shadow-sm">
+                            Le style managérial est la <strong class="text-brand">signature comportementale du manager</strong> : l'ensemble des comportements, attitudes et pratiques qu'il adopte de façon relativement stable pour diriger, animer et influencer son équipe.<br><br>
+                            Il convient de le distinguer du simple caractère ou de la personnalité : <strong class="text-brand">le style relève du comportement observable</strong>. À ce titre, il peut être appris, développé et adapté. Un manager expérimenté et réflexif peut acquérir plusieurs styles différents et apprendre à les mobiliser de façon intentionnelle selon les besoins.
+                        </div>
+                        
+                        <h3 class="text-xs font-bold tracking-widest uppercase text-slate-400 mb-5 text-center">Ce qu'il faut retenir</h3>
+                        
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-brand/30 transition-colors shadow-sm">
+                                <div class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                                <p class="text-sm text-slate-600 leading-relaxed"><strong class="text-slate-800">Action visible :</strong> Un comportement est toujours décrit par une action visible et répétable (reformuler, questionner, féliciter). Si l'on ne peut pas l'observer, ce n'est pas un comportement.</p>
+                            </li>
+                            <li class="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-brand/30 transition-colors shadow-sm">
+                                <div class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                                <p class="text-sm text-slate-600 leading-relaxed"><strong class="text-slate-800">Disposition intérieure :</strong> Un trait de caractère est stable (optimisme, leadership inné). Ces qualités influencent le style, mais ne constituent pas le style en elles-mêmes.</p>
+                            </li>
+                            <li class="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-brand/30 transition-colors shadow-sm">
+                                <div class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                                <p class="text-sm text-slate-600 leading-relaxed"><strong class="text-slate-800">Évolution possible :</strong> Ce que cela change pour le manager : un style s'apprend et se travaille. Identifier vos comportements actuels est la première étape pour les faire évoluer.</p>
+                            </li>
+                        </ul>
+                        
+                        <button class="mt-10 w-full bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2" onclick="recommencer()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Recommencer l'activité
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function recommencer() {
+            indexActuel = 0;
+            score = 0;
+            reponses = [];
+            document.getElementById("debrief").className = "hidden";
+            document.getElementById("zone-question").style.display = "block";
+            document.getElementById("progression-wrap").style.display = "flex";
+            
+            initDots();
+            afficherQuestion(0);
+        }
+
+        const btnFs = document.getElementById('btn-fullscreen');
+        const iconEnter = document.getElementById('icon-fs-enter');
+        const iconExit = document.getElementById('icon-fs-exit');
+        const spotlight = document.getElementById('spotlight-overlay');
+
+        let isPseudoFs = false;
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        // Si le navigateur bloque (ex: iframe Genially sans permission), on passe au plan B
+                        console.warn("Plein écran natif bloqué. Activation du mode pseudo-plein écran.");
+                        enablePseudoFs();
+                    });
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else {
+                    enablePseudoFs();
+                }
+            } else {
+                if (isPseudoFs) {
+                    disablePseudoFs();
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            }
+        }
+
+        function enablePseudoFs() {
+            isPseudoFs = true;
+            document.body.classList.add('pseudo-fullscreen');
+            updateFsIcons();
+        }
+
+        function disablePseudoFs() {
+            isPseudoFs = false;
+            document.body.classList.remove('pseudo-fullscreen');
+            updateFsIcons();
+        }
+
+        function updateFsIcons() {
+            if (document.fullscreenElement || document.webkitFullscreenElement || isPseudoFs) {
+                iconEnter.classList.add('hidden');
+                iconExit.classList.remove('hidden');
+            } else {
+                iconEnter.classList.remove('hidden');
+                iconExit.classList.add('hidden');
+            }
+        }
+
+        btnFs.addEventListener('click', (e) => {
+            e.stopPropagation(); // Évite de déclencher le clic global si on clique directement sur le bouton
+            toggleFullScreen();
+            hideSpotlight();
+        });
+
+        const handleFsChange = () => {
+            updateFsIcons();
+        };
+
+        document.addEventListener('fullscreenchange', handleFsChange);
+        document.addEventListener('webkitfullscreenchange', handleFsChange);
+
+        function hideSpotlight() {
+            if(spotlight && !spotlight.classList.contains('opacity-0')) {
+                spotlight.classList.add('opacity-0');
+                setTimeout(() => spotlight.style.display = 'none', 1000);
+            }
+        }
+
+        // Le spotlight reste indéfiniment jusqu'à la première interaction de l'utilisateur sur la page
+        document.addEventListener('click', () => {
+            hideSpotlight();
+        }, { once: true });
+
+        // Démarrage
+        initDots();
+        afficherQuestion(0);
+    </script>
+</body>
+</html>

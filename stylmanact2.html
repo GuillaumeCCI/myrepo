@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les 4 archétypes de manager</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#000099',
+                            light: '#e6e6ff',
+                            hover: '#0000cc',
+                        },
+                        success: { DEFAULT: '#10b981', bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7' },
+                        error: { DEFAULT: '#ef4444', bg: '#fef2f2', text: '#991b1b', border: '#fca5a5' },
+                        
+                        // Couleurs spécifiques aux archétypes pour ancrage visuel
+                        arch_dict: '#C53030',
+                        arch_micro: '#D97706',
+                        arch_coll: '#2B6CB0',
+                        arch_coach: '#276749',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .phase-item {
+                @apply flex-1 p-3 md:p-4 text-center border-r border-slate-200 transition-colors duration-300 flex flex-col justify-center;
+            }
+            .phase-item:last-child { @apply border-r-0; }
+            .phase-item.active { @apply bg-brand text-white shadow-inner; }
+            .phase-item.done { @apply bg-slate-100 text-slate-500; }
+            .phase-item.future { @apply bg-white text-slate-400; }
+
+            .btn-choix {
+                @apply flex items-center gap-3 p-4 border-2 border-slate-200 rounded-xl bg-slate-50 cursor-pointer transition-all duration-200 text-left w-full text-slate-700 font-medium;
+            }
+            .btn-choix:hover:not(:disabled) {
+                @apply border-brand bg-brand-light/30 transform -translate-y-0.5 shadow-md text-brand;
+            }
+            .btn-choix:disabled { @apply cursor-default; }
+            
+            .btn-choix.juste { @apply border-success bg-success-bg text-success shadow-none ring-2 ring-success/20 font-bold; }
+            .btn-choix.faux { @apply border-error bg-error-bg text-error opacity-70; }
+            .btn-choix.neutre-apres { @apply opacity-40 grayscale bg-slate-100 border-slate-200; }
+        }
+
+        /* Fallback pour Genially (Pseudo Plein-Ecran) */
+        body.pseudo-fullscreen {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
+            z-index: 999999 !important; margin: 0 !important;
+            overflow-y: auto !important; border-radius: 0 !important;
+            background-color: #f8fafc !important;
+        }
+
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center pb-24">
+
+    <!-- Bouton Plein Écran -->
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <svg id="icon-fs-enter" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 hidden"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <!-- Overlay Spotlight -->
+    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Passer en plein écran</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <main class="w-full max-w-4xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+        
+        <!-- BANDEAU EN-TETE -->
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="w-14 h-14 min-w-[56px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-sm z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            </div>
+            <div class="z-10">
+                <div class="text-brand-light text-xs font-bold tracking-widest uppercase mb-1">Styles de management • Section 1</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold leading-tight mb-2">Les 4 archétypes de manager</h1>
+                <div class="text-white/80 text-sm font-medium">Une situation, quatre réactions • 2 phases d'analyse</div>
+            </div>
+        </header>
+
+        <!-- INDICATEUR DE PHASES -->
+        <div class="w-full flex flex-col md:flex-row bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div class="phase-item active" id="phase-item-1">
+                <div class="text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1 opacity-80">Phase 1</div>
+                <div class="text-sm md:text-base font-semibold">Identifier les archétypes</div>
+            </div>
+            <div class="phase-item future" id="phase-item-2">
+                <div class="text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1 opacity-80">Phase 2</div>
+                <div class="text-sm md:text-base font-semibold">Identifier les limites</div>
+            </div>
+            <div class="phase-item future" id="phase-item-3">
+                <div class="text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1 opacity-80">Bilan</div>
+                <div class="text-sm md:text-base font-semibold">Synthèse et clés de lecture</div>
+            </div>
+        </div>
+
+        <!-- CARTE SITUATION -->
+        <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 relative overflow-hidden" id="carte-situation">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-slate-300"></div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="inline-flex items-center gap-2 bg-slate-100 text-slate-600 text-xs font-bold tracking-wider uppercase px-3 py-1.5 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 
+                    Situation de référence
+                </div>
+                <span class="text-xs font-bold tracking-widest text-slate-400 uppercase" id="situation-phase-label">Phase 1 / 2</span>
+            </div>
+            
+            <h3 class="text-brand font-bold text-lg mb-2">Incident en cours de service</h3>
+            <p class="text-slate-700 leading-relaxed text-lg">
+                C'est l'heure de pointe et <strong>une machine importante tombe en panne</strong>. Trois collaborateurs sont bloqués et les retards s'accumulent. Voici comment <strong>quatre managers différents</strong> réagissent face à ce même imprévu.
+            </p>
+        </div>
+
+        <!-- CONSIGNE -->
+        <div class="bg-brand-light/40 border border-brand/20 rounded-xl p-5 flex gap-4 items-start shadow-sm" id="consigne">
+            <div class="bg-white p-2 rounded-lg shadow-sm text-brand flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <p class="text-brand font-medium text-sm md:text-base leading-relaxed" id="consigne-texte">
+                Lisez chaque réaction ci-dessous et associez-la à l'archétype de manager qu'elle illustre. L'ordre des propositions est mélangé pour chaque situation.
+            </p>
+        </div>
+
+        <!-- ZONE DYNAMIQUE (REMPLACE LES ANCIENNES GRILLES) -->
+        <div id="zone-dynamique" class="w-full"></div>
+
+        <!-- BILAN -->
+        <div id="bilan" class="hidden"></div>
+        
+    </main>
+
+    <script>
+        const ARCHETYPES = [
+            { id: "dict",  nom: "Le Dictateur",    couleur: "bg-[#C53030]" },
+            { id: "micro", nom: "Le Micro-manager", couleur: "bg-[#D97706]" },
+            { id: "coll",  nom: "Le Collaborateur", couleur: "bg-[#2B6CB0]" },
+            { id: "coach", nom: "Le Coach",         couleur: "bg-[#276749]" }
+        ];
+
+        const REACTIONS = [
+            {
+                lettre: "A",
+                texte: "Il coupe court : « On ne perd pas de temps. Je réaffecte les trois personnes sur le poste B jusqu'à la fin de matinée. Personne ne bouge sans mon feu vert. » Il repart sans attendre de retour.",
+                archetype: "dict",
+                feedbackJuste: "Oui. Décider seul, réaffecter sans consulter, partir sans attendre : ce sont les marqueurs comportementaux du Dictateur. La décision est immédiate et les collaborateurs sont traités comme des exécutants.",
+                feedbackFaux: "Ce n'est pas le bon. Lisez à nouveau la réaction : le manager décide seul, sans explication, sans recueillir d'information, et repart immédiatement. C'est le Dictateur : autorité centralisée, décision imposée, zéro espace pour le collaborateur."
+            },
+            {
+                lettre: "B",
+                texte: "Il demande d'abord : « Depuis quand ? Qu'est-ce qui a été tenté ? » Il suit lui-même la procédure de redémarrage, vérifie chaque étape, demande à un collaborateur de l'observer, puis reste sur place jusqu'à résolution complète.",
+                archetype: "micro",
+                feedbackJuste: "Juste. S'informer, prendre en main la procédure lui-même, faire observer, rester jusqu'au bout : c'est le Micro-manager. L'intention est bonne (s'assurer que tout est fait correctement) mais il capte le problème au lieu de laisser le collaborateur le résoudre.",
+                feedbackFaux: "Ce n'est pas ça. Relisez : il prend lui-même en main la procédure, fait observer, reste sur place. Ce n'est pas de la collaboration ni de la délégation, c'est du contrôle intense. L'archétype est le Micro-manager."
+            },
+            {
+                lettre: "C",
+                texte: "Il rassemble rapidement les trois personnes concernées : « Qu'est-ce qu'on peut faire, là, maintenant ? Qui a une idée ? » Une proposition émerge, il l'entend, pose quelques questions, et dit : « On part sur ça. Je reste disponible. »",
+                archetype: "coll",
+                feedbackJuste: "Exact. Réunir l'équipe, poser une question ouverte, écouter les propositions, décider avec eux : c'est le Collaborateur. Il mobilise l'intelligence collective et associe les personnes concernées à la solution.",
+                feedbackFaux: "Pas tout à fait. Relisez : il rassemble l'équipe, pose une question ouverte, écoute. Il ne décide pas seul, il ne contrôle pas, il ne coache pas non plus sur le long terme. C'est le Collaborateur : consultation en temps réel et décision partagée."
+            },
+            {
+                lettre: "D",
+                texte: "Il s'adresse directement au collaborateur le plus expérimenté : « Tu as déjà géré ça. Qu'est-ce que tu proposes ? » Il écoute, acquiesce, ajoute juste : « Pense à prévenir le responsable technique en fin de matinée. » Et il repart.",
+                archetype: "coach",
+                feedbackJuste: "Oui. Identifier la bonne personne, lui poser la question plutôt que de donner la réponse, ajouter un seul point de cadrage et repartir : c'est le Coach. Il fait confiance à la compétence, responsabilise et n'intervient que pour ce que le collaborateur ne verrait pas seul.",
+                feedbackFaux: "Ce n'est pas le bon archétype. Relisez : il choisit le collaborateur le plus expérimenté, lui pose la question, écoute sa proposition, ajoute un seul élément et repart. Il ne décide pas à la place, il ne contrôle pas, il développe l'autonomie. C'est le Coach."
+            }
+        ];
+
+        const LIMITES = [
+            {
+                archetype: "dict",
+                rappel: "« On ne perd pas de temps. Je réaffecte les trois personnes sur le poste B. Personne ne bouge sans mon feu vert. »",
+                question: "Dans ce contexte de panne en pic d'activité, quelle est la limite principale de cette posture ?",
+                options: [
+                    { texte: "Il prend une décision à l'aveugle sans consulter l'équipe.", bonne: false },
+                    { texte: "Il crée une forte dépendance et tue l'initiative individuelle.", bonne: true },
+                    { texte: "Il génère de la frustration par un manque de communication.", bonne: false }
+                ],
+                feedbackJuste: "Exact. En situation d'urgence isolée, le Dictateur est parfois efficace. Mais si c'est le style habituel, il crée une dépendance : les collaborateurs n'anticipent plus. Le jour où le manager n'est pas là, personne ne sait quoi faire.",
+                feedbackFaux: "La vraie limite n'est pas dans cette décision spécifique, mais dans ce que ce style produit sur la durée : des collaborateurs qui attendent les ordres et n'agissent plus par eux-mêmes. En urgence sans manager, c'est un risque sérieux."
+            },
+            {
+                archetype: "micro",
+                rappel: "Il prend lui-même en main la procédure de redémarrage, fait observer, reste sur place jusqu'à résolution.",
+                question: "Quelle est la limite de cette posture dans ce contexte ?",
+                options: [
+                    { texte: "Il perd son propre temps et empêche le collaborateur d'apprendre.", bonne: true },
+                    { texte: "Il risque de froisser l'égo du collaborateur en l'infantilisant.", bonne: false },
+                    { texte: "Il manque de vision globale en se focalisant sur un problème.", bonne: false }
+                ],
+                feedbackJuste: "Oui. Le Micro-manager consomme son propre temps sur des tâches opérationnelles que les collaborateurs pourraient gérer. Il bloque le développement de leur autonomie. La prochaine panne ? Même scénario.",
+                feedbackFaux: "La limite centrale du Micro-manager, c'est qu'il substitue son action à celle du collaborateur, ce qui l'empêche de développer son autonomie (et empêche le manager de se concentrer sur ce qui relève vraiment de son niveau)."
+            },
+            {
+                archetype: "coll",
+                rappel: "« Qu'est-ce qu'on peut faire, là, maintenant ? Qui a une idée ? » Une proposition émerge, il l'entend, et dit : « On part sur ça. »",
+                question: "Dans ce contexte précis de pic d'activité, quelle est la principale limite de cette posture ?",
+                options: [
+                    { texte: "Le temps de consultation ralentit l'action face à l'urgence.", bonne: true },
+                    { texte: "Les collaborateurs manquent souvent d'idées sous la pression.", bonne: false },
+                    { texte: "Il donne l'impression de fuir ses propres responsabilités.", bonne: false }
+                ],
+                feedbackJuste: "Juste. Le Collaborateur est efficace quand il y a le temps de consulter. En urgence immédiate (clients qui attendent, poste bloqué), le temps de réunion peut être un luxe. Une posture plus directive peut être nécessaire.",
+                feedbackFaux: "Le risque du Collaborateur en situation d'urgence, c'est que la consultation prend du temps que la situation ne permet pas toujours. Ce n'est pas que l'équipe n'aurait pas d'idées : c'est que le processus participatif a un coût temporel."
+            },
+            {
+                archetype: "coach",
+                rappel: "« Tu as déjà géré ça. Qu'est-ce que tu proposes ? » Il écoute, acquiesce, ajoute un point de cadrage et repart.",
+                question: "Quelle est la limite de cette posture dans ce contexte ?",
+                options: [
+                    { texte: "Le manager n'apporte aucune aide concrète pour cette panne.", bonne: false },
+                    { texte: "La délégation échoue si la personne choisie n'est pas qualifiée.", bonne: true },
+                    { texte: "Cette approche isole les autres membres de l'équipe du problème.", bonne: false }
+                ],
+                feedbackJuste: "Exact. Le Coach est efficace quand il identifie correctement la personne compétente. Si cette identification est mauvaise, la délégation produit une solution sous-optimale ou une situation non gérée.",
+                feedbackFaux: "La limite du Coach n'est pas l'absence d'action directe, mais le risque de se tromper de référent. Cette posture présuppose que le manager connaît bien les compétences de chacun. Si cette lecture est incorrecte, la délégation échoue."
+            }
+        ];
+
+        let phaseCourante = 1;
+        let indexEtape = 0;
+        let phase2IntroVue = false;
+        const TOTAL_REACTIONS = REACTIONS.length;
+
+        // Utilitaire pour mélanger un tableau (anti-biais)
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        /* ---- MOTEUR D'AFFICHAGE ETAPE PAR ETAPE ---- */
+        function afficherEtape() {
+            const zone = document.getElementById("zone-dynamique");
+            const consigneTexte = document.getElementById("consigne-texte");
+            const consigneContainer = document.getElementById("consigne");
+            const labelPhase = document.getElementById("situation-phase-label");
+
+            zone.innerHTML = ""; // Vider le contenu précédent
+
+            if (phaseCourante === 1) {
+                consigneContainer.style.display = "flex";
+                labelPhase.textContent = `Phase 1 / 2 — Réaction ${indexEtape + 1} / 4`;
+                consigneTexte.textContent = "Lisez la réaction ci-dessous et associez-la à l'archétype de manager qu'elle illustre. L'ordre des propositions est mélangé à chaque fois.";
+                
+                const r = REACTIONS[indexEtape];
+                const archetypesMelanges = shuffleArray(ARCHETYPES);
+                
+                const optsHTML = archetypesMelanges.map((a) => `
+                    <button class="btn-choix group" id="opt-${a.id}" onclick="choisirArchetype('${a.id}', ${JSON.stringify(archetypesMelanges).replace(/"/g, '&quot;')})">
+                        <div class="w-4 h-4 rounded-full ${a.couleur} flex-shrink-0"></div>
+                        <span class="choix-titre">${a.nom}</span>
+                    </button>
+                `).join("");
+
+                zone.innerHTML = `
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col animate-slide-up">
+                        <div class="bg-slate-50 border-b border-slate-100 px-5 py-3 flex justify-between items-center">
+                            <span class="text-xs font-bold tracking-widest uppercase text-slate-500">Réaction ${r.lettre}</span>
+                        </div>
+                        <div class="p-5 md:p-8 flex-1 flex flex-col">
+                            <p class="text-slate-700 italic leading-relaxed border-l-4 border-slate-300 pl-4 mb-8 text-lg md:text-xl">
+                                &laquo;&thinsp;${r.texte}&thinsp;&raquo;
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${optsHTML}
+                            </div>
+                            <div class="mt-6 rounded-xl p-5 text-sm md:text-base leading-relaxed hidden animate-fade-in" id="feedback-box"></div>
+                            
+                            <button class="hidden w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md shadow-brand/20 items-center justify-center gap-2 mt-6" id="btn-suivant" onclick="etapeSuivante()">
+                                ${indexEtape < 3 ? 'Réaction suivante' : 'Passer à la Phase 2 : Identifier les limites'}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+            } else if (phaseCourante === 2) {
+                if (!phase2IntroVue) {
+                    document.getElementById("phase-item-1").className = "phase-item done";
+                    document.getElementById("phase-item-2").className = "phase-item active";
+                    
+                    labelPhase.textContent = `Transition Phase 1 → 2`;
+                    consigneContainer.style.display = "none"; // On masque la consigne pour ce panneau de transition
+                    
+                    zone.innerHTML = `
+                        <div class="bg-white border-2 border-brand/10 rounded-3xl shadow-xl overflow-hidden flex flex-col animate-slide-up relative mt-2">
+                            <div class="p-8 md:p-12 text-center flex flex-col items-center relative z-10">
+                                <div class="w-20 h-20 bg-brand-light text-brand rounded-3xl flex items-center justify-center mb-6 shadow-sm transform rotate-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                                </div>
+                                <h3 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-4">Phase 1 terminée !</h3>
+                                <p class="text-slate-600 text-lg md:text-xl mb-8 max-w-2xl leading-relaxed">
+                                    Vous avez identifié avec succès les 4 postures managériales. Mais en management, aucune de ces postures n'est parfaite dans l'absolu.
+                                </p>
+                                
+                                <div class="bg-slate-50 p-6 md:p-8 rounded-2xl text-left mb-10 border border-slate-200 w-full max-w-2xl shadow-inner">
+                                    <h4 class="font-bold text-brand mb-3 flex items-center gap-2 text-lg">
+                                        <svg class="w-6 h-6 text-brand" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                                        Votre mission pour la Phase 2 :
+                                    </h4>
+                                    <p class="text-slate-700 leading-relaxed text-base md:text-lg">
+                                        Pour chaque archétype, vous allez maintenant devoir identifier <strong class="text-brand underline decoration-brand decoration-2 underline-offset-2">la limite principale</strong> ou le risque majeur que cette posture fait courir dans ce contexte précis de panne en urgence.
+                                    </p>
+                                </div>
+                                
+                                <button class="bg-brand text-white hover:bg-brand-hover font-bold py-4 px-8 rounded-xl transition-all active:scale-95 shadow-md shadow-brand/20 flex items-center gap-3 text-lg group" onclick="lancerPhase2()">
+                                    Découvrir les limites
+                                    <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        document.getElementById("carte-situation").scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 50);
+
+                    return; // Stoppe l'exécution en attendant le clic de l'utilisateur
+                }
+
+                consigneContainer.style.display = "flex";
+                document.getElementById("phase-item-1").className = "phase-item done";
+                document.getElementById("phase-item-2").className = "phase-item active";
+                
+                labelPhase.textContent = `Phase 2 / 2 — Limite ${indexEtape + 1} / 4`;
+                consigneTexte.textContent = "Vous connaissez maintenant l'archétype derrière chaque réaction. Identifiez la limite principale que cette posture fait courir dans ce contexte précis d'urgence.";
+                
+                const l = LIMITES[indexEtape];
+                const arch = ARCHETYPES.find(a => a.id === l.archetype);
+                const optsMelangees = shuffleArray(l.options);
+
+                const optsHTML = optsMelangees.map((opt, oi) => `
+                    <button class="btn-choix p-4 text-sm md:text-base" id="opt-${oi}" onclick="choisirLimite(${oi}, ${opt.bonne}, ${JSON.stringify(optsMelangees).replace(/"/g, '&quot;')})">
+                        ${opt.texte}
+                    </button>
+                `).join("");
+
+                zone.innerHTML = `
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col animate-slide-up">
+                        <div class="bg-slate-50 border-b border-slate-100 px-5 py-3 flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full ${arch.couleur}"></div>
+                            <span class="text-xs font-bold tracking-widest uppercase text-slate-700">${arch.nom}</span>
+                        </div>
+                        <div class="p-5 md:p-8 flex-1 flex flex-col">
+                            <p class="text-slate-500 italic border-l-2 border-slate-200 pl-4 mb-6 leading-relaxed">${l.rappel}</p>
+                            <p class="text-brand font-semibold mb-6 leading-relaxed text-lg">${l.question}</p>
+                            <div class="flex flex-col gap-3">
+                                ${optsHTML}
+                            </div>
+                            <div class="mt-6 rounded-xl p-5 text-sm md:text-base leading-relaxed hidden animate-fade-in" id="feedback-box"></div>
+                            
+                            <button class="hidden w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md shadow-brand/20 items-center justify-center gap-2 mt-6" id="btn-suivant" onclick="etapeSuivante()">
+                                ${indexEtape < 3 ? 'Posture suivante' : 'Voir la synthèse finale'}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Scroll en haut de la carte de situation à chaque nouvelle question pour bien centrer la vue
+            setTimeout(() => {
+                document.getElementById("carte-situation").scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 50);
+        }
+
+        function choisirArchetype(choixId, archetypesMelanges) {
+            const r = REACTIONS[indexEtape];
+            const estJuste = choixId === r.archetype;
+
+            archetypesMelanges.forEach((a) => {
+                const btn = document.getElementById("opt-" + a.id);
+                btn.disabled = true;
+                if (a.id === choixId) {
+                    btn.className = estJuste ? "btn-choix juste" : "btn-choix faux";
+                } else if (a.id === r.archetype && !estJuste) {
+                    btn.className = "btn-choix juste"; // Révèle la bonne réponse
+                } else {
+                    btn.className = "btn-choix neutre-apres";
+                }
+            });
+
+            afficherFeedback(estJuste, r.feedbackJuste, r.feedbackFaux);
+        }
+
+        function choisirLimite(oiClicked, estJuste, optsMelangees) {
+            const l = LIMITES[indexEtape];
+
+            optsMelangees.forEach((opt, oi) => {
+                const btn = document.getElementById("opt-" + oi);
+                btn.disabled = true;
+                if (oi === oiClicked) {
+                    btn.className = estJuste ? "btn-choix p-4 text-sm md:text-base juste" : "btn-choix p-4 text-sm md:text-base faux";
+                } else if (opt.bonne && !estJuste) {
+                    btn.className = "btn-choix p-4 text-sm md:text-base juste"; // Révèle la bonne réponse
+                } else {
+                    btn.className = "btn-choix p-4 text-sm md:text-base neutre-apres";
+                }
+            });
+
+            afficherFeedback(estJuste, l.feedbackJuste, l.feedbackFaux);
+        }
+
+        function afficherFeedback(estJuste, textJuste, textFaux) {
+            const fb = document.getElementById("feedback-box");
+            fb.className = estJuste 
+                ? "mt-6 rounded-xl p-5 text-sm md:text-base leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text"
+                : "mt-6 rounded-xl p-5 text-sm md:text-base leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+            
+            const iconHTML = estJuste 
+                ? `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+                : `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+
+            const titre = estJuste ? "Correct" : "Pas tout à fait";
+            fb.innerHTML = `<div class="font-bold mb-2 flex items-center ${estJuste ? 'text-success' : 'text-error'}">${iconHTML} ${titre}</div>${estJuste ? textJuste : textFaux}`;
+
+            const btnSuivant = document.getElementById("btn-suivant");
+            btnSuivant.classList.remove("hidden");
+            btnSuivant.classList.add("flex");
+            
+            setTimeout(() => {
+                btnSuivant.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }, 100);
+        }
+
+        function lancerPhase2() {
+            phase2IntroVue = true;
+            afficherEtape();
+        }
+
+        function etapeSuivante() {
+            indexEtape++;
+            // Passage à la phase supérieure si on a vu les 4 réactions/limites
+            if (indexEtape >= 4) {
+                phaseCourante++;
+                indexEtape = 0;
+            }
+            // Si on a fini la phase 2, on affiche le bilan
+            if (phaseCourante > 2) {
+                afficherBilan();
+            } else {
+                afficherEtape();
+            }
+        }
+
+        /* ---- BILAN ---- */
+        function afficherBilan() {
+            document.getElementById("zone-dynamique").style.display = "none";
+            document.getElementById("consigne").style.display = "none";
+            document.getElementById("carte-situation").style.display = "none";
+
+            document.getElementById("phase-item-2").className = "phase-item done";
+            document.getElementById("phase-item-3").className = "phase-item active";
+
+            const BILAN_DATA = [
+                {
+                    id: "dict", nom: "Le Dictateur",
+                    couleur: "text-arch_dict", bg: "bg-arch_dict",
+                    atout: "Efficacité immédiate en situation de crise ou quand l'équipe n'a pas les éléments.",
+                    limite: "Crée une dépendance : l'équipe n'agit plus sans ordre. Démotive les experts."
+                },
+                {
+                    id: "micro", nom: "Le Micro-manager",
+                    couleur: "text-arch_micro", bg: "bg-arch_micro",
+                    atout: "Rassure les novices et sécurise les contextes à fort risque opérationnel.",
+                    limite: "Bloque l'autonomie et mobilise le manager sur des tâches de niveau inférieur."
+                },
+                {
+                    id: "coll", nom: "Le Collaborateur",
+                    couleur: "text-arch_coll", bg: "bg-arch_coll",
+                    atout: "Mobilise l'intelligence collective et renforce l'engagement sur les décisions.",
+                    limite: "Le processus de consultation a un coût temporel : inefficace en urgence absolue."
+                },
+                {
+                    id: "coach", nom: "Le Coach",
+                    couleur: "text-arch_coach", bg: "bg-arch_coach",
+                    atout: "Développe l'autonomie et la compétence individuelle sur le long terme.",
+                    limite: "Inadapté si la personne manque de compétences ou face à des situations 100% inédites."
+                }
+            ];
+
+            const archHTML = BILAN_DATA.map(a => `
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
+                    <!-- Ligne d'accentuation en haut -->
+                    <div class="absolute top-0 left-0 w-full h-1.5 ${a.bg}"></div>
+                    
+                    <h3 class="${a.couleur} font-bold text-lg mb-4 flex items-center gap-2 mt-1">
+                        <div class="w-2 h-2 rounded-full ${a.bg}"></div>
+                        ${a.nom}
+                    </h3>
+                    
+                    <div class="flex flex-col gap-3 flex-1">
+                        <!-- Bulle Atout -->
+                        <div class="bg-success-bg/50 rounded-xl p-3 flex gap-3 items-start border border-success-border/30">
+                            <svg class="w-5 h-5 text-success mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            <div>
+                                <div class="text-xs font-bold text-success uppercase tracking-wider mb-0.5">Atout</div>
+                                <div class="text-sm text-slate-700 leading-relaxed">${a.atout}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bulle Limite -->
+                        <div class="bg-error-bg/50 rounded-xl p-3 flex gap-3 items-start border border-error-border/30 mt-auto">
+                            <svg class="w-5 h-5 text-error mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <div class="text-xs font-bold text-error uppercase tracking-wider mb-0.5">Limite</div>
+                                <div class="text-sm text-slate-700 leading-relaxed">${a.limite}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+
+            const bilan = document.getElementById("bilan");
+            bilan.className = "block animate-slide-up w-full";
+            bilan.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                    
+                    <div class="bg-brand p-8 text-white relative overflow-hidden text-center">
+                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                        <div class="relative z-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 mx-auto mb-3"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                            <h2 class="text-2xl font-bold mb-2">Les 4 archétypes en un coup d'œil</h2>
+                            <p class="text-white/80 max-w-lg mx-auto text-sm leading-relaxed">Tout manager combine plusieurs de ces tendances, avec l'une ou l'autre dominante selon les moments.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 md:p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                            ${archHTML}
+                        </div>
+                        
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8 text-center shadow-sm">
+                            <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-brand-light text-brand mb-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h4 class="text-brand font-bold text-lg mb-2">Ce qu'il faut retenir</h4>
+                            <p class="text-slate-600 leading-relaxed max-w-2xl mx-auto">
+                                Chaque archétype possède un <strong>atout réel</strong> (y compris le Dictateur en crise). La compétence d'un manager n'est pas d'éliminer un style, mais de <strong>savoir lequel mobiliser</strong> selon la situation. C'est le principe du management situationnel.
+                            </p>
+                        </div>
+                        
+                        <button class="w-full bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group" onclick="recommencer()">
+                            <svg class="w-5 h-5 group-hover:-rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Recommencer l'activité
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }, 100);
+        }
+
+        function recommencer() {
+            phaseCourante = 1;
+            indexEtape = 0;
+            phase2IntroVue = false;
+            
+            document.getElementById("zone-dynamique").style.display = "block";
+            document.getElementById("consigne").style.display = "flex";
+            document.getElementById("carte-situation").style.display = "block";
+            document.getElementById("bilan").className = "hidden";
+            
+            document.getElementById("phase-item-1").className = "phase-item active";
+            document.getElementById("phase-item-2").className = "phase-item future";
+            document.getElementById("phase-item-3").className = "phase-item future";
+            
+            afficherEtape();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        // --- GESTION DU PLEIN ECRAN (AVEC FALLBACK GENIALLY) ---
+        const btnFs = document.getElementById('btn-fullscreen');
+        const iconEnter = document.getElementById('icon-fs-enter');
+        const iconExit = document.getElementById('icon-fs-exit');
+        const spotlight = document.getElementById('spotlight-overlay');
+
+        let isPseudoFs = false;
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        console.warn("Plein écran natif bloqué par l'hôte. Activation du mode pseudo-plein écran.");
+                        enablePseudoFs();
+                    });
+                    // Fallback pour blocage silencieux (Safari/Genially)
+                    setTimeout(() => {
+                        if (!document.fullscreenElement && !isPseudoFs) { enablePseudoFs(); }
+                    }, 300);
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else {
+                    enablePseudoFs();
+                }
+            } else {
+                if (isPseudoFs) {
+                    disablePseudoFs();
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            }
+        }
+
+        function enablePseudoFs() {
+            isPseudoFs = true;
+            document.body.classList.add('pseudo-fullscreen');
+            updateFsIcons();
+        }
+
+        function disablePseudoFs() {
+            isPseudoFs = false;
+            document.body.classList.remove('pseudo-fullscreen');
+            updateFsIcons();
+        }
+
+        function updateFsIcons() {
+            if (document.fullscreenElement || document.webkitFullscreenElement || isPseudoFs) {
+                iconEnter.classList.add('hidden');
+                iconExit.classList.remove('hidden');
+            } else {
+                iconEnter.classList.remove('hidden');
+                iconExit.classList.add('hidden');
+            }
+        }
+
+        btnFs.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFullScreen();
+            hideSpotlight();
+        });
+
+        const handleFsChange = () => updateFsIcons();
+        document.addEventListener('fullscreenchange', handleFsChange);
+        document.addEventListener('webkitfullscreenchange', handleFsChange);
+
+        function hideSpotlight() {
+            if(spotlight && !spotlight.classList.contains('opacity-0')) {
+                spotlight.classList.add('opacity-0');
+                setTimeout(() => spotlight.style.display = 'none', 1000);
+            }
+        }
+
+        document.addEventListener('click', () => hideSpotlight(), { once: true });
+
+        // Démarrage
+        afficherEtape();
+    </script>
+</body>
+</html>

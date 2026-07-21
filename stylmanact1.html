@@ -96,14 +96,14 @@
         /* Fallback pour Genially (Pseudo Plein-Ecran) */
         body.pseudo-fullscreen {
             position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
             z-index: 99999 !important;
             margin: 0 !important;
             overflow-y: auto !important;
             border-radius: 0 !important;
+            background-color: #f8fafc !important;
         }
 
         body {
@@ -113,7 +113,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center">
+<body class="min-h-screen text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center pb-20">
 
     <!-- Bouton Plein Écran -->
     <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
@@ -184,8 +184,7 @@
     <script>
         const CARTES = [
             {
-                difficulte: "net",
-                diffLabel: "Cas net",
+                difficulte: "net", diffLabel: "Cas net",
                 scenario: "Lundi matin, brief d'équipe",
                 observation: "Sophie, responsable d'équipe, reformule systématiquement chaque consigne à l'oral en fin de brief : elle reprend les points clés, vérifie la compréhension de chacun et note les actions dans un carnet partagé.",
                 reponse: "comportement",
@@ -193,8 +192,7 @@
                 feedbackFaux: "Attention. Reformuler, vérifier la compréhension, noter : ce sont des actions que l'on peut observer, décrire et reproduire. Il ne s'agit pas d'une disposition intérieure mais d'un comportement professionnel. C'est bien le style qui se manifeste ici."
             },
             {
-                difficulte: "net",
-                diffLabel: "Cas net",
+                difficulte: "net", diffLabel: "Cas net",
                 scenario: "Discussion en salle de pause",
                 observation: "Karim, chef de vente, est de nature optimiste : il voit naturellement le côté positif dans chaque situation, ce qui irradie sur son entourage.",
                 reponse: "caractere",
@@ -202,8 +200,7 @@
                 feedbackFaux: "Ce n'est pas tout à fait ça. L'optimisme naturel est une prédisposition interne, pas un comportement observable. On ne peut pas 'mesurer' ni 'régler' l'optimisme comme on le ferait avec une pratique professionnelle. C'est bien un trait de caractère."
             },
             {
-                difficulte: "net",
-                diffLabel: "Cas net",
+                difficulte: "net", diffLabel: "Cas net",
                 scenario: "Bilan de fin de semaine",
                 observation: "Lors des debriefs du vendredi, Yasmine commence toujours par demander à chaque membre de l'équipe ce qui a bien fonctionné avant d'aborder les difficultés rencontrées.",
                 reponse: "comportement",
@@ -211,8 +208,7 @@
                 feedbackFaux: "Reconsidérez. La séquence 'réussites d'abord, difficultés ensuite' est une décision consciente et reproductible. On peut la décrire, l'enseigner et l'évaluer. Ce n'est pas une qualité naturelle : c'est un choix comportemental."
             },
             {
-                difficulte: "nuance",
-                diffLabel: "Cas nuancé",
+                difficulte: "nuance", diffLabel: "Cas nuancé",
                 scenario: "Période de forte charge d'activité",
                 observation: "David, responsable logistique, est reconnu pour son calme en situation de crise : il ne s'affole jamais, maintient une voix posée et décompose méthodiquement les problèmes.",
                 reponse: "comportement",
@@ -220,8 +216,7 @@
                 feedbackFaux: "Ce cas mérite une lecture plus fine. Même si le calme peut sembler un trait de personnalité, ce que l'on observe concrètement, c'est une voix posée, une méthode de résolution : des comportements visibles. C'est bien le style managérial qui se manifeste, même si le tempérament facilite son expression."
             },
             {
-                difficulte: "nuance",
-                diffLabel: "Cas nuancé",
+                difficulte: "nuance", diffLabel: "Cas nuancé",
                 scenario: "Entretien de recrutement interne",
                 observation: "Nadia est impatiente. Lorsqu'un collaborateur met du temps à expliquer un problème, elle termine ses phrases et propose rapidement des solutions sans laisser la personne finir.",
                 reponse: "comportement",
@@ -229,8 +224,7 @@
                 feedbackFaux: "Ce cas est subtil. L'impatience en elle-même est une prédisposition intérieure, mais couper la parole et proposer des solutions prématurément sont des comportements concrets et observables. C'est cette traduction en actes qui relève du style, et sur laquelle un manager peut travailler."
             },
             {
-                difficulte: "nuance",
-                diffLabel: "Cas nuancé",
+                difficulte: "nuance", diffLabel: "Cas nuancé",
                 scenario: "Réunion de planning hebdomadaire",
                 observation: "Alexis a un sens naturel du leadership : les gens l'écoutent spontanément et le suivent sans qu'il ait besoin de s'imposer.",
                 reponse: "caractere",
@@ -238,8 +232,7 @@
                 feedbackFaux: "Attention à la formulation. L'observation ne décrit aucun comportement précis : ni parole, ni geste, ni pratique. 'Les gens le suivent spontanément' désigne une qualité personnelle, pas une conduite observable. Sans comportement identifiable, on reste dans le domaine du caractère."
             },
             {
-                difficulte: "piege",
-                diffLabel: "Cas piège",
+                difficulte: "piege", diffLabel: "Cas piège",
                 scenario: "Formation d'un nouveau collaborateur",
                 observation: "Laure est bienveillante : elle prend le temps de féliciter son équipe après un projet difficile, pose des questions pour comprendre les blocages et propose son aide avant qu'on la lui demande.",
                 reponse: "comportement",
@@ -247,8 +240,7 @@
                 feedbackFaux: "C'est le piège classique. 'Bienveillance' évoque un trait de personnalité, mais regardez la suite : féliciter après un projet difficile, poser des questions, proposer son aide en anticipation. Ce sont des comportements concrets, observables et enseignables. C'est le style qui opère, pas simplement le caractère."
             },
             {
-                difficulte: "piege",
-                diffLabel: "Cas piège",
+                difficulte: "piege", diffLabel: "Cas piège",
                 scenario: "Période de tension avec un fournisseur",
                 observation: "Marc est autoritaire. On le sait, c'est sa nature : il a toujours besoin d'avoir le dernier mot et n'apprécie pas qu'on remette ses décisions en question.",
                 reponse: "caractere",
@@ -496,6 +488,7 @@
             afficherQuestion(0);
         }
 
+        // --- GESTION DU PLEIN ECRAN (AVEC FALLBACK GENIALLY) ---
         const btnFs = document.getElementById('btn-fullscreen');
         const iconEnter = document.getElementById('icon-fs-enter');
         const iconExit = document.getElementById('icon-fs-exit');
@@ -506,14 +499,30 @@
         function toggleFullScreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
                 const elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => {
-                        // Si le navigateur bloque (ex: iframe Genially sans permission), on passe au plan B
-                        console.warn("Plein écran natif bloqué. Activation du mode pseudo-plein écran.");
+                
+                // On récupère la fonction native
+                const enterFn = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+
+                if (enterFn) {
+                    try {
+                        const promise = enterFn.call(elem);
+                        if (promise && typeof promise.catch === 'function') {
+                            promise.catch(err => {
+                                console.warn("Plein écran natif bloqué par l'hôte (Genially) :", err);
+                                enablePseudoFs();
+                            });
+                        } else {
+                            // C'est ici qu'intervient le fameux fallback de 300ms pour les navigateurs muets !
+                            setTimeout(() => {
+                                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                                    enablePseudoFs();
+                                }
+                            }, 300);
+                        }
+                    } catch (err) {
+                        console.warn("Erreur API plein écran:", err);
                         enablePseudoFs();
-                    });
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
+                    }
                 } else {
                     enablePseudoFs();
                 }
@@ -521,10 +530,11 @@
                 if (isPseudoFs) {
                     disablePseudoFs();
                 } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
+                    const exitFn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                    if (exitFn) {
+                        try { exitFn.call(document); } catch (err) { disablePseudoFs(); }
+                    } else {
+                        disablePseudoFs();
                     }
                 }
             }
@@ -553,7 +563,7 @@
         }
 
         btnFs.addEventListener('click', (e) => {
-            e.stopPropagation(); // Évite de déclencher le clic global si on clique directement sur le bouton
+            e.stopPropagation(); 
             toggleFullScreen();
             hideSpotlight();
         });
@@ -577,7 +587,7 @@
             hideSpotlight();
         }, { once: true });
 
-        // Démarrage
+        // Démarrage de l'activité
         initDots();
         afficherQuestion(0);
     </script>

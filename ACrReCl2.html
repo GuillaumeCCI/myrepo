@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conduire l'échange avec un client mécontent</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { DEFAULT: '#000099', light: '#e6e6ff', hover: '#0000cc' },
+                        accent: { DEFAULT: '#810464', hover: '#64034e', light: '#fdf2f8' },
+                        success: { DEFAULT: '#10b981', bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7' },
+                        error: { DEFAULT: '#ef4444', bg: '#fef2f2', text: '#991b1b', border: '#fca5a5' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-choix {
+                @apply flex flex-col items-start gap-2 p-4 border-2 border-slate-200 rounded-xl bg-slate-50 cursor-pointer transition-all duration-200 text-left w-full text-slate-700 text-[15px];
+            }
+            .btn-choix:hover:not(:disabled) {
+                @apply border-brand bg-brand-light/30 transform -translate-y-0.5 shadow-md;
+            }
+            .btn-choix:disabled { @apply cursor-default transform-none shadow-none; }
+            
+            .btn-choix.juste { @apply border-success bg-success-bg text-success-text shadow-none ring-2 ring-success/20 font-medium; }
+            .btn-choix.faux  { @apply border-error bg-error-bg text-error-text opacity-70; }
+            .btn-choix.neutre-apres { @apply opacity-35 grayscale bg-slate-100 border-slate-200; }
+
+            .technique-tag {
+                @apply text-[11px] font-bold tracking-wider uppercase px-2 py-1 rounded bg-white shadow-sm border border-slate-200 text-slate-500 transition-colors;
+            }
+            .btn-choix.juste .technique-tag { @apply bg-success text-white border-success; }
+            .btn-choix.faux  .technique-tag { @apply bg-error text-white border-error; }
+            .btn-choix:hover:not(:disabled) .technique-tag { @apply text-brand border-brand/30; }
+
+            .step-dot { @apply w-2.5 h-2.5 rounded-full bg-slate-200 transition-all duration-300; }
+            .step-dot.actif { @apply bg-brand ring-4 ring-brand-light scale-110; }
+            .step-dot.done-ok  { @apply bg-success; }
+            .step-dot.done-err { @apply bg-error/60; }
+            
+            .bubble-client { @apply bg-slate-100 text-slate-700 rounded-2xl rounded-tl-none px-5 py-3 text-[15px] leading-relaxed border border-slate-200 shadow-sm relative; }
+            .bubble-conseiller { @apply bg-brand-light/40 border border-brand/20 rounded-2xl rounded-tr-none px-5 py-3 text-[15px] leading-relaxed text-brand shadow-sm relative font-medium; }
+        }
+
+        html { height: 100%; overflow: hidden; }
+        body {
+            height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        body.pseudo-fullscreen {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100% !important; height: 100% !important;
+            z-index: 999999 !important; margin: 0 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center pb-24">
+
+    <!-- Bouton Plein Écran -->
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <svg id="icon-fs-enter" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <!-- Overlay Spotlight -->
+    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Passer en plein écran</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <main class="w-full max-w-3xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+        
+        <!-- HEADER -->
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="w-14 h-14 min-w-[56px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-sm z-10">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+            </div>
+            <div class="z-10">
+                <div class="text-brand-light text-xs font-bold tracking-widest uppercase mb-1">Techniques d'écoute active</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold leading-tight mb-2">Conduire l'échange avec un client</h1>
+                <div class="text-white/80 text-sm font-medium">Choisissez le bon canal et la bonne technique étape par étape.</div>
+            </div>
+        </header>
+
+        <!-- SÉLECTION DE CANAL -->
+        <div id="channelSelect" class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+            <div class="bg-slate-50 border-l-4 border-accent p-5 rounded-r-xl mb-8">
+                <h3 class="font-bold text-accent mb-2 text-sm uppercase tracking-widest">Le contexte</h3>
+                <p class="text-[15px] text-slate-700 leading-relaxed">
+                    Un client a passé commande la semaine dernière. Un article manquait à la livraison. Il avait déjà contacté le service une première fois, mais estime que la réponse obtenue était trop rapide et n'a rien réglé. Il recontacte aujourd'hui, visiblement agacé.
+                </p>
+            </div>
+            
+            <h3 class="text-center font-bold text-slate-800 mb-6 text-sm uppercase tracking-wider">Par quel canal voulez-vous que se déroule cet échange ?</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button class="bg-white border-2 border-slate-200 hover:border-brand hover:bg-brand-light/30 rounded-2xl p-6 text-left transition-all duration-300 group shadow-sm hover:shadow-md" onclick="startChannel('telephone')">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-brand text-slate-500 group-hover:text-white flex items-center justify-center transition-colors mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </div>
+                    <div class="font-bold text-slate-800 text-lg mb-2">Téléphone</div>
+                    <div class="text-sm text-slate-500 leading-relaxed">Aucun repère visuel. Tout passe par la voix, les silences et les marqueurs verbaux.</div>
+                </button>
+                
+                <button class="bg-white border-2 border-slate-200 hover:border-brand hover:bg-brand-light/30 rounded-2xl p-6 text-left transition-all duration-300 group shadow-sm hover:shadow-md" onclick="startChannel('ecrit')">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-brand text-slate-500 group-hover:text-white flex items-center justify-center transition-colors mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    </div>
+                    <div class="font-bold text-slate-800 text-lg mb-2">Écrit (E-mail)</div>
+                    <div class="text-sm text-slate-500 leading-relaxed">Pas d'échange en temps réel. Chaque message doit être complet, structuré et explicite.</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- VUE DIALOGUE / ENTRAÎNEMENT -->
+        <div id="dialogueView" class="hidden flex-col gap-6">
+            
+            <div class="w-full flex flex-col gap-3 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" id="progression-container">
+                <div class="flex justify-between items-end text-sm">
+                    <div class="flex items-center gap-2">
+                        <span id="channelBadgeIcon" class="text-brand"></span>
+                        <span class="font-bold text-slate-500 uppercase tracking-wider text-xs" id="prog-label">Étape 1 sur 4</span>
+                    </div>
+                    <span class="font-bold text-brand bg-brand-light px-3 py-1 rounded-full text-xs" id="step-name">Accueillir</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner mt-1">
+                    <div class="h-full bg-brand rounded-full transition-all duration-500" id="prog-bar" style="width:0%"></div>
+                </div>
+                <div class="flex gap-2 justify-center mt-1" id="prog-dots"></div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden animate-slide-up">
+                
+                <div class="bg-slate-50 border-b border-slate-100 px-6 py-4">
+                    <span class="text-xs font-bold tracking-widest uppercase text-slate-400">Historique de l'échange</span>
+                </div>
+                
+                <div class="p-6 md:p-8">
+                    
+                    <div class="mb-8 flex flex-col gap-4" id="transcriptHistory"></div>
+                    
+                    <div class="bg-brand-light/30 border border-brand/20 p-5 rounded-xl mb-6 relative">
+                        <div class="absolute -top-3 left-6 bg-brand text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">À vous de jouer</div>
+                        <p class="text-sm font-semibold text-brand mt-1" id="stepPrompt"></p>
+                    </div>
+                    
+                    <div class="flex flex-col gap-3" id="optionsList"></div>
+                    
+                    <div class="mt-6 rounded-xl p-5 text-[15px] leading-relaxed hidden animate-fade-in" id="feedbackPanel"></div>
+                    
+                    <button class="hidden w-full bg-accent hover:bg-accent-hover text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md items-center justify-center gap-2 mt-6" id="nextBtn" onclick="nextStep()">
+                        Étape suivante
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYNTHESE FINALE -->
+        <div id="synthesisView" class="hidden bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-slide-up w-full mt-2">
+            <div class="bg-brand p-8 text-white text-center relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                <div class="relative z-10">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    <h2 class="text-2xl font-bold mb-2">Débrief de l'échange</h2>
+                    <div class="inline-flex bg-white/20 px-4 py-1.5 rounded-full text-sm font-bold tracking-wide uppercase mb-3" id="synthTag"></div>
+                </div>
+            </div>
+            
+            <div class="p-6 md:p-8">
+                <p class="text-[15px] text-slate-700 leading-relaxed mb-4" id="synthText1"></p>
+                <p class="text-[15px] text-slate-700 leading-relaxed mb-8" id="synthText2"></p>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button class="flex-1 bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group" onclick="restart()">
+                        <svg class="w-5 h-5 group-hover:-rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Refaire l'analyse
+                    </button>
+                    <button class="flex-1 bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2" onclick="retryOtherChannel()" id="btnOtherChannel">
+                        Tester l'autre canal
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+<script>
+// --- DONNÉES / SCÉNARIOS (Égalité stricte des caractères par option) ---
+const clientOpening = "Je vous recontacte parce que votre collègue m'a répondu très vite la dernière fois, mais concrètement, rien n'est réglé : il me manque toujours une pièce et je ne sais pas quand je vais la recevoir.";
+
+const stepsData = {
+    telephone: [
+        {
+            label: "Étape 1 — Accueillir",
+            prompt: "Le client vient d'exposer son agacement au téléphone. Que dites-vous en premier ?",
+            options: [
+                { technique: "Reformuler", text: "Si je comprends bien, la pièce manque toujours et vous ignorez totalement quand elle arrivera.", quality: "weak", feedback: "Reformuler est utile, mais pas encore à ce stade : le client vient d'exprimer une frustration réelle, et cette émotion n'a pas été accueillie avant de passer aux faits." },
+                { technique: "Questionner", text: "D'accord, pouvez-vous me redonner le numéro de commande pour que je vérifie ce point précis ?", quality: "weak", feedback: "Question légitime, mais mal placée ici : elle traite l'échange comme une simple formalité administrative, alors que le client vient d'exprimer une vraie frustration." },
+                { technique: "Accueillir", text: "Je comprends que ce soit très agaçant d'avoir le sentiment que rien n'a été réglé. On regarde.", quality: "strong", feedback: "Au téléphone, c'est la voix et le contenu du propos qui doivent porter la reconnaissance de l'agacement du client. Cette réponse nomme l'émotion sans la minimiser." }
+            ]
+        },
+        {
+            label: "Étape 2 — Questionner",
+            prompt: "Le client a été accueilli. Il faut maintenant comprendre précisément ce qui s'est passé.",
+            options: [
+                { technique: "Question fermée", text: "Est-ce que le premier conseiller vous a bien donné un délai très précis lors de votre appel ?", quality: "weak", feedback: "Une question fermée à ce stade limite trop vite l'exploration : elle oriente vers un seul point alors que le client n'a pas encore pu détailler l'ensemble du problème." },
+                { technique: "Question ouverte", text: "Pouvez-vous me raconter ce qui vous a été dit avant, et ce qui vous a semblé si insuffisant ?", quality: "strong", feedback: "Au téléphone, la question ouverte est le seul moyen de faire émerger les détails qu'aucun repère visuel ne révèle. Elle laisse le client reconstituer les faits." },
+                { technique: "Reformuler", text: "Donc pour résumer rapidement la situation, on vous a très mal renseigné lors du premier appel.", quality: "weak", feedback: "Reformuler suppose d'avoir déjà entendu suffisamment d'éléments. Ici, le conseiller conclut prématurément sur la base d'une seule phrase du client." }
+            ]
+        },
+        {
+            label: "Étape 3 — Reformuler",
+            prompt: "Le client a détaillé la situation. Avant de proposer une solution, que faites-vous ?",
+            options: [
+                { technique: "Proposer directement", text: "Je vous envoie la pièce manquante dès aujourd'hui par courrier prioritaire pour régler ce blocage au plus vite, promis.", quality: "weak", feedback: "La solution est peut-être bonne, mais arrive sans vérification de compréhension. Au téléphone, sans reformulation à voix haute, le client ne sait pas s'il a été compris." },
+                { technique: "Reformuler à voix haute", text: "Si je résume : la pièce manque, la première réponse a semblé trop expéditive, et vous voulez un vrai délai. C'est ça ?", quality: "strong", feedback: "Au téléphone, la reformulation à voix haute est le signal explicite qui permet au client de vérifier qu'il a été compris avant d'avancer une solution. Un passage obligé." },
+                { technique: "Question ouverte", text: "D'accord. Et à part cet article manquant, est-ce que tout le reste de votre commande correspond bien à vos attentes ?", quality: "weak", feedback: "Cette question change de sujet avant d'avoir vérifié la compréhension du problème initial. Elle donne l'impression de vouloir passer à autre chose trop vite." }
+            ]
+        },
+        {
+            label: "Étape 4 — Conclure",
+            prompt: "La compréhension est validée par le client. Comment concluez-vous l'échange ?",
+            options: [
+                { technique: "Fixer un cadre", text: "J'expédie la pièce aujourd'hui. Vous l'aurez sous 48h. Je confirme le tout par SMS dans les cinq minutes pour en garder une trace.", quality: "strong", feedback: "La solution est concrète, chiffrée, et le conseiller compense l'absence de trace écrite du téléphone en proposant un SMS. L'incertitude est refermée." },
+                { technique: "Proposer sans échéance", text: "Je fais le maximum pour l'envoi rapide de la pièce. Elle devrait logiquement arriver chez vous d'ici la toute fin de la semaine.", quality: "weak", feedback: "Après un échange reprochant un manque de suivi concret, une réponse sans délai précis laisse la même incertitude qu'au départ, seulement reformulée poliment." },
+                { technique: "Relancer une question", text: "N'hésitez surtout pas à nous rappeler si vous avez la moindre interrogation additionnelle ou une autre inquiétude sur la commande.", quality: "weak", feedback: "Poser une nouvelle question ouverte à ce stade retarde la conclusion attendue par le client, qui a surtout besoin d'une réponse concrète sur son problème initial." }
+            ]
+        }
+    ],
+    ecrit: [
+        {
+            label: "Étape 1 — Accueillir",
+            prompt: "Vous rédigez la réponse à cet e-mail. Comment débutez-vous votre message ?",
+            options: [
+                { technique: "Reformuler", text: "Pour résumer votre message, la pièce manquante n'est toujours pas arrivée chez vous malgré une première relance.", quality: "weak", feedback: "Résumer avant d'avoir accueilli l'agacement exprimé donne un ton froid et procédural, alors que le message exprime avant tout une déception." },
+                { technique: "Questionner", text: "Pouvez-vous me confirmer le numéro de la commande concernée afin que je puisse vérifier ce point dans le dossier ?", quality: "weak", feedback: "Une demande d'information administrative en première ligne donne l'impression que la frustration n'a pas été lue, seulement le problème matériel." },
+                { technique: "Accueillir", text: "Je comprends votre agacement : il est normal d'attendre qu'une telle situation soit résolue, pas juste expédiée.", quality: "strong", feedback: "À l'écrit, l'accueil doit être explicite dès les premières lignes, puisqu'aucun ton de voix ne peut le suggérer. Cette phrase reconnaît directement l'émotion." }
+            ]
+        },
+        {
+            label: "Étape 2 — Questionner",
+            prompt: "Vous devez maintenant clarifier certains points avant de répondre sur le fond.",
+            options: [
+                { technique: "Question fermée", text: "Avez-vous bien reçu un vrai numéro de suivi valide lors de la réponse apportée par mon collègue la semaine passée ?", quality: "weak", feedback: "Une question fermée limite la réponse, alors qu'à l'écrit, il est préférable d'inviter à préciser l'ensemble de la situation en une seule fois." },
+                { technique: "Question ouverte", text: "Pourriez-vous me préciser quel article manque exactement, et ce qui vous avait été indiqué lors du premier email ?", quality: "strong", feedback: "À l'écrit, sans aller-retour immédiat, la question ouverte doit rassembler en une fois tous les éléments nécessaires, plutôt que de clarifier un point à la fois." },
+                { technique: "Reformuler", text: "Donc, si je comprends bien le fond de votre message, on ne vous a apporté aucune information lors du premier email.", quality: "weak", feedback: "Conclure sur cette base est prématuré : le message initial du client ne permet pas encore de savoir précisément ce qui lui a été dit ni quel article manque." }
+            ]
+        },
+        {
+            label: "Étape 3 — Reformuler",
+            prompt: "Le client a répondu avec les précisions demandées. Vous rédigez la suite du message.",
+            options: [
+                { technique: "Proposer directement", text: "Nous expédions l'article manquant par transporteur express dès aujourd'hui pour résoudre ce désagrément le plus vite possible.", quality: "weak", feedback: "Sans reformulation écrite préalable, rien ne garantit au client que sa demande a bien été comprise. À l'écrit, ce passage est essentiel en l'absence de ton de voix." },
+                { technique: "Reformuler par écrit", text: "Si je comprends bien, il manque la pièce X, et notre premier e-mail ne donnait aucune date de réexpédition. Est-ce bien cela ?", quality: "strong", feedback: "À l'écrit, la reformulation doit être explicite et vérifiable par le client en relisant le message. C'est la seule façon de s'assurer d'un accord sur les faits." },
+                { technique: "Changer de sujet", text: "Pendant que nous y sommes, souhaitez-vous que je vous inscrive afin d'être informé de nos futures offres commerciales exclusives ?", quality: "weak", feedback: "Introduire un sujet commercial avant même d'avoir réglé la demande initiale du client est susceptible d'aggraver fortement son mécontentement actuel." }
+            ]
+        },
+        {
+            label: "Étape 4 — Conclure",
+            prompt: "La compréhension a été confirmée par le client. Vous rédigez la conclusion du message.",
+            options: [
+                { technique: "Fixer un cadre clair", text: "Nous expédions la pièce X ce jour, en envoi suivi. Vous recevrez un e-mail de confirmation avec le numéro de colis sous 24 heures.", quality: "strong", feedback: "La réponse écrite fixe une échéance précise et une preuve de suivi, refermant explicitement l'incertitude exprimée par le client dès son premier message." },
+                { technique: "Proposer sans échéance", text: "Soyez assuré que nous allons faire le maximum pour vous envoyer la pièce très rapidement, pour que vous la receviez dans les temps.", quality: "weak", feedback: "Une formulation aussi générale reproduit exactement ce que le client reproche à la première réponse : une promesse rapide sans élément concret." },
+                { technique: "Relancer une question", text: "Nous restons bien entendu à votre entière disposition si vous avez d'autres remarques ou une question quelconque sur cette commande.", quality: "weak", feedback: "Cette formule de politesse générique, placée avant toute confirmation concrète de la solution, laisse le message se terminer sans réponse ferme au problème." }
+            ]
+        }
+    ]
+};
+
+// --- ÉTAT ---
+const state = {
+    channel: null,
+    stepIndex: 0,
+    history: [], // Stocke les échanges
+    results: [] // Stocke les qualités de réponses (strong/weak)
+};
+
+// --- AUDIO ---
+const sfx = {
+    initialized: false,
+    init: async function() {
+        if(this.initialized) return;
+        this.initialized = true;
+        await Tone.start();
+        this.success = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
+        this.success.volume.value = -25;
+        this.error = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
+        this.error.volume.value = -20;
+        this.click = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 } }).toDestination();
+        this.click.volume.value = -30;
+    },
+    playSuccess: function() { if(this.initialized) { const n = Tone.now(); this.success.triggerAttackRelease("C5", "16n", n); this.success.triggerAttackRelease("G5", "16n", n+0.1); } },
+    playError: function() { if(this.initialized) this.error.triggerAttackRelease("C3", "16n"); },
+    playClick: function() { if(this.initialized) this.click.triggerAttackRelease("C6", "32n"); }
+};
+document.addEventListener('click', () => sfx.init(), { once: true });
+
+// --- UTILS ---
+function shuffleArray(arr) {
+    let s = [...arr];
+    for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
+    return s;
+}
+
+// --- LOGIQUE METIER ---
+function startChannel(channel) {
+    sfx.playClick();
+    state.channel = channel;
+    state.stepIndex = 0;
+    state.history = [{ speaker: 'client', text: clientOpening }];
+    state.results = [];
+
+    document.getElementById('channelSelect').style.display = 'none';
+    document.getElementById('synthesisView').classList.add('hidden');
+    document.getElementById('dialogueView').classList.remove('hidden');
+    document.getElementById('dialogueView').classList.add('flex');
+
+    const iconTel = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
+    const iconMail = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`;
+    
+    document.getElementById('channelBadgeIcon').innerHTML = channel === 'telephone' ? iconTel : iconMail;
+    
+    const otherChannelBtn = document.getElementById('btnOtherChannel');
+    otherChannelBtn.innerHTML = `Tester au ${channel === 'telephone' ? 'format Écrit' : 'Téléphone'} <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+
+    initDots();
+    renderStep();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function initDots() {
+    const wrap = document.getElementById("prog-dots");
+    wrap.innerHTML = "";
+    const total = stepsData[state.channel].length;
+    for (let i = 0; i < total; i++) {
+        wrap.innerHTML += `<div class="step-dot" id="dot-${i}"></div>`;
+    }
+}
+
+function updateProgress() {
+    const total = stepsData[state.channel].length;
+    document.getElementById("prog-label").textContent = `Étape ${state.stepIndex + 1} sur ${total}`;
+    
+    const stepLabels = ["Accueillir", "Questionner", "Reformuler", "Conclure"];
+    document.getElementById("step-name").textContent = stepLabels[state.stepIndex];
+    document.getElementById("prog-bar").style.width = `${(state.stepIndex / total) * 100}%`;
+
+    for (let i = 0; i < total; i++) {
+        const d = document.getElementById(`dot-${i}`);
+        if (i < state.stepIndex) d.className = state.results[i] === 'strong' ? "step-dot done-ok" : "step-dot done-err";
+        else if (i === state.stepIndex) d.className = "step-dot actif";
+        else d.className = "step-dot";
+    }
+}
+
+function renderHistory() {
+    const box = document.getElementById('transcriptHistory');
+    box.innerHTML = '';
+    
+    state.history.forEach(l => {
+        const isConseiller = l.speaker === 'conseiller';
+        const html = `
+            <div class="flex gap-3 ${isConseiller ? 'flex-row-reverse' : ''}">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm ${isConseiller ? 'bg-brand text-white' : 'bg-slate-200 text-slate-500'}">
+                    ${isConseiller ? 'Co.' : 'Cl.'}
+                </div>
+                <div class="max-w-[85%] ${isConseiller ? 'bubble-conseiller' : 'bubble-client'}">
+                    ${l.text}
+                </div>
+            </div>
+        `;
+        box.innerHTML += html;
+    });
+}
+
+function renderStep() {
+    updateProgress();
+    const step = stepsData[state.channel][state.stepIndex];
+    document.getElementById('stepPrompt').textContent = step.prompt;
+
+    renderHistory();
+
+    const list = document.getElementById('optionsList');
+    list.innerHTML = '';
+    
+    const shuffledOptions = shuffleArray(step.options);
+    
+    shuffledOptions.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-choix';
+        btn.id = `opt-${idx}`;
+        btn.innerHTML = `<span class="technique-tag">${opt.technique}</span><span>${opt.text}</span>`;
+        btn.onclick = () => onChoice(idx, opt, shuffledOptions);
+        list.appendChild(btn);
+    });
+
+    document.getElementById('feedbackPanel').classList.add('hidden');
+    document.getElementById('nextBtn').classList.add('hidden');
+    document.getElementById('nextBtn').classList.remove('flex');
+}
+
+function onChoice(idxClique, chosen, optionsArr) {
+    const isStrong = chosen.quality === 'strong';
+    isStrong ? sfx.playSuccess() : sfx.playError();
+
+    optionsArr.forEach((opt, i) => {
+        const btn = document.getElementById(`opt-${i}`);
+        btn.disabled = true;
+        if (i === idxClique) {
+            btn.className = isStrong ? "btn-choix juste" : "btn-choix faux";
+        } else if (opt.quality === 'strong' && !isStrong) {
+            btn.className = "btn-choix juste";
+        } else {
+            btn.className = "btn-choix neutre-apres";
+        }
+    });
+
+    const fb = document.getElementById('feedbackPanel');
+    fb.className = isStrong 
+        ? "mt-6 rounded-xl p-5 text-[15px] leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text"
+        : "mt-6 rounded-xl p-5 text-[15px] leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+    
+    const icon = isStrong 
+        ? `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`
+        : `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+
+    fb.innerHTML = `<div class="font-bold mb-2 flex items-center gap-1">${icon} ${isStrong ? 'Choix adapté' : 'À reconsidérer'}</div>${chosen.feedback}`;
+
+    state.results.push(chosen.quality);
+    
+    // Simulate client progression between steps based on normal conversational flow
+    state.history.push({ speaker: 'conseiller', text: chosen.text });
+    
+    if(state.stepIndex === 0) state.history.push({ speaker: 'client', text: "Oui c'est ça, la personne m'a expédié sans me donner aucune date !" });
+    if(state.stepIndex === 1) state.history.push({ speaker: 'client', text: "Elle m'a juste dit 'on s'en occupe', et depuis plus rien. Il me manque la pièce X." });
+    if(state.stepIndex === 2) state.history.push({ speaker: 'client', text: "Oui, c'est tout à fait ça. J'ai besoin de savoir quand je pourrai enfin utiliser mon article." });
+
+    const btnSuiv = document.getElementById('nextBtn');
+    btnSuiv.innerHTML = state.stepIndex < stepsData[state.channel].length - 1 
+        ? `Étape suivante <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+        : `Voir le débrief final <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+    
+    btnSuiv.classList.remove('hidden');
+    btnSuiv.classList.add('flex');
+    
+    // Update active dot color immediately
+    const total = stepsData[state.channel].length;
+    document.getElementById(`dot-${state.stepIndex}`).className = isStrong ? "step-dot done-ok scale-110" : "step-dot done-err scale-110";
+
+    setTimeout(() => btnSuiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+function nextStep() {
+    sfx.playClick();
+    state.stepIndex++;
+    if (state.stepIndex >= stepsData[state.channel].length) {
+        showSynthesis();
+    } else {
+        renderStep();
+        setTimeout(() => document.getElementById("progression-container").scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+}
+
+function showSynthesis() {
+    document.getElementById('dialogueView').classList.add('hidden');
+    document.getElementById('dialogueView').classList.remove('flex');
+    document.getElementById('synthesisView').classList.remove('hidden');
+    document.getElementById('synthesisView').classList.add('block');
+
+    const strongCount = state.results.filter(r => r === 'strong').length;
+    const channelLabel = state.channel === 'telephone' ? 'au téléphone' : 'à l\'écrit';
+    
+    const tag = document.getElementById('synthTag');
+    const t1 = document.getElementById('synthText1');
+    const t2 = document.getElementById('synthText2');
+
+    // Force progress bar fill
+    document.getElementById("prog-bar").style.width = "100%";
+
+    if (strongCount === 4) {
+        tag.textContent = "Séquence maîtrisée";
+        t1.textContent = `Sur les quatre étapes, la technique choisie correspondait à la fois au moment de l'échange et aux contraintes propres au canal ${channelLabel}. Accueillir avant de questionner, questionner avant de reformuler, reformuler avant de conclure : cet ordre n'est pas une formalité, chaque étape sautée a un coût réel sur l'échange.`;
+        t2.textContent = `Essayez maintenant de refaire cet échange sur l'autre canal : certaines techniques qui fonctionnent ${channelLabel} ne sont plus disponibles de la même façon sur l'autre, ce qui oblige à répondre différemment.`;
+    } else if (strongCount >= 2) {
+        tag.textContent = "Séquence partiellement maîtrisée";
+        t1.textContent = "Certaines techniques choisies étaient pertinentes en elles-mêmes, mais arrivaient au mauvais moment de l'échange : reformuler avant d'avoir assez questionné, ou proposer une solution avant d'avoir vérifié la compréhension, sont les erreurs les plus fréquentes.";
+        t2.textContent = `Le canal ${channelLabel} imposait aussi des choix spécifiques, par exemple d'expliciter la reformulation là où l'autre canal permettrait de la suggérer autrement.`;
+    } else {
+        tag.textContent = "Séquence à reprendre";
+        t1.textContent = "L'ordre des techniques n'a pas été respecté à plusieurs étapes : accueillir, questionner, reformuler et conclure suivent une logique précise, où chaque étape prépare et sécurise la suivante.";
+        t2.textContent = `Reprenez l'échange en vous demandant à chaque fois : ce que je m'apprête à dire suppose-t-il d'avoir déjà accompli l'étape précédente ? C'est cette question qui évite les impairs, quel que soit le canal.`;
+    }
+    
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+}
+
+function restart() {
+    sfx.playClick();
+    document.getElementById('channelSelect').style.display = 'block';
+    document.getElementById('dialogueView').classList.add('hidden');
+    document.getElementById('dialogueView').classList.remove('flex');
+    document.getElementById('synthesisView').classList.add('hidden');
+    document.getElementById('synthesisView').classList.remove('block');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function retryOtherChannel() {
+    const other = state.channel === 'telephone' ? 'ecrit' : 'telephone';
+    startChannel(other);
+}
+
+// FULLSCREEN LOGIC
+const btnFs = document.getElementById('btn-fullscreen');
+const iconEnter = document.getElementById('icon-fs-enter');
+const iconExit = document.getElementById('icon-fs-exit');
+const spotlight = document.getElementById('spotlight-overlay');
+let isPseudoFs = false;
+
+function updateFsIcons() { const isFs = document.fullscreenElement || document.webkitFullscreenElement || isPseudoFs; iconEnter.classList.toggle('hidden', !!isFs); iconExit.classList.toggle('hidden', !isFs); }
+function enablePseudoFs()  { isPseudoFs = true;  document.body.classList.add('pseudo-fullscreen');    updateFsIcons(); }
+function disablePseudoFs() { isPseudoFs = false; document.body.classList.remove('pseudo-fullscreen'); updateFsIcons(); }
+
+btnFs.addEventListener('click', (e) => {
+    e.stopPropagation(); sfx.playClick(); hideSpotlight();
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+        const el = document.documentElement;
+        const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (fn) { try { const p = fn.call(el); if (p && p.catch) p.catch(() => enablePseudoFs()); setTimeout(() => { if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) enablePseudoFs(); }, 300); } catch { enablePseudoFs(); } }
+        else enablePseudoFs();
+    } else { if (isPseudoFs) disablePseudoFs(); else { const fn = document.exitFullscreen || document.webkitExitFullscreen; if (fn) try { fn.call(document); } catch { disablePseudoFs(); } } }
+});
+
+document.addEventListener('fullscreenchange', updateFsIcons);
+document.addEventListener('webkitfullscreenchange', updateFsIcons);
+
+function hideSpotlight() {
+    if(spotlight && !spotlight.classList.contains('opacity-0')) {
+        spotlight.classList.add('opacity-0');
+        setTimeout(() => spotlight.style.display = 'none', 1000);
+    }
+}
+document.addEventListener('click', () => hideSpotlight(), { once: true });
+
+</script>
+</body>
+</html>

@@ -45,10 +45,10 @@
                 @apply font-sans text-[14.5px] text-left bg-slate-50 border border-slate-200 rounded-lg p-4 cursor-pointer leading-relaxed transition-all duration-150 w-full;
             }
             .btn-choix:hover:not(:disabled) {
-                @apply border-brand bg-brand-light/30 text-brand shadow-sm transform -translate-y-0.5;
+                @apply border-brand bg-brand-light/30 text-brand shadow-sm;
             }
             .btn-choix:focus-visible { @apply outline-none ring-2 ring-brand ring-offset-2; }
-            .btn-choix:disabled { @apply cursor-default transform-none shadow-none; }
+            .btn-choix:disabled { @apply cursor-default; }
             .btn-choix.chosen-strong { @apply border-success bg-success-bg text-success-text font-medium; }
             .btn-choix.chosen-weak { @apply border-error bg-error-bg text-error-text opacity-80; }
             .btn-choix.chosen-other { @apply opacity-40 grayscale; }
@@ -99,6 +99,19 @@
 </head>
 <body class="text-slate-800 p-4 md:p-8 flex flex-col items-center pb-24">
 
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-[200] bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <svg id="icon-fs-enter" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <div id="spotlight-overlay" class="fixed inset-0 z-[150] transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Passer en plein écran</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <!-- Modale d'introduction correctement fermée -->
     <div id="intro-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
             <div class="bg-brand p-6 md:p-8 text-white relative overflow-hidden">
@@ -124,19 +137,8 @@
         </div>
     </div>
 
-    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
-        <svg id="icon-fs-enter" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-        <svg id="icon-fs-exit" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
-    </button>
-
-    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
-        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
-            <span>Passer en plein écran</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-        </div>
-    </div>
-
-    <main class="w-full max-w-3xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+    <!-- Contenu principal, caché au lancement -->
+    <main id="main-content" class="hidden w-full max-w-3xl flex-col gap-6 animate-fade-in mt-14 md:mt-0">
 
         <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
             <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -163,7 +165,6 @@
                 
                 <div class="font-mono text-[10px] uppercase tracking-widest text-slate-400 mb-4" id="cardContext"></div>
                 
-                <!-- Zone Historique -->
                 <div id="crmBlock" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
                     <div class="flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
                         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -172,22 +173,15 @@
                     <div class="flex flex-col gap-3" id="crmLines"></div>
                 </div>
 
-                <!-- Zone Dialogue -->
                 <div id="dialogueBlock" class="hidden flex-col gap-4 mb-6"></div>
 
                 <div class="font-display font-semibold text-brand text-[15px] mb-4" id="promptText"></div>
                 
-                <!-- Liste d'options Phase 1 -->
-                <div id="historyOptionsList" class="hidden flex-col gap-2.5 mb-6"></div>
-
-                <!-- Grille SONCAS Phase 2/3/4 -->
-                <div id="soncasGrid" class="hidden grid-cols-3 sm:grid-cols-6 gap-2 mb-6"></div>
-
-                <!-- Section Argument SONCAS (Affichée EN DESSOUS de la grille) -->
-                <div id="argumentSection" class="hidden pt-6 border-t border-slate-100">
-                    <div class="font-display font-semibold text-brand text-[15px] mb-4" id="promptText2"></div>
-                    <div id="optionsList" class="flex flex-col gap-2.5"></div>
-                </div>
+                <!-- Ordre d'affichage corrigé : Grille d'abord, puis Options -->
+                <div id="soncasGrid" class="hidden grid-cols-3 sm:grid-cols-6 gap-2 mb-6 border-b border-slate-100 pb-6"></div>
+                
+                <div class="font-display font-semibold text-brand text-[15px] mb-4 hidden" id="promptText2"></div>
+                <div id="optionsList" class="flex flex-col gap-2.5"></div>
 
                 <div id="feedbackPanel" class="hidden mt-6 rounded-xl p-5 text-sm leading-relaxed">
                     <span id="feedbackLabel" class="block font-display font-bold text-xs uppercase tracking-widest mb-1.5"></span>
@@ -238,7 +232,7 @@
     ];
 
     const cards = [
-        // PHASE 1 : HISTORIQUE (3 cas d'analyse CRM)
+        // PHASE 1 : HISTORIQUE (3 cas d'analyse CRM) sans "L'intention est de"
         {
             phase: 1, type: "history", context: "Palier 1 · Cas 1 / 3 - Consultation de l'historique",
             crm: [
@@ -291,7 +285,7 @@
             dialogue: [
                 { speaker: "client", text: "Avant de m'engager, j'ai besoin d'être certain que le service inclut une garantie de remboursement et un support en cas de problème." }
             ],
-            correctLever: "S",
+            correctLever: "S", prompt: "Levier identifié. Quel argument choisissez-vous ?",
             options: [
                 { text: "Garantie de remboursement intégrale sous 30 jours et support technique dédié disponible 7j/7 en cas de difficulté majeure.", quality: "strong", feedback: "Parfait. Cet argument répond précisément au besoin de Sécurité exprimé : remboursement garanti et support immédiat." },
                 { text: "Dernière version exclusive tout juste sortie du studio avec des fonctionnalités totalement inédites sur le marché cette année.", quality: "weak", feedback: "Hors sujet. Cet argument Nouveauté ignore totalement l'inquiétude du client, qui cherche à être rassuré, pas à innover." },
@@ -303,7 +297,7 @@
             dialogue: [
                 { speaker: "client", text: "Est-ce que c'est la toute dernière version ? J'aime bien être parmi les premiers à essayer les nouveautés." }
             ],
-            correctLever: "N",
+            correctLever: "N", prompt: "Levier identifié. Quel argument choisissez-vous ?",
             options: [
                 { text: "C'est la toute dernière version de ce mois-ci, avec des fonctionnalités exclusives qui n'existent pas encore du tout ailleurs.", quality: "strong", feedback: "Excellent. Cela flatte directement son besoin de Nouveauté et son envie d'exclusivité technologique." },
                 { text: "C'est une valeur sûre et parfaitement stable, éprouvée depuis plusieurs années par de nombreux clients très très satisfaits.", quality: "weak", feedback: "C'est l'inverse de ce qu'il demande. La Sécurité (ancienneté, stabilité) rebute un client motivé par la Nouveauté." },
@@ -315,7 +309,7 @@
             dialogue: [
                 { speaker: "client", text: "Je voudrais une formule qui montre clairement que je suis un client privilégié, pas la même chose que tout le monde." }
             ],
-            correctLever: "O",
+            correctLever: "O", prompt: "Levier identifié. Quel argument choisissez-vous ?",
             options: [
                 { text: "Voici une formule VIP réservée à nos clients les plus fidèles, avec des avantages exclusifs et un accès totalement prioritaire.", quality: "strong", feedback: "C'est ça. L'argument Orgueil (reconnaissance, VIP, exclusivité) répond à son refus d'être traité comme tout le monde." },
                 { text: "Voici notre formule la plus simple et rapide à utiliser au quotidien, conçue pour vous éviter tout effort technique superflu.", quality: "weak", feedback: "Le Confort (simplicité d'usage) ne traite absolument pas son besoin de distinction et de traitement préférentiel." },
@@ -327,7 +321,7 @@
             dialogue: [
                 { speaker: "client", text: "J'aimerais quelque chose de simple à utiliser au quotidien, sans avoir à y penser. Et si en plus ça peut me faire faire des économies, tant mieux." }
             ],
-            correctLever: "C",
+            correctLever: "C", prompt: "Levier identifié. Quel argument choisissez-vous ?",
             options: [
                 { text: "Cette formule automatisée fonctionne toute seule sans aucun réglage complexe, elle s'adapte à toutes vos habitudes de vie.", quality: "strong", feedback: "Bien arbitré. Le client mentionne l'économie en dernier ('si en plus...'). Le Confort (simplicité) est son levier majeur." },
                 { text: "Cette formule d'entrée de gamme est la moins chère de notre catalogue et vous garantit de très vraies économies annuelles.", quality: "weak", feedback: "L'Argent n'est ici qu'un bonus secondaire ('si en plus...'). Axer uniquement sur le prix ignore son besoin principal." },
@@ -339,7 +333,7 @@
             dialogue: [
                 { speaker: "client", text: "Je préfère traiter avec quelqu'un en qui j'ai confiance plutôt que changer d'interlocuteur. Et j'aimerais être sûr que le service ne va pas me lâcher." }
             ],
-            correctLever: "CS",
+            correctLever: "CS", prompt: "Levier identifié. Quel argument choisissez-vous ?",
             options: [
                 { text: "C'est pour cela que nous vous attribuons un conseiller dédié et toujours joignable pour suivre parfaitement votre dossier.", quality: "strong", feedback: "Exact. L'inquiétude technique arrive en second. Le besoin de relation humaine stable (Sympathie) est dominant." },
                 { text: "C'est pour cela que notre service technique inclut une garantie de continuité immédiate en cas de panne totale du réseau.", quality: "weak", feedback: "La garantie (Sécurité) est importante, mais la relation de confiance (Sympathie) est développée en tout premier." },
@@ -351,7 +345,7 @@
             dialogue: [
                 { speaker: "client", text: "Franchement, c'est trop cher par rapport à ailleurs. Remarquez, je ne connais pas très bien votre enseigne, alors difficile de savoir si ça vaut le coup." }
             ],
-            correctLever: "CS",
+            correctLever: "CS", prompt: "Levier identifié. Quel argument choisissez-vous ?",
             options: [
                 { text: "Je comprends votre prudence. Nous avons un engagement de satisfaction et des avis vérifiés pour vous rassurer complètement.", quality: "strong", feedback: "Brillant ! Le prix n'était qu'un prétexte. La seconde phrase révèle la vraie cause : le manque de confiance envers l'enseigne." },
                 { text: "Je comprends votre prudence. Je peux exceptionnellement vous faire un geste commercial de dix pour cent si cela vous y aide.", quality: "weak", feedback: "Piège classique. Baisser le prix ne résout pas un manque de confiance, cela peut même augmenter fortement le doute du client." },
@@ -427,7 +421,7 @@
         document.getElementById('feedbackPanel').classList.add('hidden');
         document.getElementById('nextBtn').classList.add('hidden');
         document.getElementById('nextBtn').classList.remove('flex');
-        document.getElementById('argumentSection').classList.add('hidden');
+        document.getElementById('promptText2').classList.add('hidden');
 
         if (card.type === 'history') {
             document.getElementById('crmBlock').classList.remove('hidden');
@@ -445,29 +439,23 @@
 
             document.getElementById('promptText').innerHTML = card.prompt;
             
-            const hList = document.getElementById('historyOptionsList');
-            hList.innerHTML = '';
-            hList.classList.remove('hidden');
-            hList.classList.add('flex');
-            document.getElementById('optionsList').innerHTML = ''; // Nettoyer l'autre liste
-            
+            const list = document.getElementById('optionsList');
+            list.innerHTML = '';
             const shuffledOptions = shuffleArray(card.options);
+            
             shuffledOptions.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-choix';
                 btn.id = `opt-${idx}`;
                 btn.innerHTML = opt.text;
-                btn.onclick = () => onChoice(idx, opt, shuffledOptions, false, 'historyOptionsList');
-                hList.appendChild(btn);
+                btn.onclick = () => onChoice(idx, opt, shuffledOptions, false);
+                list.appendChild(btn);
             });
 
         } else if (card.type === 'soncas') {
             document.getElementById('crmBlock').classList.add('hidden');
             document.getElementById('dialogueBlock').classList.remove('hidden');
             document.getElementById('dialogueBlock').classList.add('flex');
-            
-            document.getElementById('historyOptionsList').classList.add('hidden');
-            document.getElementById('historyOptionsList').classList.remove('flex');
             
             const diagBox = document.getElementById('dialogueBlock');
             diagBox.innerHTML = card.dialogue.map(l => `
@@ -497,12 +485,9 @@
         }
     }
 
-    function onChoice(idxClique, chosen, optionsArr, isArgumentAfterSoncas, containerId) {
+    function onChoice(idxClique, chosen, optionsArr, isArgumentAfterSoncas) {
         const isStrong = chosen.quality === 'strong';
         isStrong ? sfx.playSuccess() : sfx.playError();
-
-        const container = document.getElementById(containerId);
-        const buttons = container.querySelectorAll('.btn-choix');
 
         optionsArr.forEach((opt, i) => {
             const btn = document.getElementById(`opt-${i}`);
@@ -512,7 +497,6 @@
             else btn.className = "btn-choix chosen-other";
         });
 
-        // Validation finale
         const finalCorrect = isArgumentAfterSoncas ? (state.diagnosisCorrect && isStrong) : isStrong;
         
         const fb = document.getElementById('feedbackPanel');
@@ -559,8 +543,9 @@
             }
         });
 
-        document.getElementById('promptText2').textContent = "Levier identifié. Quel argument choisissez-vous ?";
-        document.getElementById('argumentSection').classList.remove('hidden');
+        const p2 = document.getElementById('promptText2');
+        p2.textContent = "Levier identifié. Quel argument choisissez-vous ?";
+        p2.classList.remove('hidden');
         
         const list = document.getElementById('optionsList');
         list.innerHTML = '';
@@ -571,11 +556,11 @@
             btn.className = 'btn-choix';
             btn.id = `opt-${idx}`;
             btn.textContent = opt.text;
-            btn.onclick = () => onChoice(idx, opt, shuffledOptions, true, 'optionsList');
+            btn.onclick = () => onChoice(idx, opt, shuffledOptions, true);
             list.appendChild(btn);
         });
         
-        setTimeout(() => document.getElementById('argumentSection').scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        setTimeout(() => document.getElementById('promptText2').scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     }
 
     document.getElementById('nextBtn').addEventListener('click', () => {
@@ -664,6 +649,7 @@
     // Gestion de la modale d'introduction
     const introModal = document.getElementById('intro-modal');
     const btnStartActivity = document.getElementById('btn-start-activity');
+    const mainContent = document.getElementById('main-content');
 
     if (btnStartActivity && introModal) {
         btnStartActivity.addEventListener('click', () => {
@@ -671,6 +657,8 @@
             introModal.classList.add('opacity-0');
             setTimeout(() => {
                 introModal.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                mainContent.classList.add('flex');
             }, 300);
         });
     }

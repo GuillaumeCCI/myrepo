@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traiter l'objection sur le prix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    },
+                    colors: {
+                        brand: { DEFAULT: '#000099', light: '#e6e6ff', hover: '#0000cc' },
+                        accent: { DEFAULT: '#810464', light: '#fdf2f8', hover: '#63034d' },
+                        success: { DEFAULT: '#10b981', bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7' },
+                        error: { DEFAULT: '#ef4444', bg: '#fef2f2', text: '#991b1b', border: '#fca5a5' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-choix {
+                @apply font-sans text-[14.5px] text-left bg-slate-50 border border-slate-200 rounded-xl p-4 cursor-pointer leading-relaxed transition-all duration-150 w-full flex flex-col gap-1;
+            }
+            .btn-choix:hover:not(:disabled) {
+                @apply border-brand bg-brand-light/30 text-brand shadow-sm;
+            }
+            .btn-choix:focus-visible { @apply outline-none ring-2 ring-brand ring-offset-2; }
+            .btn-choix:disabled { @apply cursor-default; }
+            .btn-choix.chosen-strong { @apply border-success bg-success-bg text-success-text font-medium; }
+            .btn-choix.chosen-weak { @apply border-error bg-error-bg text-error-text opacity-80; }
+            .btn-choix.chosen-other { @apply opacity-40 grayscale bg-slate-100 border-slate-200; }
+
+            .progress-dot { @apply h-1 flex-1 bg-slate-200 rounded-full transition-colors; }
+            .progress-dot.done { @apply bg-success; }
+            .progress-dot.current { @apply bg-brand; }
+            .progress-dot.skipped { @apply bg-error; }
+
+            .bubble-client { @apply bg-slate-100 text-slate-700 rounded-2xl rounded-tl-none px-5 py-3 text-[15px] leading-relaxed border border-slate-200 shadow-sm relative; }
+            .bubble-conseiller { @apply bg-brand-light/40 border border-brand/20 rounded-2xl rounded-tr-none px-5 py-3 text-[15px] leading-relaxed text-brand shadow-sm relative font-medium; }
+            .bubble-client-angry { @apply bg-error-bg border border-error-border rounded-2xl rounded-tl-none px-5 py-3 text-[15px] leading-relaxed text-error shadow-sm relative font-medium; }
+        }
+
+        html { height: 100%; overflow: hidden; }
+        body {
+            height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        body.pseudo-fullscreen {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100% !important; height: 100% !important;
+            z-index: 999999 !important; margin: 0 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 p-4 md:p-8 flex flex-col items-center pb-24">
+
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-[200] bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <svg id="icon-fs-enter" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <div id="spotlight-overlay" class="fixed inset-0 z-[150] transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Passer en plein écran</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <div id="intro-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
+            <div class="bg-brand p-6 md:p-8 text-white relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="text-brand-light text-xs font-mono font-bold tracking-widest uppercase mb-2 relative z-10">Traiter l'objection</div>
+                <h2 class="font-display text-2xl md:text-3xl font-bold leading-tight relative z-10">L'objection sur le prix</h2>
+            </div>
+            <div class="p-6 md:p-8">
+                <p class="text-slate-700 text-[15px] leading-relaxed mb-5">
+                    Un client conteste le prix. À chaque étape, choisissez la réplique qui respecte la méthode : identifier, accepter, chercher à comprendre, traiter, contrôler.
+                </p>
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-xl mb-8 shadow-sm">
+                    <p class="text-amber-800 text-[14.5px] font-medium leading-relaxed">
+                        <strong class="text-amber-900 font-bold uppercase tracking-wider text-xs block mb-1">Attention</strong>
+                        Sauter une étape (comme traiter l'objection avant de l'avoir acceptée) a un coût immédiat sur la réaction du client. Ne brûlez pas les étapes.
+                    </p>
+                </div>
+                <button id="btn-start-activity" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2">
+                    Commencer l'activité
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main id="main-content" class="hidden w-full max-w-3xl flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+        
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="w-14 h-14 min-w-[56px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-sm z-10">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="z-10">
+                <div class="text-brand-light text-xs font-mono font-bold tracking-widest uppercase mb-1">Méthodologie</div>
+                <h1 class="font-display text-2xl md:text-3xl font-bold leading-tight mb-2">Traiter l'objection sur le prix</h1>
+                <div class="text-white/80 text-sm font-medium">Choisissez le bon canal et la bonne réponse, étape par étape.</div>
+            </div>
+        </header>
+
+        <div id="channelSelect" class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+            <div class="bg-slate-50 border-l-4 border-accent p-5 rounded-r-xl mb-8">
+                <h3 class="font-bold text-accent mb-2 text-sm uppercase tracking-widest">Le contexte</h3>
+                <p class="text-[15px] text-slate-700 leading-relaxed">
+                    Un client hésite avant de valider sa commande. Il s'adresse à vous : <br><br>
+                    <span class="italic font-medium text-slate-600">« Franchement, c'est trop cher par rapport à ce que j'ai vu ailleurs. Remarquez, je ne connais pas très bien votre enseigne, alors difficile de savoir si ça vaut vraiment le coup. »</span>
+                </p>
+            </div>
+            
+            <h3 class="text-center font-bold text-slate-800 mb-6 text-sm uppercase tracking-wider">Par quel canal se déroule cet échange ?</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button class="bg-white border-2 border-slate-200 hover:border-brand hover:bg-brand-light/30 rounded-2xl p-6 text-left transition-all duration-300 group shadow-sm hover:shadow-md" onclick="startChannel('telephone')">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-brand text-slate-500 group-hover:text-white flex items-center justify-center transition-colors mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </div>
+                    <div class="font-bold text-slate-800 text-lg mb-2">Téléphone</div>
+                    <div class="text-sm text-slate-500 leading-relaxed">Rien ne reste par écrit. Le ton doit rester calme même si le client s'agace.</div>
+                </button>
+                
+                <button class="bg-white border-2 border-slate-200 hover:border-brand hover:bg-brand-light/30 rounded-2xl p-6 text-left transition-all duration-300 group shadow-sm hover:shadow-md" onclick="startChannel('ecrit')">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-brand text-slate-500 group-hover:text-white flex items-center justify-center transition-colors mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    </div>
+                    <div class="font-bold text-slate-800 text-lg mb-2">Écrit (E-mail)</div>
+                    <div class="text-sm text-slate-500 leading-relaxed">Aucun ton de voix pour nuancer. Chaque point soulevé doit être traité.</div>
+                </button>
+            </div>
+        </div>
+
+        <div id="dialogueView" class="hidden flex-col gap-6">
+            
+            <div id="progression-container" class="w-full flex flex-col gap-3 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-end text-sm">
+                    <div class="flex items-center gap-2">
+                        <span id="channelBadgeIcon" class="text-brand"></span>
+                        <span class="font-bold text-slate-500 uppercase tracking-wider text-xs" id="prog-label"></span>
+                    </div>
+                    <span class="font-bold text-brand bg-brand-light px-3 py-1 rounded-full text-xs" id="step-name"></span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner mt-1">
+                    <div class="h-full bg-brand rounded-full transition-all duration-500" id="prog-bar" style="width:0%"></div>
+                </div>
+                <div class="flex gap-2 justify-center mt-1" id="prog-dots"></div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden animate-slide-up">
+                
+                <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                    <span class="text-xs font-bold tracking-widest uppercase text-slate-400">Historique de l'échange</span>
+                </div>
+                
+                <div class="p-6 md:p-8">
+                    
+                    <div class="mb-8 flex flex-col gap-4" id="transcriptHistory"></div>
+                    
+                    <div id="derailBanner" class="hidden mb-8 bg-error-bg border border-error-border rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center gap-2 text-error font-bold text-sm uppercase tracking-widest mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Le client se braque
+                        </div>
+                        <p class="text-[15px] text-error font-medium leading-relaxed" id="derailText"></p>
+                    </div>
+
+                    <div class="bg-brand-light/30 border border-brand/20 p-5 rounded-xl mb-6 relative" id="promptBlock">
+                        <div class="absolute -top-3 left-6 bg-brand text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">À vous de jouer</div>
+                        <p class="text-sm font-semibold text-brand mt-1" id="stepPrompt"></p>
+                    </div>
+                    
+                    <div class="flex flex-col gap-3" id="optionsList"></div>
+                    
+                    <div class="mt-6 rounded-xl p-5 text-[15px] leading-relaxed hidden animate-fade-in" id="feedbackPanel"></div>
+                    
+                    <div class="flex justify-end mt-6">
+                        <button class="hidden bg-brand hover:bg-brand-hover text-white font-bold py-3 px-6 rounded-xl transition-all shadow-sm items-center gap-2" id="nextBtn" onclick="nextStep()">
+                            Étape suivante
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="synthesisView" class="hidden bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-slide-up w-full mt-2">
+            <div class="bg-brand p-8 text-white text-center relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                <div class="relative z-10">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                    <h2 class="text-2xl font-bold mb-2">Débrief de l'échange</h2>
+                    <div class="inline-flex bg-white/20 px-4 py-1.5 rounded-full text-sm font-bold tracking-wide uppercase mb-3" id="synthTag"></div>
+                </div>
+            </div>
+            
+            <div class="p-6 md:p-8">
+                <p class="text-[15px] text-slate-700 leading-relaxed mb-4" id="synthText1"></p>
+                <p class="text-[15px] text-slate-700 leading-relaxed mb-8" id="synthText2"></p>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button class="flex-1 bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group" onclick="restart()">
+                        <svg class="w-5 h-5 group-hover:-rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Refaire l'échange
+                    </button>
+                    <button class="flex-1 bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2" onclick="retryOtherChannel()" id="btnOtherChannel">
+                        Tester l'autre canal
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+<script>
+(function () {
+
+    const clientOpening = "Franchement, c'est trop cher par rapport à ce que j'ai vu ailleurs. Remarquez, je ne connais pas très bien votre enseigne, alors difficile de savoir si ça vaut vraiment le coup.";
+
+    const derailReaction = {
+        telephone: {
+            banner: "Le client répond d'un ton sec : « Vous voyez bien que c'est le prix le problème, non ? »",
+            clientLine: "Vous voyez bien que c'est le prix le problème, non ? Ce n'est pas la peine d'insister."
+        },
+        ecrit: {
+            banner: "Le client vous répond par e-mail en une seule ligne : « Je vais regarder ailleurs. »",
+            clientLine: "Je vois surtout que vous ne voulez pas baisser le prix. Je vais regarder ailleurs."
+        }
+    };
+
+    const stepsData = {
+        telephone: [
+            {
+                label: "Identifier l'objection",
+                prompt: "Le client vient d'exprimer son objection. Que faites-vous en premier ?",
+                options: [
+                    { quality: "skip", text: "Je comprends, je peux vous faire un geste commercial de dix pour cent si cela vous aide.", feedback: "C'est le piège : traiter l'objection avant de l'avoir accueillie. Une remise immédiate braque le client." },
+                    { quality: "strong", text: "Je vous entends bien. Est-ce que le prix est le seul point qui vous freine aujourd'hui ?", feedback: "Au téléphone, il faut clarifier si l'objection affichée est la seule, car il vient de mentionner l'enseigne." },
+                    { quality: "weak", text: "D'accord, mais qu'est-ce qui vous fait dire que notre tarif ne serait pas si justifié ?", feedback: "Question pertinente sur le fond, mais prématurée car vous n'avez pas encore identifié tous les freins réels." }
+                ],
+                clientReply: "C'est surtout que je ne vous connais pas bien, alors j'hésite."
+            },
+            {
+                label: "Accepter l'objection",
+                prompt: "L'objection est identifiée. Avant d'aller plus loin, que dites-vous ?",
+                options: [
+                    { quality: "skip", text: "En tout cas, sachez que nos tarifs sont alignés sur la qualité du service global fourni.", feedback: "Contre-argumenter directement sur le prix saute l'étape d'acceptation. Le client n'a pas été entendu." },
+                    { quality: "strong", text: "Je comprends votre prudence, c'est une remarque légitime si vous ne nous connaissez pas.", feedback: "Au téléphone, le ton doit rester calme et l'accueil explicite. Cette phrase reconnaît la remarque du client." },
+                    { quality: "weak", text: "Est-ce que l'explication que je vous apporte répond totalement à votre question initiale ?", feedback: "Vérifier la réponse n'a de sens qu'après avoir répondu. Cette question arrive bien trop tôt dans la séquence." }
+                ],
+                clientReply: "Oui, c'est ça..."
+            },
+            {
+                label: "Chercher à comprendre",
+                prompt: "L'objection a été accueillie. Il faut maintenant comprendre ce qu'il y a derrière.",
+                options: [
+                    { quality: "weak", text: "Pour vous rassurer sur le tarif, sachez que nous offrons un service client hyper réactif.", feedback: "Cette réponse reste centrée sur le prix, sans explorer l'autre point mentionné : la méconnaissance de l'enseigne." },
+                    { quality: "strong", text: "Vous évoquiez notre enseigne : c'est peut-être surtout cela qui vous fait encore hésiter ?", feedback: "Cette question va chercher la source réelle de la résistance (la confiance), distinguant le frein du symptôme." },
+                    { quality: "weak", text: "Donc si je comprends bien tout ce que vous me dites, le prix est votre unique objection ?", feedback: "Revenir à l'étape d'identification fait reculer l'échange. Le client a déjà donné une piste à approfondir." }
+                ],
+                clientReply: "J'ai juste besoin d'être rassuré sur votre fiabilité."
+            },
+            {
+                label: "Traiter l'objection",
+                prompt: "Le vrai frein est identifié : la méconnaissance de l'enseigne. Comment répondez-vous ?",
+                options: [
+                    { quality: "weak", text: "Je peux exceptionnellement vous accorder une remise de dix pour cent sur votre facture.", feedback: "Une remise ne répond pas à un doute sur l'enseigne. Elle laisse penser que le prix affiché n'était pas justifié." },
+                    { quality: "strong", text: "Afin de vous rassurer, voici un lien vers nos avis clients et la garantie satisfaction.", feedback: "L'argument traite directement le frein identifié : la confiance envers l'enseigne, avec des preuves tangibles." },
+                    { quality: "weak", text: "Pour bien confirmer ce que nous disions, le tarif reste donc votre principale réserve ?", feedback: "Revenir sur le prix après avoir identifié un frein différent ramène l'échange sur un terrain inadapté et clos." }
+                ],
+                clientReply: "D'accord, je vais regarder ça."
+            },
+            {
+                label: "Contrôler",
+                prompt: "Une réponse a été apportée sur le vrai frein. Comment concluez-vous l'échange ?",
+                options: [
+                    { quality: "strong", text: "Ces éléments clarifient-ils la situation, ou souhaitez-vous obtenir d'autres précisions ?", feedback: "Cette question vérifie que la réponse a bien levé le doute sans présumer que l'échange est définitivement clos." },
+                    { quality: "weak", text: "Très bien, je vous laisse y réfléchir de votre côté et je reste à votre disposition ici.", feedback: "Terminer sans vérifier si la réponse a levé le doute laisse le client livré à lui-même sur un point non résolu." },
+                    { quality: "weak", text: "En tout cas, je vous confirme que notre tarification reste très raisonnable sur le marché.", feedback: "Revenir sur le prix en conclusion réintroduit un sujet qui n'était pas le vrai problème. C'est contre-productif." }
+                ],
+                clientReply: "Oui, c'est plus clair, merci."
+            }
+        ],
+        ecrit: [
+            {
+                label: "Identifier l'objection",
+                prompt: "Vous rédigez la réponse à ce message. Que faites-vous en premier ?",
+                options: [
+                    { quality: "skip", text: "Nous pouvons vous proposer une remise de dix pour cent si ce tarif global vous freine ici.", feedback: "C'est le piège classique : répondre par une remise avant d'avoir clarifié l'ensemble des freins exprimés." },
+                    { quality: "strong", text: "Avant d'aborder le tarif, est-ce le seul frein ou d'autres éléments entrent-ils en compte ?", feedback: "À l'écrit, il faut identifier explicitement dès la première réponse si l'objection affichée est bien la seule." },
+                    { quality: "weak", text: "Pouvez-vous me préciser ce que vous avez trouvé ailleurs à un tarif bien plus intéressant ?", feedback: "La question s'engage sur la comparaison tarifaire avant d'avoir vérifié si le prix est réellement le seul frein." }
+                ],
+                clientReply: "Pour être franc, c'est surtout que je ne connais pas votre site, alors j'hésite un peu."
+            },
+            {
+                label: "Accepter l'objection",
+                prompt: "L'objection est identifiée. Que faites-vous avant d'y répondre sur le fond ?",
+                options: [
+                    { quality: "skip", text: "Nos tarifs reflètent la très haute qualité de nos prestations par rapport à la concurrence.", feedback: "Contre-argumenter sans accueillir la remarque donne un ton défensif. Le client ne se sentira pas entendu." },
+                    { quality: "strong", text: "Votre prudence est tout à fait compréhensible si vous découvrez notre enseigne aujourd'hui.", feedback: "À l'écrit, la reconnaissance doit être explicite. Elle prépare le terrain avant d'aborder le fond du sujet." },
+                    { quality: "weak", text: "N'hésitez surtout pas à revenir vers nous si ce message ne répond pas du tout à la question.", feedback: "Vérifier que la réponse convient n'a de sens qu'après avoir répondu sur le fond. C'est prématuré ici en e-mail." }
+                ],
+                clientReply: "Merci de le comprendre."
+            },
+            {
+                label: "Chercher à comprendre",
+                prompt: "L'objection a été accueillie dans le message. Que développez-vous ensuite ?",
+                options: [
+                    { quality: "weak", text: "Pour vous rassurer sur le prix, notre offre inclut plusieurs services additionnels gratuits.", feedback: "Cette réponse reste centrée sur l'argument tarifaire sans explorer la méconnaissance de l'enseigne évoquée." },
+                    { quality: "strong", text: "Vous indiquiez ne pas connaître notre enseigne : c'est souvent ce qui rend un tarif suspect.", feedback: "Cette phrase nomme explicitement l'hypothèse que le vrai frein n'est pas le tarif mais la confiance (enseigne)." },
+                    { quality: "weak", text: "Pour être certain de bien vous répondre, confirmez-vous que le tarif reste le seul problème ?", feedback: "Revenir à l'identification fait reculer l'échange. Le client a donné une indication claire à approfondir ici." }
+                ],
+                clientReply: "Oui, c'est exactement ça. J'ai besoin d'être rassuré sur votre fiabilité."
+            },
+            {
+                label: "Traiter l'objection",
+                prompt: "Le vrai frein a été nommé : l'enseigne. Que proposez-vous ?",
+                options: [
+                    { quality: "weak", text: "Nous pouvons exceptionnellement accorder une remise de dix pour cent pour tester notre offre.", feedback: "Une remise écrite ne répond pas à un doute sur la fiabilité. Elle peut même le renforcer (prix non justifié)." },
+                    { quality: "strong", text: "Afin de juger par vous-même, voici le lien vers nos avis clients et notre garantie complète.", feedback: "L'argument traite directement le frein identifié : la confiance envers l'enseigne, avec des éléments concrets." },
+                    { quality: "weak", text: "Pour confirmer ce que nous disions, le niveau de tarification reste votre principale réserve ?", feedback: "Revenir sur le prix après avoir identifié un frein différent ignore ce qui vient d'être établi juste auparavant." }
+                ],
+                clientReply: "C'est noté, je vais consulter ces avis, c'est rassurant."
+            },
+            {
+                label: "Contrôler",
+                prompt: "Une réponse a été apportée sur le vrai frein. Comment terminez-vous le message ?",
+                options: [
+                    { quality: "strong", text: "N'hésitez pas à dire si ces éléments vous rassurent, ou si vous souhaitez d'autres précisions.", feedback: "Cette formule vérifie explicitement, par écrit, que la réponse a bien répondu au doute, gardant le lien ouvert." },
+                    { quality: "weak", text: "Je reste à votre entière disposition si besoin. Je vous souhaite une excellente fin de journée.", feedback: "Cette formule de politesse générique termine le message sans vérifier si la réponse a réellement levé le doute." },
+                    { quality: "weak", text: "Pour rappel conclusif, notre niveau de tarification reste très compétitif face à la concurrence.", feedback: "Revenir sur l'argument tarifaire en conclusion réintroduit un sujet qui n'était plus le point central de l'échange." }
+                ],
+                clientReply: "Parfait, je reviens vers vous vite."
+            }
+        ]
+    };
+
+    const state = {
+        channel: null,
+        stepIndex: 0,
+        history: [], 
+        results: [],
+        skippedOnce: false,
+        historyExpanded: false
+    };
+
+    const sfx = {
+        initialized: false,
+        init: async function() {
+            if(this.initialized) return;
+            try {
+                await Tone.start();
+                this.success = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
+                this.success.volume.value = -25;
+                this.error = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
+                this.error.volume.value = -20;
+                this.click = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 } }).toDestination();
+                this.click.volume.value = -30;
+                this.initialized = true;
+            } catch(e) { console.warn("Audio init failed", e); }
+        },
+        playSuccess: function() { if(this.initialized && this.success) { const n = Tone.now(); this.success.triggerAttackRelease("C5", "16n", n); this.success.triggerAttackRelease("G5", "16n", n+0.1); } },
+        playError: function() { if(this.initialized && this.error) this.error.triggerAttackRelease("C3", "16n"); },
+        playClick: function() { if(this.initialized && this.click) this.click.triggerAttackRelease("C6", "32n"); }
+    };
+    document.addEventListener('click', () => sfx.init(), { once: true });
+
+    function shuffleArray(arr) {
+        let s = [...arr];
+        for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
+        return s;
+    }
+
+    window.startChannel = function(channel) {
+        sfx.playClick();
+        state.channel = channel;
+        state.stepIndex = 0;
+        state.history = [{ speaker: 'client', text: clientOpening }];
+        state.results = [];
+        state.skippedOnce = false;
+        state.historyExpanded = false;
+
+        document.getElementById('intro-modal').classList.add('opacity-0');
+        setTimeout(() => {
+            document.getElementById('intro-modal').style.display = 'none';
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('flex');
+            
+            document.getElementById('channelSelect').style.display = 'none';
+            document.getElementById('synthesisView').classList.add('hidden');
+            document.getElementById('dialogueView').classList.remove('hidden');
+            document.getElementById('dialogueView').classList.add('flex');
+
+            const iconTel = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
+            const iconMail = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`;
+            
+            document.getElementById('channelBadgeIcon').innerHTML = channel === 'telephone' ? iconTel : iconMail;
+            
+            const otherChannelBtn = document.getElementById('btnOtherChannel');
+            otherChannelBtn.innerHTML = `Tester au ${channel === 'telephone' ? 'format Écrit' : 'Téléphone'} <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+
+            initDots();
+            renderStep();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }, 300);
+    }
+
+    const btnStartActivity = document.getElementById('btn-start-activity');
+    if (btnStartActivity) {
+        btnStartActivity.addEventListener('click', () => {
+            sfx.playClick();
+            document.getElementById('intro-modal').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('intro-modal').style.display = 'none';
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('flex');
+            }, 300);
+        });
+    }
+
+    function initDots() {
+        const wrap = document.getElementById("prog-dots");
+        wrap.innerHTML = "";
+        const total = stepsData[state.channel].length;
+        for (let i = 0; i < total; i++) {
+            wrap.innerHTML += `<div class="progress-dot" id="dot-${i}"></div>`;
+        }
+    }
+
+    function updateProgress() {
+        const total = stepsData[state.channel].length;
+        document.getElementById("prog-label").textContent = `Étape ${state.stepIndex + 1} sur ${total}`;
+        
+        const stepNames = stepsData[state.channel].map(s => s.label);
+        document.getElementById("step-name").textContent = stepNames[state.stepIndex];
+        document.getElementById("prog-bar").style.width = `${(state.stepIndex / total) * 100}%`;
+
+        for (let i = 0; i < total; i++) {
+            const d = document.getElementById(`dot-${i}`);
+            if (i < state.stepIndex) d.className = state.results[i] === 'skip' ? "progress-dot skipped" : "progress-dot done";
+            else if (i === state.stepIndex) d.className = "progress-dot current";
+            else d.className = "progress-dot";
+        }
+    }
+
+    function renderHistory() {
+        const box = document.getElementById('transcriptHistory');
+        box.innerHTML = '';
+        
+        let currentSpeaker = null;
+        let currentBubble = null;
+        let wraps = [];
+        let currentWrap = null;
+
+        state.history.forEach((l, index) => {
+            const isConseiller = l.speaker === 'conseiller';
+            const isAngry = l.tense;
+            const speakerKey = l.speaker + (isAngry ? '-angry' : '');
+
+            // Nouveau locuteur = nouveau bloc
+            if (currentSpeaker !== speakerKey) {
+                currentSpeaker = speakerKey;
+                
+                currentWrap = document.createElement('div');
+                currentWrap.className = `flex items-start gap-3 ${isConseiller ? 'flex-row-reverse' : ''}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = `w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm ${isConseiller ? 'bg-brand text-white' : (isAngry ? 'bg-error text-white' : 'bg-slate-200 text-slate-500')}`;
+                avatar.textContent = isConseiller ? 'Co.' : 'Cl.';
+                
+                const bubble = document.createElement('div');
+                bubble.className = `max-w-[85%] flex flex-col ${isConseiller ? 'bubble-conseiller' : (isAngry ? 'bubble-client-angry' : 'bubble-client')}`;
+                
+                currentBubble = bubble;
+                
+                currentWrap.appendChild(avatar);
+                currentWrap.appendChild(bubble);
+                wraps.push(currentWrap);
+            }
+
+            // On ajoute le texte à la bulle en cours
+            const line = document.createElement('div');
+            if (index === state.history.length - 1 && index > 0) {
+                line.className = 'animate-fade-in';
+            }
+            line.innerHTML = l.text;
+
+            if (currentBubble.children.length > 0) {
+                line.classList.add('mt-3.5');
+            }
+
+            currentBubble.appendChild(line);
+        });
+
+        // Gestion de la réduction de l'historique : on cache tout sauf les 2 derniers blocs
+        if (wraps.length > 2) {
+            const oldContainer = document.createElement('div');
+            oldContainer.className = 'flex flex-col gap-4 transition-all duration-300';
+            if (!state.historyExpanded) oldContainer.classList.add('hidden');
+
+            const recentContainer = document.createElement('div');
+            recentContainer.className = 'flex flex-col gap-4 mt-2';
+
+            for (let i = 0; i < wraps.length - 2; i++) {
+                oldContainer.appendChild(wraps[i]);
+            }
+            for (let i = wraps.length - 2; i < wraps.length; i++) {
+                recentContainer.appendChild(wraps[i]);
+            }
+
+            const toggleBtnWrap = document.createElement('div');
+            toggleBtnWrap.className = 'flex justify-center my-3 relative';
+            toggleBtnWrap.innerHTML = `
+                <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-slate-200"></div></div>
+                <button class="relative bg-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400 border border-slate-200 hover:text-brand hover:border-brand/30 transition-colors flex items-center gap-2 shadow-sm z-10" onclick="toggleHistory()">
+                    ${state.historyExpanded ? "Masquer l'historique" : "Voir l'historique complet"}
+                    <svg class="w-3.5 h-3.5 transform transition-transform duration-300 ${state.historyExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+            `;
+
+            box.appendChild(oldContainer);
+            box.appendChild(toggleBtnWrap);
+            box.appendChild(recentContainer);
+        } else {
+            wraps.forEach(w => box.appendChild(w));
+        }
+    }
+
+    window.toggleHistory = function() {
+        sfx.playClick();
+        state.historyExpanded = !state.historyExpanded;
+        renderHistory();
+    }
+
+    function renderStep() {
+        updateProgress();
+        const step = stepsData[state.channel][state.stepIndex];
+        document.getElementById('stepPrompt').textContent = step.prompt;
+
+        renderHistory();
+
+        document.getElementById('derailBanner').classList.add('hidden');
+        document.getElementById('promptBlock').classList.remove('hidden');
+
+        const list = document.getElementById('optionsList');
+        list.innerHTML = '';
+        
+        const shuffledOptions = shuffleArray(step.options);
+        
+        shuffledOptions.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-choix';
+            btn.id = `opt-${idx}`;
+            // Suppression du tag technique pour rendre le choix plus dur
+            btn.innerHTML = `<span>${opt.text}</span>`;
+            btn.onclick = () => onChoice(idx, opt, shuffledOptions);
+            list.appendChild(btn);
+        });
+
+        document.getElementById('feedbackPanel').classList.add('hidden');
+        document.getElementById('nextBtn').classList.add('hidden');
+    }
+
+    function onChoice(idxClique, chosen, optionsArr) {
+        const isStrong = chosen.quality === 'strong';
+        const isSkip = chosen.quality === 'skip';
+        
+        isStrong ? sfx.playSuccess() : sfx.playError();
+
+        optionsArr.forEach((opt, i) => {
+            const btn = document.getElementById(`opt-${i}`);
+            btn.disabled = true;
+            if (i === idxClique) {
+                btn.className = isStrong ? "btn-choix chosen-strong" : "btn-choix chosen-weak";
+            } else if (opt.quality === 'strong' && !isStrong) {
+                // S'illumine en vert même si l'apprenant a fait un choix "skip"
+                btn.className = "btn-choix chosen-strong";
+            } else {
+                btn.className = "btn-choix chosen-other";
+            }
+        });
+
+        const fb = document.getElementById('feedbackPanel');
+        fb.className = isStrong 
+            ? "mt-6 rounded-xl p-5 text-[15px] leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text"
+            : "mt-6 rounded-xl p-5 text-[15px] leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+        
+        const icon = isStrong 
+            ? `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`
+            : `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+
+        let title = isStrong ? 'Choix adapté' : 'À reconsidérer';
+        if (isSkip) title = 'Étape sautée';
+
+        // Boîte verte pour l'approche attendue si erreur
+        let expectedFeedback = '';
+        if (!isStrong) {
+            const strongOpt = optionsArr.find(o => o.quality === 'strong');
+            expectedFeedback = `
+                <div class="mt-4 border-t border-slate-200/60 pt-4">
+                    <div class="font-bold text-success flex items-center gap-1 mb-1 text-sm uppercase tracking-widest">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        L'approche attendue
+                    </div>
+                    <p class="text-success-text">${strongOpt.feedback}</p>
+                </div>
+            `;
+        }
+
+        fb.innerHTML = `<div class="font-bold mb-2 flex items-center gap-1">${icon} ${title}</div><p>${chosen.feedback}</p>${expectedFeedback}`;
+
+        state.history.push({ speaker: 'conseiller', text: chosen.text });
+        state.results.push(chosen.quality);
+        state.historyExpanded = false; // Réduire l'historique automatiquement à chaque étape
+        
+        if (isSkip) {
+            state.skippedOnce = true;
+            document.getElementById('promptBlock').classList.add('hidden');
+            const derailBanner = document.getElementById('derailBanner');
+            derailBanner.classList.remove('hidden');
+            document.getElementById('derailText').textContent = derailReaction[state.channel].banner;
+
+            state.history.push({ speaker: 'client', text: derailReaction[state.channel].clientLine, tense: true });
+            renderHistory();
+
+            document.getElementById(`dot-${state.stepIndex}`).className = "progress-dot skipped";
+        } else {
+            // Ajout de la réaction naturelle du client si tout va bien
+            if (stepsData[state.channel][state.stepIndex].clientReply) {
+                state.history.push({ speaker: 'client', text: stepsData[state.channel][state.stepIndex].clientReply });
+            }
+            document.getElementById(`dot-${state.stepIndex}`).className = isStrong ? "progress-dot done" : "progress-dot skipped";
+        }
+        
+        // On affiche toujours "Etape suivante", on ne bloque plus l'utilisateur.
+        const btnSuiv = document.getElementById('nextBtn');
+        btnSuiv.innerHTML = state.stepIndex < stepsData[state.channel].length - 1 
+            ? `Étape suivante <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+            : `Voir le débrief final <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+        
+        btnSuiv.classList.remove('hidden');
+        btnSuiv.classList.add('flex');
+        setTimeout(() => btnSuiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    window.nextStep = function() {
+        sfx.playClick();
+        state.stepIndex++;
+        if (state.stepIndex >= stepsData[state.channel].length) {
+            showSynthesis();
+        } else {
+            renderStep();
+            setTimeout(() => document.getElementById("progression-container").scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        }
+    }
+
+    function showSynthesis() {
+        document.getElementById('dialogueView').classList.add('hidden');
+        document.getElementById('dialogueView').classList.remove('flex');
+        document.getElementById('synthesisView').classList.remove('hidden');
+        document.getElementById('synthesisView').classList.add('block');
+
+        const strongCount = state.results.filter(r => r === 'strong').length;
+        const channelLabel = state.channel === 'telephone' ? 'au téléphone' : "à l'écrit";
+        
+        const tag = document.getElementById('synthTag');
+        const t1 = document.getElementById('synthText1');
+        const t2 = document.getElementById('synthText2');
+
+        document.getElementById("prog-bar").style.width = "100%";
+
+        if (strongCount === 5 && !state.skippedOnce) {
+            tag.textContent = "Méthode respectée";
+            t1.textContent = `Les cinq étapes ont été suivies dans l'ordre, ${channelLabel} : identifier l'objection dans son ensemble, l'accepter avant d'y répondre, chercher le frein réel derrière le prix affiché, le traiter spécifiquement, puis vérifier que la réponse a bien levé le doute.`;
+            t2.textContent = "Le point le plus important à retenir : le prix affiché n'était qu'un symptôme, le vrai frein étant la méconnaissance de l'enseigne. Traiter le symptôme (une remise) n'aurait rien réglé sur le fond, et aurait même pu renforcer le doute du client.";
+        } else if (strongCount >= 3) {
+            tag.textContent = "Méthode globalement respectée";
+            if (state.skippedOnce) {
+                t1.textContent = "L'échange a connu un passage en force, où l'objection a été traitée avant d'avoir été acceptée. Le client s'est braqué en milieu d'échange, même si le reste des étapes a été mieux géré.";
+            } else {
+                t1.textContent = "L'ordre général des étapes a été respecté, mais certains choix sont restés centrés sur l'argument du prix plutôt que de suivre le vrai frein identifié en cours d'échange, la méconnaissance de l'enseigne.";
+            }
+            t2.textContent = `Le réflexe à travailler : une fois qu'un frein plus profond est identifié, y revenir en boucle sur l'argument de prix ${channelLabel} fait perdre le bénéfice du diagnostic déjà établi.`;
+        } else {
+            tag.textContent = "Méthode à reprendre";
+            t1.textContent = "Plusieurs étapes ont été traitées dans le désordre ou sautées, avec un réflexe fréquent : répondre à l'objection de prix par une remise ou un contre-argument, sans avoir cherché ce qu'il y avait réellement derrière.";
+            t2.textContent = "Reprenez l'échange en vous demandant à chaque étape : ce que je m'apprête à dire suppose-t-il d'avoir déjà accueilli et compris l'objection ? C'est cette question qui évite de traiter un symptôme à la place de la vraie cause.";
+        }
+        
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+    }
+
+    window.restart = function() {
+        sfx.playClick();
+        document.getElementById('channelSelect').style.display = 'block';
+        document.getElementById('dialogueView').classList.add('hidden');
+        document.getElementById('dialogueView').classList.remove('flex');
+        document.getElementById('synthesisView').classList.add('hidden');
+        document.getElementById('synthesisView').classList.remove('block');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.retryOtherChannel = function() {
+        const other = state.channel === 'telephone' ? 'ecrit' : 'telephone';
+        startChannel(other);
+    }
+
+    const btnFs = document.getElementById('btn-fullscreen');
+    const iconEnter = document.getElementById('icon-fs-enter');
+    const iconExit = document.getElementById('icon-fs-exit');
+    const spotlight = document.getElementById('spotlight-overlay');
+    let isPseudoFs = false;
+
+    function updateFsIcons() { const isFs = document.fullscreenElement || document.webkitFullscreenElement || isPseudoFs; iconEnter.classList.toggle('hidden', !!isFs); iconExit.classList.toggle('hidden', !isFs); }
+    function enablePseudoFs()  { isPseudoFs = true;  document.body.classList.add('pseudo-fullscreen');    updateFsIcons(); }
+    function disablePseudoFs() { isPseudoFs = false; document.body.classList.remove('pseudo-fullscreen'); updateFsIcons(); }
+
+    btnFs.addEventListener('click', (e) => {
+        e.stopPropagation(); sfx.playClick(); hideSpotlight();
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+            const el = document.documentElement;
+            const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+            if (fn) { 
+                try { 
+                    const p = fn.call(el); 
+                    if (p && p.catch) p.catch(() => enablePseudoFs()); 
+                    setTimeout(() => { if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) enablePseudoFs(); }, 300); 
+                } catch (err) { enablePseudoFs(); } 
+            }
+            else enablePseudoFs();
+        } else { 
+            if (isPseudoFs) disablePseudoFs(); 
+            else { 
+                const fn = document.exitFullscreen || document.webkitExitFullscreen; 
+                if (fn) try { fn.call(document); } catch (err) { disablePseudoFs(); } 
+            } 
+        }
+    });
+
+    document.addEventListener('fullscreenchange', updateFsIcons);
+    document.addEventListener('webkitfullscreenchange', updateFsIcons);
+
+    function hideSpotlight() {
+        if(spotlight && !spotlight.classList.contains('opacity-0')) {
+            spotlight.classList.add('opacity-0');
+            setTimeout(() => spotlight.style.display = 'none', 1000);
+        }
+    }
+    document.addEventListener('click', () => hideSpotlight(), { once: true });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Méthode CAP</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#000099',
+                            light: '#e6e6ff',
+                            hover: '#0000cc',
+                            muted: '#3333b3'
+                        },
+                        accent: {
+                            DEFAULT: '#810464',
+                            light: '#fdf2f8',
+                        },
+                        success: {
+                            DEFAULT: '#10b981',
+                            bg: '#ecfdf5',
+                            text: '#065f46',
+                            border: '#6ee7b7'
+                        },
+                        error: {
+                            DEFAULT: '#ef4444',
+                            bg: '#fef2f2',
+                            text: '#991b1b',
+                            border: '#fca5a5'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-cap-option {
+                @apply flex items-start gap-4 p-4 md:p-5 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all duration-300 w-full outline-none focus-visible:ring-2 focus-visible:ring-brand;
+            }
+            .btn-cap-option:hover:not(:disabled) {
+                border-color: var(--theme-color);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                transform: translateY(-2px);
+            }
+            .btn-cap-option:hover:not(:disabled) .icon-opt {
+                border-color: var(--theme-color);
+                color: var(--theme-color);
+            }
+            .btn-cap-option.juste {
+                @apply border-success bg-success-bg ring-2 ring-success/20 transform-none shadow-none;
+            }
+            .btn-cap-option.faux {
+                @apply border-error bg-error-bg opacity-75 transform-none shadow-none;
+            }
+            .btn-cap-option.neutre-apres {
+                @apply opacity-40 grayscale-[50%] bg-slate-50 border-slate-200;
+            }
+        }
+
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center">
+
+    <!-- Bouton Plein Écran -->
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <svg id="icon-fs-enter" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 hidden"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <!-- Overlay Spotlight -->
+    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Pour un meilleur confort, activez le plein écran</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <!-- MODAL D'INTRODUCTION -->
+    <div id="intro-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-pop-in">
+            <div class="bg-brand p-6 text-white text-center relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                <div class="w-16 h-16 mx-auto bg-white/20 rounded-2xl flex items-center justify-center mb-4 relative z-10 backdrop-blur-md border border-white/30 shadow-sm">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-extrabold relative z-10">Règle du jeu</h2>
+            </div>
+            <div class="p-8">
+                <p class="text-slate-600 text-center mb-6 leading-relaxed">
+                    L'activité se compose de <strong class="text-brand">3 scénarios</strong>. 
+                    Pour chacun d'entre eux, vous devrez franchir <strong class="text-[#810464]">2 étapes successives</strong> :
+                </p>
+                <div class="flex flex-col gap-4 mb-8">
+                    <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-10 h-10 rounded-full bg-[#810464] text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm">1</div>
+                        <div class="text-sm font-medium text-slate-700">Identifier l'<strong>Avantage</strong> qui se cache derrière la caractéristique technique.</div>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-10 h-10 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm">2</div>
+                        <div class="text-sm font-medium text-slate-700">Choisir la meilleure <strong>Preuve</strong> pour valider cet argument auprès du client.</div>
+                    </div>
+                </div>
+                <button onclick="startActivity()" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                    J'ai compris, commencer !
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="w-full max-w-4xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0 blur-[4px] pointer-events-none transition-all duration-500" id="main-content">
+        
+        <!-- BANDEAU EN-TÊTE -->
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="w-14 h-14 min-w-[56px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-sm z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            </div>
+            <div class="z-10">
+                <div class="text-brand-light text-xs font-bold tracking-widest uppercase mb-1">Argumentaire de vente</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold leading-tight mb-2">La Méthode CAP</h1>
+                <div class="text-white/80 text-sm font-medium">Activité d'association • 3 scénarios à construire</div>
+            </div>
+        </header>
+
+        <!-- BARRE DE PROGRESSION -->
+        <div class="w-full flex flex-col gap-3" id="progression-wrap">
+            <div class="flex justify-between items-end text-sm">
+                <span class="font-semibold text-slate-500 uppercase tracking-wider text-xs" id="progression-label">Scénario 1 sur 3</span>
+                <span class="font-bold text-brand bg-brand-light px-3 py-1 rounded-full text-xs" id="progression-score">Étape 1 / 2</span>
+            </div>
+            <div class="h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                <div class="h-full bg-brand rounded-full transition-all duration-500 ease-out relative" id="barre-fill" style="width:0%">
+                    <div class="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZONE DYNAMIQUE -->
+        <div id="zone-activite" class="w-full flex flex-col gap-6"></div>
+        
+        <!-- DEBRIEF FINAL -->
+        <div id="debrief" class="hidden"></div>
+        
+    </main>
+
+    <script>
+        const SCENARIOS = [
+            {
+                c: "Ce stylo possède une encre gel à séchage ultra-rapide (moins d'une seconde).",
+                context: "Vente en papeterie",
+                a_options: [
+                    { text: "La composition chimique de cette encre permet une évaporation immédiate sur le papier.", correct: false, feedback: "C'est une description technique du produit. Le client s'en fiche de l'évaporation, il veut savoir ce que ça lui apporte au quotidien." },
+                    { text: "Vous écrivez très vite et passez la main sur la page sans jamais faire aucune bavure.", correct: true, feedback: "Exact ! L'avantage est centré sur le confort direct de l'utilisateur (écrire vite sans se salir), face à un besoin concret." },
+                    { text: "Le liquide pénètre la fibre de la feuille en exactement zéro virgule huit seconde net.", correct: false, feedback: "C'est l'expression d'une performance mesurée. C'est factuel, mais cela ne traduit pas le bénéfice humain de manière concrète." }
+                ],
+                p_options: [
+                    { text: "Passer votre main sur le texte juste après l'avoir écrit pour montrer le rendu parfait.", correct: true, feedback: "Parfait ! La démonstration par l'expérience en temps réel est la preuve absolue et indiscutable de votre promesse." },
+                    { text: "Lui affirmer avec certitude : « C'est la marque numéro un choisie par les étudiants. »", correct: false, feedback: "L'argument d'autorité ne prouve en rien que l'encre sèche vite. C'est une affirmation qui n'apporte aucune certitude matérielle." },
+                    { text: "Lui lire les résultats du laboratoire qui sont imprimés au dos de la boîte en carton.", correct: false, feedback: "Une donnée de laboratoire imprimée reste théorique et abstraite. Le client a besoin de voir le résultat de ses propres yeux." }
+                ]
+            },
+            {
+                c: "Cette valise est équipée de quatre doubles roues pivotantes à 360 degrés.",
+                context: "Vente en bagagerie",
+                a_options: [
+                    { text: "Vous naviguez sans le moindre effort dans les gares bondées en gardant le bras droit.", correct: true, feedback: "Excellent ! Le bénéfice projette le client dans une vraie situation (les gares) avec un soulagement clair (sans effort, bras droit)." },
+                    { text: "L'axe de rotation des roulettes intègre un système de roulement à billes ultra fluide.", correct: false, feedback: "Vous décrivez la mécanique de la roue. L'apprenant doit toujours se demander : En quoi ce roulement à billes m'est-il utile ?" },
+                    { text: "Le poids du bagage est réparti équitablement sur les quatre angles de sa base rigide.", correct: false, feedback: "C'est une explication technique sur la répartition du poids. Le client achète un voyage confortable, pas un cours de physique." }
+                ],
+                p_options: [
+                    { text: "Faire rouler la valise pleine sur elle-même avec un seul petit doigt devant le client.", correct: true, feedback: "Très bien ! Une démonstration physique vaut mille mots. Si un doigt suffit, le client est immédiatement convaincu de la fluidité." },
+                    { text: "Lui promettre : « J'ai exactement le même modèle depuis cinq ans pour mes vols pro. »", correct: false, feedback: "Une promesse orale, même sincère ou personnelle, n'est pas une preuve formelle. Le client a besoin d'éléments concrets." },
+                    { text: "Montrer la certification technique affichée sur l'étiquette plastifiée du fabricant.", correct: false, feedback: "L'étiquette est une garantie de conception, mais elle est très froide par rapport au ressenti physique du produit en mouvement." }
+                ]
+            },
+            {
+                c: "Ce parapluie possède un bouton d'ouverture automatique au niveau du manche.",
+                context: "Vente d'accessoires",
+                a_options: [
+                    { text: "Vous vous abritez immédiatement d'une seule main lorsque vous avez les bras chargés.", correct: true, feedback: "Très juste ! Vous répondez à un problème vécu (bras chargés sous la pluie) par une solution pratique et immédiate. C'est vendeur." },
+                    { text: "Le ressort sous tension propulse la structure métallique grâce à une simple pression.", correct: false, feedback: "C'est l'explication du mécanisme interne. Le client achète l'abri immédiat contre la pluie, pas le ressort sous tension." },
+                    { text: "La toile se déploie entièrement en moins de deux secondes après activation du bouton.", correct: false, feedback: "Vous traduisez la caractéristique en performance chronométrée. Il manque la dimension pratique et confortable pour l'usager." }
+                ],
+                p_options: [
+                    { text: "Tenir un sac lourd d'une main et ouvrir le parapluie de l'autre de manière immédiate.", correct: true, feedback: "C'est la meilleure preuve ! Vous mettez le produit en condition réelle d'utilisation. Le bénéfice devient visible et incontestable." },
+                    { text: "Assurer au client avec conviction : « C'est le système d'ouverture le plus réactif. »", correct: false, feedback: "C'est une simple affirmation commerciale. Dire c'est le meilleur n'a aucune valeur de preuve aux yeux d'un client rationnel." },
+                    { text: "Démonter une partie du manche pour faire constater la solidité du mécanisme interne.", correct: false, feedback: "Montrer l'intérieur du mécanisme explique pourquoi ça fonctionne, mais cela ne prouve pas le confort d'utilisation au quotidien." }
+                ]
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let currentPhase = 'A'; // 'A' = on cherche l'Avantage, 'P' = on cherche la Preuve
+
+        let audioInitialized = false;
+        let synth, polySynth, membrane, vol;
+
+        async function initAudio() {
+            if (audioInitialized) return;
+            try {
+                await Tone.start();
+                vol = new Tone.Volume(-28).toDestination(); // Volume fortement baissé (sons très discrets)
+                
+                synth = new Tone.Synth({ 
+                    oscillator: { type: "sine" }, 
+                    envelope: { attack: 0.1, decay: 0.2, sustain: 0, release: 0.2 } 
+                }).connect(vol);
+                
+                polySynth = new Tone.PolySynth(Tone.Synth, { 
+                    oscillator: { type: "triangle" }, 
+                    envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 } 
+                }).connect(vol);
+                
+                membrane = new Tone.MembraneSynth({ 
+                    pitchDecay: 0.01, octaves: 1, 
+                    oscillator: { type: "sine" }, 
+                    envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.01 } 
+                }).connect(vol);
+                
+                audioInitialized = true;
+            } catch(e) { console.warn("Audio bloqué ou non chargé"); }
+        }
+
+        function playClick() { if (audioInitialized && membrane) membrane.triggerAttackRelease("C5", "32n", Tone.now(), 0.1); }
+        function playSuccess() { if (audioInitialized && polySynth) polySynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", Tone.now(), 0.2); }
+        function playError() { if (audioInitialized && synth) synth.triggerAttackRelease("C2", "8n", Tone.now(), 0.3); }
+
+        function renderStep() {
+            const scenario = SCENARIOS[currentScenarioIndex];
+            const isPhaseA = currentPhase === 'A';
+            const zone = document.getElementById("zone-activite");
+
+            // Mise à jour de la barre de progression
+            const totalSteps = SCENARIOS.length * 2;
+            const currentStepNum = currentScenarioIndex * 2 + (isPhaseA ? 1 : 2);
+            const pct = (currentStepNum / totalSteps) * 100;
+            
+            document.getElementById("progression-label").textContent = `Scénario ${currentScenarioIndex + 1} sur ${SCENARIOS.length}`;
+            document.getElementById("progression-score").textContent = `Étape ${isPhaseA ? '1' : '2'} / 2`;
+            document.getElementById("barre-fill").style.width = pct + "%";
+
+            // Thème de couleur dynamique
+            const colorC = '#000099'; // Brand
+            const colorA = '#810464'; // Accent (Magenta)
+            const colorP = '#d97706'; // Amber-600
+
+            const currentThemeColor = isPhaseA ? colorA : colorP;
+            const options = isPhaseA ? scenario.a_options : scenario.p_options;
+            const questionText = isPhaseA 
+                ? "Parmi ces propositions, laquelle exprime le véritable <strong style='color:#810464'>Avantage (A)</strong> pour le client ?" 
+                : "Quelle <strong style='color:#d97706'>Preuve (P)</strong> appuie le mieux cet avantage ?";
+
+            // On mélange les options
+            const shuffledOptions = options.map((opt, index) => ({...opt, originalIndex: index})).sort(() => Math.random() - 0.5);
+
+            zone.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden animate-slide-up" onclick="initAudio()">
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center flex-wrap gap-2">
+                        <span class="text-xs font-bold tracking-widest uppercase text-slate-400">Construction de l'argumentaire</span>
+                        <span class="text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-500">${scenario.context}</span>
+                    </div>
+                    
+                    <div class="p-6 md:p-8">
+                        
+                        <!-- L'empilement CAP -->
+                        <div class="flex flex-col gap-3 mb-8">
+                            <!-- Brique Caractéristique -->
+                            <div class="p-4 md:p-5 rounded-2xl border-l-4 border-brand bg-brand-light/20 flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-brand text-white font-black text-xl flex items-center justify-center shadow-sm flex-shrink-0">C</div>
+                                <div class="flex-1 pt-1">
+                                    <div class="text-[10px] font-bold uppercase tracking-wider text-brand mb-1">Caractéristique</div>
+                                    <div class="text-slate-800 font-medium leading-relaxed">${scenario.c}</div>
+                                </div>
+                            </div>
+                            
+                            ${!isPhaseA ? `
+                            <!-- Brique Avantage -->
+                            <div class="p-4 md:p-5 rounded-2xl border-l-4 border-[#810464] bg-[#810464]/5 flex items-start gap-4 animate-slide-up">
+                                <div class="w-10 h-10 rounded-xl bg-[#810464] text-white font-black text-xl flex items-center justify-center shadow-sm flex-shrink-0">A</div>
+                                <div class="flex-1 pt-1">
+                                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#810464] mb-1">Avantage validé</div>
+                                    <div class="text-slate-800 font-medium leading-relaxed">${scenario.a_options.find(opt => opt.correct).text}</div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- La Question -->
+                        <h3 class="text-center font-bold text-slate-700 text-lg mb-6">${questionText}</h3>
+                        
+                        <!-- Les Options -->
+                        <div class="flex flex-col gap-3">
+                            ${shuffledOptions.map((opt, i) => `
+                                <button id="btn-opt-${i}" data-original="${opt.originalIndex}" class="btn-cap-option group" style="--theme-color: ${currentThemeColor}" onclick="handleChoice(${i}, ${opt.originalIndex})">
+                                    <div class="w-8 h-8 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400 font-bold flex-shrink-0 transition-colors mt-0.5 icon-opt" id="icon-opt-${i}">
+                                        ${String.fromCharCode(65 + i)}
+                                    </div>
+                                    <div class="flex-1 text-slate-700 font-medium leading-relaxed group-hover:text-slate-900 transition-colors">
+                                        ${opt.text}
+                                    </div>
+                                </button>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Zone de Feedback -->
+                        <div id="feedback-area" class="hidden mt-6 rounded-xl p-5 text-sm leading-relaxed animate-fade-in"></div>
+                        
+                        <!-- Bouton Suivant -->
+                        <button id="btn-next" class="hidden mt-8 w-full md:w-auto mx-auto bg-brand hover:bg-brand-hover text-white font-bold py-4 px-10 rounded-xl shadow-md transition-all items-center justify-center gap-2" onclick="goNext()">
+                            ${isPhaseA ? "Étape suivante : Trouver la Preuve" : (currentScenarioIndex < SCENARIOS.length - 1 ? "Passer au Scénario " + (currentScenarioIndex + 2) : "Voir le bilan final")}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+
+                    </div>
+                </div>
+            `;
+            
+            // Attacher l'audio au premier clavier
+            document.addEventListener('keydown', initAudio, {once: true});
+        }
+
+        function handleChoice(renderedIndex, originalIndex) {
+            playClick();
+            const scenario = SCENARIOS[currentScenarioIndex];
+            const isPhaseA = currentPhase === 'A';
+            const options = isPhaseA ? scenario.a_options : scenario.p_options;
+            const isCorrect = options[originalIndex].correct;
+            const feedbackText = options[originalIndex].feedback;
+            
+            // Désactiver tous les boutons pour empêcher de spammer
+            for(let i=0; i<3; i++) {
+                document.getElementById(`btn-opt-${i}`).disabled = true;
+            }
+
+            const btn = document.getElementById(`btn-opt-${renderedIndex}`);
+            const icon = document.getElementById(`icon-opt-${renderedIndex}`);
+            const feedback = document.getElementById("feedback-area");
+            const btnNext = document.getElementById("btn-next");
+
+            if (isCorrect) {
+                playSuccess();
+                btn.classList.add("juste");
+                icon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                icon.classList.remove('border-slate-300', 'text-slate-400');
+                icon.classList.add('border-success', 'text-success');
+                
+                // Griser les autres
+                for(let i=0; i<3; i++) {
+                    if (i !== renderedIndex) document.getElementById(`btn-opt-${i}`).classList.add("neutre-apres");
+                }
+
+                feedback.className = "mt-6 rounded-xl p-5 text-sm leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text";
+                
+                feedback.innerHTML = `
+                    <div class="font-bold text-success mb-2 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Correct !</div>
+                    <div class="mb-2">${feedbackText}</div>
+                `;
+                
+                btnNext.classList.remove("hidden");
+                btnNext.classList.add("flex");
+                
+                setTimeout(() => btnNext.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+                
+            } else {
+                playError();
+                btn.classList.add("faux");
+                icon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+                icon.classList.remove('border-slate-300', 'text-slate-400');
+                icon.classList.add('border-error', 'text-error');
+                
+                let correctRenderedIndex = 0;
+                for(let i=0; i<3; i++) {
+                    let btnEl = document.getElementById(`btn-opt-${i}`);
+                    let origIdx = parseInt(btnEl.getAttribute('data-original'));
+                    if(options[origIdx].correct) {
+                        correctRenderedIndex = i;
+                    }
+                }
+                
+                const correctBtn = document.getElementById(`btn-opt-${correctRenderedIndex}`);
+                const correctIcon = document.getElementById(`icon-opt-${correctRenderedIndex}`);
+                
+                correctBtn.classList.add("juste");
+                correctIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                correctIcon.classList.remove('border-slate-300', 'text-slate-400');
+                correctIcon.classList.add('border-success', 'text-success');
+
+                // Griser la troisième option neutre
+                for(let i=0; i<3; i++) {
+                    if (i !== renderedIndex && i !== correctRenderedIndex) {
+                        document.getElementById(`btn-opt-${i}`).classList.add("neutre-apres");
+                    }
+                }
+
+                feedback.className = "mt-6 rounded-xl p-5 text-sm leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+                feedback.innerHTML = `
+                    <div class="font-bold text-error mb-2 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Pas tout à fait...</div>
+                    <div class="mb-2">${feedbackText}</div>
+                `;
+                
+                // Afficher le bouton suivant pour permettre de passer à l'étape d'après sans rester bloqué
+                btnNext.classList.remove("hidden");
+                btnNext.classList.add("flex");
+                
+                setTimeout(() => btnNext.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+            }
+        }
+
+        function goNext() {
+            playClick();
+            if (currentPhase === 'A') {
+                currentPhase = 'P';
+                renderStep();
+            } else {
+                currentScenarioIndex++;
+                if (currentScenarioIndex < SCENARIOS.length) {
+                    currentPhase = 'A';
+                    renderStep();
+                } else {
+                    showDebrief();
+                }
+            }
+        }
+
+        function showDebrief() {
+            document.getElementById("zone-activite").style.display = "none";
+            document.getElementById("progression-wrap").style.display = "none";
+            
+            const debrief = document.getElementById("debrief");
+            debrief.className = "block animate-slide-up w-full";
+            
+            debrief.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                    <div class="bg-brand p-8 text-white text-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4 text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-16 h-16 mx-auto"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-extrabold mb-2">Activité terminée !</h2>
+                            <p class="text-white/80 max-w-lg mx-auto text-sm md:text-base leading-relaxed">Vous maîtrisez la construction d'un argumentaire CAP convaincant.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 md:p-10 flex flex-col gap-6 bg-slate-50/50">
+                        
+                        <div class="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+                            <h3 class="font-extrabold text-slate-800 text-xl mb-6">L'essentiel à retenir</h3>
+                            
+                            <div class="flex flex-col gap-4">
+                                <div class="flex items-start gap-4 p-4 md:p-5 rounded-xl border border-slate-100 bg-slate-50 transition-colors hover:bg-brand-light/10">
+                                    <div class="w-12 h-12 rounded-xl bg-brand text-white flex items-center justify-center font-black text-xl flex-shrink-0 shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-brand mb-1">Caractéristique</h4>
+                                        <p class="text-sm text-slate-600 leading-relaxed">C'est la définition objective et factuelle du produit ou service (ce qu'il est, ce qu'il fait). Une caractéristique technique seule ne fait pas vendre.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-4 p-4 md:p-5 rounded-xl border border-slate-100 bg-slate-50 transition-colors hover:bg-[#810464]/5">
+                                    <div class="w-12 h-12 rounded-xl bg-[#810464] text-white flex items-center justify-center font-black text-xl flex-shrink-0 shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-[#810464] mb-1">Avantage</h4>
+                                        <p class="text-sm text-slate-600 leading-relaxed">C'est la traduction de la caractéristique en bénéfice concret pour le client (gain de temps, confort, économie). C'est le vrai moteur de l'achat.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-4 p-4 md:p-5 rounded-xl border border-slate-100 bg-slate-50 transition-colors hover:bg-amber-50">
+                                    <div class="w-12 h-12 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-xl flex-shrink-0 shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-amber-600 mb-1">Preuve</h4>
+                                        <p class="text-sm text-slate-600 leading-relaxed">C'est l'élément tangible qui rend l'avantage crédible (démonstration, témoignage, étude chiffrée, garantie contractuelle). Elle rassure le client de façon irréfutable.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="mt-4 flex justify-center">
+                            <button onclick="recommencer()" class="w-full md:w-auto bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 px-10 rounded-xl transition-all shadow-sm flex items-center justify-center gap-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Recommencer l'activité
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function recommencer() {
+            playClick();
+            currentScenarioIndex = 0;
+            currentPhase = 'A';
+            document.getElementById("debrief").className = "hidden";
+            document.getElementById("zone-activite").style.display = "flex";
+            document.getElementById("progression-wrap").style.display = "flex";
+            renderStep();
+        }
+
+        const btnFs = document.getElementById('btn-fullscreen');
+        const iconEnter = document.getElementById('icon-fs-enter');
+        const iconExit = document.getElementById('icon-fs-exit');
+        const spotlight = document.getElementById('spotlight-overlay');
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.warn("Plein écran natif bloqué."));
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        }
+
+        function updateFsIcons() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                iconEnter.classList.add('hidden');
+                iconExit.classList.remove('hidden');
+            } else {
+                iconEnter.classList.remove('hidden');
+                iconExit.classList.add('hidden');
+            }
+        }
+
+        btnFs.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFullScreen();
+            hideSpotlight();
+        });
+
+        document.addEventListener('fullscreenchange', updateFsIcons);
+        document.addEventListener('webkitfullscreenchange', updateFsIcons);
+
+        function hideSpotlight() {
+            if(spotlight && !spotlight.classList.contains('opacity-0')) {
+                spotlight.classList.add('opacity-0');
+                setTimeout(() => spotlight.style.display = 'none', 1000);
+            }
+        }
+
+        document.addEventListener('click', hideSpotlight, { once: true });
+
+        function startActivity() {
+            initAudio();
+            playClick();
+            
+            const modal = document.getElementById('intro-modal');
+            const mainContent = document.getElementById('main-content');
+            
+            modal.classList.add('opacity-0');
+            mainContent.classList.remove('blur-[4px]', 'pointer-events-none');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                renderStep();
+            }, 300);
+        }
+    </script>
+</body>
+</html>

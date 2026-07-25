@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faire évoluer son style dans le temps</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { DEFAULT: '#000099', light: '#e6e6ff', hover: '#0000cc' },
+                        accent: { DEFAULT: '#810464', light: '#fdf2f8', hover: '#64034e' },
+                        success: { DEFAULT: '#10b981', bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7' },
+                        error: { DEFAULT: '#ef4444', bg: '#fef2f2', text: '#991b1b', border: '#fca5a5' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        pop: { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-choix {
+                @apply flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl bg-slate-50 cursor-pointer transition-all duration-200 text-left w-full text-slate-700 font-medium;
+            }
+            .btn-choix:hover:not(:disabled) {
+                @apply border-brand bg-brand-light/40 transform -translate-y-0.5 shadow-md text-brand;
+            }
+            .btn-choix:disabled { @apply cursor-default; }
+            .btn-choix.juste { @apply border-success bg-success-bg text-success shadow-none ring-2 ring-success/20 font-bold; }
+            .btn-choix.faux { @apply border-error bg-error-bg text-error opacity-70; }
+            .btn-choix.neutre-apres { @apply opacity-40 grayscale bg-slate-100 border-slate-200; }
+
+            .timeline-dot {
+                @apply w-5 h-5 rounded-full border-4 border-white bg-slate-300 shadow-sm transition-all duration-500 relative z-10;
+            }
+            .timeline-dot.actif { @apply bg-accent scale-125 ring-4 ring-accent-light; }
+            .timeline-dot.done { @apply bg-brand; }
+            
+            .timeline-line {
+                @apply absolute top-2.5 left-0 h-1 bg-slate-200 -z-0 transition-all duration-700 ease-out rounded-full;
+            }
+            .timeline-line-fill {
+                @apply absolute top-0 left-0 h-full bg-brand rounded-full transition-all duration-700 ease-out;
+            }
+        }
+
+        /* Force l'ascenseur interne pour Genially */
+        html { height: 100%; overflow: hidden; }
+        body {
+            height: 100%;
+            overflow-y: auto; overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        body.pseudo-fullscreen {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100% !important; height: 100% !important;
+            z-index: 999999 !important; margin: 0 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center pb-24">
+
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all" title="Plein écran">
+        <svg id="icon-fs-enter" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Passer en plein écran</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <main class="w-full max-w-4xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+        
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="w-14 h-14 min-w-[56px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-sm z-10">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+            </div>
+            <div class="z-10 flex-1">
+                <div class="text-brand-light text-xs font-bold tracking-widest uppercase mb-1">Management Situationnel</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold leading-tight mb-2">Faire évoluer son style dans le temps</h1>
+                <div class="text-white/80 text-sm font-medium">Accompagnez l'évolution de Marc sur 14 mois.</div>
+            </div>
+        </header>
+
+        <div class="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm" id="progression-container">
+            <div class="relative w-full h-10 mb-2">
+                <div class="timeline-line w-full">
+                    <div class="timeline-line-fill" id="timeline-fill" style="width: 0%"></div>
+                </div>
+                <div class="absolute top-0 w-full flex justify-between px-1">
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="timeline-dot actif" id="dot-0"></div>
+                        <span class="text-[10px] font-bold uppercase text-accent tracking-widest" id="lbl-0">Mois 1</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="timeline-dot" id="dot-1"></div>
+                        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-widest" id="lbl-1">Mois 3</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="timeline-dot" id="dot-2"></div>
+                        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-widest" id="lbl-2">Mois 8</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="timeline-dot" id="dot-3"></div>
+                        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-widest" id="lbl-3">Mois 14</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="zone-dynamique" class="w-full"></div>
+
+    </main>
+
+<script>
+const ETAPES = [
+    {
+        mois: "Mois 1",
+        titre: "L'intégration",
+        contexte: "Marc intègre l'équipe. Il a une bonne attitude mais ne connaît ni les processus de l'entreprise ni les spécificités des produits. Il doit traiter ses premiers dossiers.",
+        consigne: "Quel style de management est le plus adapté à son niveau (D1 - Débutant) ?",
+        options: [
+            // Longueurs strictement égales : 80 caractères
+            { texte: "S1 Directif - Dicter chaque étape, imposer la méthode et contrôler le travail.", bonne: true, style: "S1 Directif" },
+            { texte: "S4 Délégatif - Fixer les buts globaux de la semaine et le laisser s'organiser.", bonne: false, style: "S4 Délégatif" },
+            { texte: "S3 Participatif - Lui demander ses idées et valider ensemble son plan d'action.", bonne: false, style: "S3 Participatif" }
+        ],
+        fbJuste: "Exact. Marc est au stade <strong>D1 (Débutant)</strong>. Il a besoin d'un cadre clair et sécurisant. Le style <strong>S1 Directif</strong> est le plus approprié : on donne des consignes précises et on suit les premières étapes.",
+        fbFaux: "À ce stade, Marc est un <strong>Débutant (D1)</strong>. Il ne possède pas encore les clés pour s'organiser seul ou proposer des méthodes. Il lui faut un style <strong>S1 Directif</strong> pour structurer ses débuts."
+    },
+    {
+        mois: "Mois 3",
+        titre: "Les premiers doutes",
+        contexte: "Marc connaît désormais les bases, mais il rencontre ses premiers échecs face à des clients exigeants. Il semble perdre sa motivation et hésite à prendre le téléphone.",
+        consigne: "Comment adaptez-vous votre style à son nouveau profil (D2 - Apprenant) ?",
+        options: [
+            // Longueurs strictement égales : 81 caractères
+            { texte: "S2 Persuasif - Expliquer les décisions, redonner du sens et valoriser l'effort.", bonne: true, style: "S2 Persuasif" },
+            { texte: "S1 Directif - Imposer des méthodes strictes sans discuter pour éviter l'erreur.", bonne: false, style: "S1 Directif" },
+            { texte: "S4 Délégatif - Le laisser gérer les échecs tout seul, c'est la meilleure école.", bonne: false, style: "S4 Délégatif" }
+        ],
+        fbJuste: "Correct. Marc est au stade <strong>D2 (Apprenant)</strong>. Le style <strong>S2 Persuasif</strong> s'impose : on continue à guider la méthode, mais on explique davantage pour redonner du sens et de l'encouragement.",
+        fbFaux: "Marc est au stade <strong>D2 (Apprenant)</strong> : il a les bases mais manque de confiance suite à ses échecs. Un style trop strict (S1) le braquerait, une liberté totale (S4) le perdrait. Il faut un style <strong>S2 Persuasif</strong>."
+    },
+    {
+        mois: "Mois 8",
+        titre: "L'autonomie acquise",
+        contexte: "Marc est devenu un véritable expert sur son secteur. Ses résultats sont excellents, il gère ses dossiers de bout en bout et n'a plus besoin de validation technique.",
+        consigne: "Quel style devez-vous adopter aujourd'hui (D4 - Autonome) ?",
+        options: [
+            // Longueurs strictement égales : 82 caractères
+            { texte: "S4 Délégatif - Fixer un cadre général puis laisser une totale liberté d'action.", bonne: true, style: "S4 Délégatif" },
+            { texte: "S1 Directif - Vérifier chaque dossier avec lui au quotidien pour tenir le niveau.", bonne: false, style: "S1 Directif" },
+            { texte: "S2 Persuasif - Expliquer en détail comment il doit préparer les futurs dossiers.", bonne: false, style: "S2 Persuasif" }
+        ],
+        fbJuste: "Parfait. Marc a atteint le stade <strong>D4 (Autonome)</strong> sur sa mission. Le manager doit s'effacer sur l'opérationnel et adopter un style <strong>S4 Délégatif</strong>, en ne gérant plus que les objectifs globaux.",
+        fbFaux: "Marc est <strong>Autonome (D4)</strong>. Continuer à vérifier son travail ou à lui expliquer la méthode serait vécu comme du micro-management (et une perte de temps pour vous). Le style <strong>S4 Délégatif</strong> s'impose."
+    },
+    {
+        mois: "Mois 14",
+        titre: "La nouvelle mission (Le piège)",
+        contexte: "Vous confiez à Marc le déploiement d'un nouveau logiciel CRM extrêmement complexe. Bien qu'expert sur la vente, il est totalement perdu face à cet outil et prend du retard.",
+        consigne: "Quelle est la meilleure réaction face à cette situation inédite ?",
+        options: [
+            // Longueurs strictement égales : 83 caractères
+            { texte: "S1 Directif - Reprendre un encadrement strict pour l'aider à structurer la tâche.", bonne: true, style: "S1 Directif" },
+            { texte: "S4 Délégatif - Maintenir la délégation : c'est un senior qui trouvera la parade.", bonne: false, style: "S4 Délégatif" },
+            { texte: "S3 Participatif - L'écouter exprimer ses doutes sans imposer de méthode précise.", bonne: false, style: "S3 Participatif" }
+        ],
+        fbJuste: "Excellent ! C'est le principe de l'évolution non-linéaire : <strong>le niveau de développement s'évalue par tâche, pas par personne</strong>. Sur ce nouveau CRM, Marc est redevenu Débutant (D1). Revenir à un style <strong>S1 Directif</strong> temporaire n'est pas une régression, c'est une nécessité contextuelle.",
+        fbFaux: "C'est le piège classique. L'autonomie de Marc sur la vente ne se transfère pas magiquement sur un CRM complexe. <strong>L'évolution n'est pas linéaire</strong> : face à une tâche totalement nouvelle, Marc est redevenu Débutant (D1). Il faut temporairement revenir à un style <strong>S1 Directif</strong> pour l'aider."
+    }
+];
+
+let currentIndex = 0;
+let totalScore = 0;
+
+const sfx = {
+    initialized: false,
+    init: async function() {
+        if(this.initialized) return;
+        this.initialized = true;
+        await Tone.start();
+        this.success = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
+        this.success.volume.value = -20;
+        this.error = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
+        this.error.volume.value = -18;
+        this.click = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 } }).toDestination();
+        this.click.volume.value = -25;
+    },
+    playSuccess: function() { if(this.initialized){ const n = Tone.now(); this.success.triggerAttackRelease("C5", "16n", n); this.success.triggerAttackRelease("G5", "16n", n+0.1); } },
+    playError: function() { if(this.initialized) this.error.triggerAttackRelease("C3", "16n"); },
+    playClick: function() { if(this.initialized) this.click.triggerAttackRelease("C6", "32n"); }
+};
+document.addEventListener('click', () => sfx.init(), { once: true });
+
+function shuffleArray(arr) {
+    let s = [...arr];
+    for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
+    return s;
+}
+
+function majFrise() {
+    const progress = (currentIndex / (ETAPES.length - 1)) * 100;
+    document.getElementById("timeline-fill").style.width = `${progress}%`;
+
+    for (let i = 0; i < ETAPES.length; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        const lbl = document.getElementById(`lbl-${i}`);
+        if (i < currentIndex) {
+            dot.className = "timeline-dot done";
+            lbl.className = "text-[10px] font-bold uppercase text-brand tracking-widest transition-colors";
+        } else if (i === currentIndex) {
+            dot.className = "timeline-dot actif";
+            lbl.className = "text-[10px] font-bold uppercase text-accent tracking-widest transition-colors";
+        } else {
+            dot.className = "timeline-dot";
+            lbl.className = "text-[10px] font-bold uppercase text-slate-400 tracking-widest transition-colors";
+        }
+    }
+}
+
+function afficherEtape() {
+    majFrise();
+    const data = ETAPES[currentIndex];
+    const zone = document.getElementById("zone-dynamique");
+    const optionsMelangees = shuffleArray(data.options);
+
+    const optsHTML = optionsMelangees.map((opt, idx) => {
+        // Mise en gras automatique du style au début de la proposition
+        const parts = opt.texte.split(" - ");
+        const formattedText = parts.length > 1 
+            ? `<strong class="text-slate-900">${parts[0]}</strong> - ${parts[1]}` 
+            : opt.texte;
+
+        return `
+            <button class="btn-choix group" id="opt-${idx}" onclick="validerChoix(${idx}, ${opt.bonne}, ${JSON.stringify(optionsMelangees).replace(/"/g, '&quot;')})">
+                <div class="w-8 h-8 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0 group-hover:border-brand transition-colors text-xs font-bold text-slate-400 group-hover:text-brand">${['A', 'B', 'C'][idx]}</div>
+                <span class="leading-relaxed flex-1">${formattedText}</span>
+            </button>
+        `;
+    }).join("");
+
+    zone.innerHTML = `
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-pop">
+            <div class="bg-slate-50 border-b border-slate-100 px-6 py-5 flex items-center gap-3">
+                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                <div class="text-xs font-bold tracking-widest uppercase text-brand">${data.mois} • ${data.titre}</div>
+            </div>
+            
+            <div class="p-6 md:p-8">
+                <p class="text-slate-600 italic leading-relaxed text-[15px] border-l-2 border-slate-300 pl-4 mb-6">
+                    ${data.contexte}
+                </p>
+                
+                <h3 class="text-lg font-bold text-slate-800 mb-5">${data.consigne}</h3>
+                
+                <div class="flex flex-col gap-3">
+                    ${optsHTML}
+                </div>
+                
+                <div class="mt-6 rounded-xl p-5 text-sm md:text-[15px] leading-relaxed hidden animate-fade-in" id="feedback-box"></div>
+                
+                <button class="hidden w-full bg-accent hover:bg-accent-hover text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md items-center justify-center gap-2 mt-6" id="btn-suivant" onclick="etapeSuivante()">
+                    ${currentIndex < ETAPES.length - 1 ? "Passer à la période suivante" : "Voir le bilan de l'évolution"}
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function validerChoix(idxClique, estJuste, optionsMelangees) {
+    if(estJuste) { sfx.playSuccess(); totalScore++; } else { sfx.playError(); }
+
+    optionsMelangees.forEach((opt, idx) => {
+        const btn = document.getElementById(`opt-${idx}`);
+        btn.disabled = true;
+        if (idx === idxClique) {
+            btn.className = estJuste ? "btn-choix juste" : "btn-choix faux";
+        } else if (opt.bonne && !estJuste) {
+            btn.className = "btn-choix juste";
+        } else {
+            btn.className = "btn-choix neutre-apres";
+        }
+    });
+
+    const data = ETAPES[currentIndex];
+    const fb = document.getElementById("feedback-box");
+    fb.className = estJuste 
+        ? "mt-6 rounded-xl p-5 text-[15px] leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text"
+        : "mt-6 rounded-xl p-5 text-[15px] leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+    
+    const iconHtml = estJuste 
+        ? `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+        : `<svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+
+    fb.innerHTML = `<div class="font-bold mb-2 flex items-center gap-1">${iconHtml} ${estJuste ? 'Excellente adaptation' : 'Attention au décalage'}</div>${estJuste ? data.fbJuste : data.fbFaux}`;
+
+    const btnSuiv = document.getElementById("btn-suivant");
+    btnSuiv.classList.remove("hidden");
+    btnSuiv.classList.add("flex");
+    setTimeout(() => btnSuiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+function etapeSuivante() {
+    sfx.playClick();
+    currentIndex++;
+    if (currentIndex < ETAPES.length) {
+        afficherEtape();
+        setTimeout(() => document.getElementById("progression-container").scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    } else {
+        afficherBilan();
+    }
+}
+
+function afficherBilan() {
+    document.getElementById("progression-container").style.display = "none";
+    const msgScore = totalScore === 4 
+        ? "Parcours sans faute. Vous maîtrisez parfaitement la fluidité imposée par le management situationnel." 
+        : "Le management situationnel exige de la flexibilité. Mémorisez bien les principes ci-dessous.";
+
+    document.getElementById("zone-dynamique").innerHTML = `
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-slide-up w-full mt-2">
+            <div class="bg-brand p-8 text-white text-center relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                <div class="relative z-10">
+                    <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    <h2 class="text-2xl font-bold mb-2">Bilan de l'évolution</h2>
+                    <div class="flex items-baseline justify-center gap-1 mb-4">
+                        <span class="text-5xl font-black text-brand-light">${totalScore}</span>
+                        <span class="text-xl text-white/60 font-medium">/ 4</span>
+                    </div>
+                    <p class="text-white/80 max-w-lg mx-auto text-sm leading-relaxed">${msgScore}</p>
+                </div>
+            </div>
+            
+            <div class="p-6 md:p-8">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <!-- Bloc 1 -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <div class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center font-bold mb-3">1</div>
+                        <h4 class="font-bold text-brand mb-2 text-sm">Progression du collaborateur</h4>
+                        <p class="text-slate-600 text-xs leading-relaxed">Le rôle du manager est d'accompagner la montée en compétence. À chaque niveau de développement (D1 Débutant à D4 Autonome) correspond un style managérial optimal (S1 à S4).</p>
+                    </div>
+                    <!-- Bloc 2 -->
+                    <div class="bg-accent-light border border-accent/20 rounded-xl p-5 shadow-sm">
+                        <div class="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold mb-3">2</div>
+                        <h4 class="font-bold text-accent mb-2 text-sm">Évolution non linéaire</h4>
+                        <p class="text-slate-700 text-xs leading-relaxed">Une nouvelle tâche (comme le CRM pour Marc) fait revenir à un niveau inférieur. Le manager ajuste son style en retour : ce n'est pas une sanction, c'est une nécessité.</p>
+                    </div>
+                    <!-- Bloc 3 -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <div class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center font-bold mb-3">3</div>
+                        <h4 class="font-bold text-brand mb-2 text-sm">Résister au naturel</h4>
+                        <p class="text-slate-600 text-xs leading-relaxed">Un bon manager ne reste pas dans sa zone de confort (son style naturel). Il choisit volontairement un style pour l'adapter au besoin réel du collaborateur.</p>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group" onclick="recommencer()">
+                    <svg class="w-5 h-5 group-hover:-rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Recommencer l'activité
+                </button>
+            </div>
+        </div>
+    `;
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+}
+
+function recommencer() {
+    sfx.playClick();
+    currentIndex = 0;
+    totalScore = 0;
+    document.getElementById("progression-container").style.display = "block";
+    afficherEtape();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+const btnFs = document.getElementById('btn-fullscreen');
+const iconEnter = document.getElementById('icon-fs-enter');
+const iconExit = document.getElementById('icon-fs-exit');
+const spotlight = document.getElementById('spotlight-overlay');
+let isPseudoFs = false;
+
+function updateFsIcons() { const isFs = document.fullscreenElement || document.webkitFullscreenElement || isPseudoFs; iconEnter.classList.toggle('hidden', !!isFs); iconExit.classList.toggle('hidden', !isFs); }
+function enablePseudoFs()  { isPseudoFs = true;  document.body.classList.add('pseudo-fullscreen');    updateFsIcons(); }
+function disablePseudoFs() { isPseudoFs = false; document.body.classList.remove('pseudo-fullscreen'); updateFsIcons(); }
+
+btnFs.addEventListener('click', (e) => {
+    e.stopPropagation(); sfx.playClick(); hideSpotlight();
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+        const el = document.documentElement;
+        const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (fn) { try { const p = fn.call(el); if (p && p.catch) p.catch(() => enablePseudoFs()); setTimeout(() => { if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) enablePseudoFs(); }, 300); } catch { enablePseudoFs(); } }
+        else enablePseudoFs();
+    } else { if (isPseudoFs) disablePseudoFs(); else { const fn = document.exitFullscreen || document.webkitExitFullscreen; if (fn) try { fn.call(document); } catch { disablePseudoFs(); } } }
+});
+
+document.addEventListener('fullscreenchange', updateFsIcons);
+document.addEventListener('webkitfullscreenchange', updateFsIcons);
+
+function hideSpotlight() {
+    if(spotlight && !spotlight.classList.contains('opacity-0')) {
+        spotlight.classList.add('opacity-0');
+        setTimeout(() => spotlight.style.display = 'none', 1000);
+    }
+}
+document.addEventListener('click', () => hideSpotlight(), { once: true });
+
+/* INIT */
+afficherEtape();
+</script>
+</body>
+</html>

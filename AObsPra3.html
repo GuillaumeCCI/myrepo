@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construire le plan de perfectionnement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+<style>
+:root {
+  --bleu:#000099; --bleu-cl:#e6e6ff; --bleu-hv:#0000cc;
+  --magenta:#810464; --magenta-hv:#64034e; --magenta-bg:#fdf2f8;
+  --vert:#10b981; --vert-bg:#ecfdf5; --vert-bd:#6ee7b7; --vert-tx:#065f46;
+  --rouge:#ef4444; --rouge-bg:#fef2f2; --rouge-bd:#fca5a5; --rouge-tx:#991b1b;
+  --ambre:#d97706; --ambre-bg:#fffbeb; --ambre-bd:#fcd34d;
+  --fond:#f8fafc; --blanc:#ffffff; --gris-cl:#f1f5f9; --gris-bd:#e2e8f0;
+  --radius:12px; --shadow:0 2px 12px rgba(0,0,153,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:'Inter',system-ui,sans-serif;background:var(--fond);background-image:radial-gradient(#e2e8f0 1px,transparent 1px);background-size:24px 24px;min-height:100vh;color:#1e293b;}
+body{display:flex;flex-direction:column;align-items:center;padding:80px 16px 80px;}
+
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;transition:opacity .3s;}
+.modal{background:var(--blanc);border-radius:18px;width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.25);overflow:hidden;animation:popIn .3s cubic-bezier(.175,.885,.32,1.275) both;}
+@keyframes popIn{from{opacity:0;transform:scale(.94);}to{opacity:1;transform:scale(1);}}
+.modal-hd{background:var(--bleu);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.modal-hd h2{font-size:1rem;font-weight:700;color:var(--blanc);}
+.modal-hd p{font-size:.75rem;color:rgba(255,255,255,.65);margin-top:2px;}
+.btn-x{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:var(--blanc);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.btn-x:hover{background:rgba(255,255,255,.28);}
+.modal-bd{padding:20px 24px;overflow-y:auto;flex:1;background:var(--gris-cl);}
+.modal-ft{padding:14px 24px;border-top:1px solid var(--gris-bd);background:var(--blanc);display:flex;justify-content:flex-end;}
+
+.spotlight-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  background: radial-gradient(circle at 75px 35px, transparent 50px, rgba(15,23,42,.75) 55px);
+  display: flex; align-items: flex-start; justify-content: flex-start;
+  transition: opacity .4s; opacity: 1; pointer-events: auto; cursor: pointer;
+}
+.spotlight-msg {
+  margin-top: 100px; margin-left: 20px; background: var(--bleu); color: var(--blanc);
+  padding: 14px 20px; border-radius: 12px; max-width: 320px; font-size: .85rem; font-weight: 600;
+  animation: sUp .3s ease-out both; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,.2); line-height: 1.5;
+}
+.spotlight-msg::before {
+  content: ''; position: absolute; top: -10px; left: 35px;
+  width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 10px solid var(--bleu);
+}
+.spotlight-msg .pulse {
+  display: inline-block; width: 8px; height: 8px; background: var(--vert); border-radius: 50%; margin-right: 6px; box-shadow: 0 0 0 0 rgba(16, 185, 129, 1); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+.g-table{width:100%;border-collapse:collapse;font-size:.82rem;background:var(--blanc);border-radius:var(--radius);overflow:hidden;min-width:560px;}
+.g-table th{padding:10px 12px;background:var(--bleu);color:var(--blanc);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-align:left;border:1px solid rgba(255,255,255,.15);}
+.g-table td{padding:11px 12px;border:1px solid var(--gris-bd);color:#334155;vertical-align:middle;}
+.g-table tr:nth-child(even) td{background:var(--gris-cl);}
+.g-sec{background:#f0f4ff!important;font-size:.68rem;font-weight:800;letter-spacing:.10em;text-transform:uppercase;color:var(--bleu)!important;padding:7px 12px!important;}
+.badge{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.b-r{background:var(--rouge-bg);color:var(--rouge);border:1px solid var(--rouge-bd);}
+.b-v{background:var(--vert-bg);color:var(--vert);border:1px solid var(--vert-bd);}
+.b-a{background:var(--ambre-bg);color:var(--ambre);border:1px solid var(--ambre-bd);}
+.fait{font-style:italic;color:#64748b;font-size:.79rem;line-height:1.45;}
+
+.btn-fl{position:fixed;top:16px;left:16px;z-index:40;background:var(--blanc);border:1px solid var(--gris-bd);border-radius:30px;padding:9px 16px;font-size:.79rem;font-weight:700;color:var(--bleu);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.10);display:flex;align-items:center;gap:7px;transition:all .15s;}
+.btn-fl:hover{border-color:var(--magenta);color:var(--magenta);}
+
+.main{width:100%;max-width:860px;display:flex;flex-direction:column;gap:20px;}
+.hdr{background:var(--bleu);border-radius:20px;padding:26px 30px;display:flex;align-items:flex-start;gap:18px;box-shadow:0 8px 32px rgba(0,0,153,.15);position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(255,255,255,.08);border-radius:50%;}
+.hdr-ic{width:50px;height:50px;min-width:50px;background:var(--blanc);border-radius:14px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+.hdr-tx{position:relative;z-index:1;}
+.hdr-sur{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.60);margin-bottom:5px;}
+.hdr h1{font-size:1.35rem;font-weight:800;color:var(--blanc);line-height:1.25;margin-bottom:4px;}
+.hdr-sub{font-size:.82rem;color:rgba(255,255,255,.70);}
+
+.phases{display:grid;grid-template-columns:repeat(4,1fr);background:var(--blanc);border:1px solid var(--gris-bd);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+.ph{padding:12px 8px;text-align:center;border-right:1px solid var(--gris-bd);transition:background .3s;}
+.ph:last-child{border-right:none;}
+.ph-n{font-size:.58rem;font-weight:700;letter-spacing:.10em;text-transform:uppercase;color:var(--gris-bd);margin-bottom:3px;}
+.ph-l{font-size:.76rem;font-weight:700;color:#94a3b8;}
+.ph.active{background:var(--bleu);}
+.ph.active .ph-n{color:rgba(255,255,255,.60);}
+.ph.active .ph-l{color:var(--blanc);}
+.ph.done{background:var(--gris-cl);}
+.ph.done .ph-n{color:var(--vert);}
+.ph.done .ph-l{color:#475569;}
+
+.carte{background:var(--blanc);border:1px solid var(--gris-bd);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;animation:sUp .38s ease-out both;}
+@keyframes sUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.carte-hd{background:var(--gris-cl);border-bottom:1px solid var(--gris-bd);padding:18px 22px;display:flex;gap:14px;align-items:flex-start;}
+.chic{width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chic.bl{background:var(--bleu-cl);color:var(--bleu);}
+.chic.vt{background:var(--vert-bg);color:var(--vert);}
+.chic.mg{background:var(--magenta-bg);color:var(--magenta);}
+.chic.rg{background:var(--rouge-bg);color:var(--rouge);}
+.carte-hd h3{font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:4px;}
+.carte-hd p{font-size:.83rem;color:#64748b;line-height:1.5;}
+.carte-hd strong{color:var(--bleu);}
+.carte-bd{padding:22px;}
+
+.opts{display:flex;flex-direction:column;gap:10px;}
+.opt{border:2px solid var(--gris-bd);border-radius:10px;background:var(--gris-cl);padding:13px 15px;cursor:pointer;font-size:.87rem;color:#475569;text-align:left;transition:all .15s;line-height:1.5;width:100%;}
+.opt:hover:not(:disabled){border-color:var(--bleu);background:var(--bleu-cl);color:var(--bleu);}
+.opt:disabled{cursor:default;}
+.opt.sel{border-color:var(--bleu);background:rgba(230,230,255,.4);}
+.opt.ok{border-color:var(--vert);background:var(--vert-bg);color:var(--vert-tx);font-weight:600;}
+.opt.ko{border-color:var(--rouge);background:var(--rouge-bg);color:var(--rouge-tx);opacity:.65;}
+.opt.gris{opacity:.32;filter:grayscale(1);}
+
+.cpt{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;}
+.cpt-lbl{font-size:.66rem;font-weight:700;letter-spacing:.10em;text-transform:uppercase;color:#94a3b8;}
+.cpt-bdg{font-size:.71rem;font-weight:700;background:var(--bleu-cl);color:var(--bleu);padding:3px 11px;border-radius:20px;}
+
+.fb{margin-top:15px;padding:14px 17px;border-radius:10px;font-size:.85rem;line-height:1.6;display:none;}
+.fb.show{display:block;animation:fi .32s ease both;}
+@keyframes fi{from{opacity:0;}to{opacity:1;}}
+.fb.ok{background:var(--vert-bg);border:1px solid var(--vert-bd);color:var(--vert-tx);}
+.fb.ko{background:var(--rouge-bg);border:1px solid var(--rouge-bd);color:var(--rouge-tx);}
+.fb-tt{font-weight:700;margin-bottom:4px;font-size:.76rem;letter-spacing:.05em;text-transform:uppercase;}
+.fb.ok .fb-tt{color:var(--vert);}
+.fb.ko .fb-tt{color:var(--rouge);}
+
+.btn-nx{width:100%;background:var(--magenta);color:var(--blanc);border:none;border-radius:10px;padding:13px;font-size:.90rem;font-weight:700;cursor:pointer;margin-top:14px;display:none;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .1s;}
+.btn-nx:hover{background:var(--magenta-hv);transform:translateY(-1px);}
+.btn-nx.show{display:flex;animation:fi .32s ease both;}
+.btn-vp1{width:100%;background:var(--magenta);color:var(--blanc);border:none;border-radius:10px;padding:13px;font-size:.90rem;font-weight:700;cursor:pointer;margin-top:14px;display:none;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+.btn-vp1:hover{background:var(--magenta-hv);}
+.btn-vp1.show{display:flex;animation:fi .32s ease both;}
+
+.bilan{background:var(--blanc);border:1px solid var(--gris-bd);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;animation:sUp .38s ease-out both;}
+.bilan-hd{background:var(--bleu);padding:26px 30px;text-align:center;color:var(--blanc);position:relative;overflow:hidden;}
+.bilan-hd::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.08) 0%,transparent 70%);}
+.bilan-hd-ic{font-size:2rem;margin-bottom:6px;position:relative;z-index:1;}
+.bilan-hd-tt{font-size:1.2rem;font-weight:800;margin-bottom:3px;position:relative;z-index:1;}
+.bilan-hd-sub{font-size:.80rem;color:rgba(255,255,255,.68);position:relative;z-index:1;}
+.bilan-bd{padding:22px;overflow-x:auto;}
+
+.ptable{width:100%;border-collapse:collapse;font-size:.81rem;min-width:680px;background:var(--blanc);}
+.ptable th{padding:11px 11px;background:var(--bleu);color:var(--blanc);font-size:.70rem;font-weight:700;text-align:center;vertical-align:middle;border:1px solid rgba(255,255,255,.15);line-height:1.3;}
+.ptable th small{font-size:.60rem;opacity:.68;font-weight:400;display:block;margin-top:2px;}
+.ptable td{padding:13px 11px;border:1px solid var(--gris-bd);vertical-align:middle;color:#334155;line-height:1.5;}
+.ptable tr:nth-child(even) td{background:var(--gris-cl);}
+.nc{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:var(--blanc);flex-shrink:0;margin-right:7px;}
+.axe-c{font-weight:700;color:var(--bleu);display:flex;align-items:center;white-space:nowrap;}
+.bulles{display:flex;gap:5px;align-items:center;justify-content:center;}
+.bulle{width:25px;height:25px;border-radius:50%;border:2px solid var(--gris-bd);display:flex;align-items:center;justify-content:center;font-size:.70rem;font-weight:700;color:#94a3b8;background:var(--blanc);}
+.bulle.on{border-color:var(--vert);background:var(--vert-bg);color:var(--vert);box-shadow:0 0 0 3px rgba(16,185,129,.15);}
+.ptable tfoot td{padding:10px 14px;background:var(--bleu-cl);font-weight:700;color:var(--bleu);font-size:.78rem;text-align:center;border:1px solid var(--gris-bd);}
+
+.bilan-ft{padding:18px 22px;border-top:1px solid var(--gris-bd);}
+.btn-rec{width:100%;background:transparent;color:var(--bleu);border:2px solid var(--bleu);border-radius:10px;padding:12px;font-size:.87rem;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-rec:hover{background:var(--bleu);color:var(--blanc);}
+
+@media(max-width:560px){
+  body{padding:70px 10px 56px;}
+  .phases{grid-template-columns:1fr 1fr;}
+  .hdr{padding:18px;}
+  .hdr h1{font-size:1.1rem;}
+  .carte-bd,.bilan-bd{padding:14px;}
+}
+</style>
+</head>
+<body>
+
+<button class="btn-fl" onclick="ouvrirGrille()">
+  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+  Grille d'observation
+</button>
+
+<div class="overlay" id="grid-modal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <h2>Grille d'observation - Entretien commercial</h2>
+        <p>Visite terrain - Collaborateur : Thomas R.</p>
+      </div>
+      <button class="btn-x" onclick="fermerGrille()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="modal-bd">
+      <div style="overflow-x:auto">
+        <table class="g-table">
+          <thead>
+            <tr>
+              <th style="width:27%">Critère d'observation</th>
+              <th style="width:20%">Niveau évalué</th>
+              <th>Faits observés</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="g-sec">A. Prise de contact</td></tr>
+            <tr>
+              <td style="font-weight:600;color:var(--bleu)">Accueil du client</td>
+              <td><span class="badge b-r">Doit être renforcé</span></td>
+              <td class="fait">Pas de lever de siège à l'arrivée du client. Pas de contact visuel maintenu. Direction indiquée d'un geste, sans accompagnement physique.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--bleu)">Présentation claire</td>
+              <td><span class="badge b-v">Autonome et efficace</span></td>
+              <td class="fait">Prénom, fonction et objectif de l'entretien annoncés d'emblée. Ton chaleureux et assuré.</td>
+            </tr>
+            <tr><td colspan="3" class="g-sec">B. Découverte du besoin</td></tr>
+            <tr>
+              <td style="font-weight:600;color:var(--bleu)">Questions ouvertes</td>
+              <td><span class="badge b-r">Doit être renforcé</span></td>
+              <td class="fait">3 questions fermées (Oui/Non) consécutives en ouverture. Aucune question ouverte avant la 4e minute d'échange.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--bleu)">Écoute et reformulation</td>
+              <td><span class="badge b-v">Autonome et efficace</span></td>
+              <td class="fait">Reformulation des 2 attentes principales du client avec validation explicite.</td>
+            </tr>
+            <tr><td colspan="3" class="g-sec">C. Argumentation et conclusion</td></tr>
+            <tr>
+              <td style="font-weight:600;color:var(--bleu)">Présentation d'une offre adaptée</td>
+              <td><span class="badge b-a">En cours de développement</span></td>
+              <td class="fait">Offre présentée en lien avec les besoins. Arguments génériques, non personnalisés au contexte du client.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--bleu)">Proposition de conclusion / suite</td>
+              <td><span class="badge b-a">En cours de développement</span></td>
+              <td class="fait">Accord de principe obtenu. Pas de date de rappel ni d'étape suivante proposée en fin d'entretien.</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="3" style="padding:9px 12px;background:var(--gris-cl);font-size:.76rem;color:#64748b;font-style:italic;border:1px solid var(--gris-bd)">2 critères &laquo; Doit être renforcé &raquo; - 2 critères &laquo; En cours de développement &raquo; - 2 critères &laquo; Autonome et efficace &raquo;</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button onclick="fermerGrille()" style="background:var(--magenta);color:var(--blanc);border:none;border-radius:8px;padding:9px 20px;font-size:.87rem;font-weight:700;cursor:pointer;transition:background .15s;">Fermer et commencer l'exercice</button>
+    </div>
+  </div>
+</div>
+
+<div class="spotlight-overlay" style="display:none; opacity:0;" id="spotlight" onclick="hideGridSpotlight()">
+  <div class="spotlight-msg">
+    <span class="pulse"></span>Vous pouvez consulter la grille d'observation à tout moment pour vous aider à répondre.
+    <div style="margin-top: 10px; font-size: 0.75rem; opacity: 0.8; font-weight: normal;">Cliquez n'importe où pour continuer</div>
+  </div>
+</div>
+
+<main class="main">
+
+  <header class="hdr">
+    <div class="hdr-ic">
+      <svg width="28" height="28" fill="none" stroke="var(--bleu)" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+    </div>
+    <div class="hdr-tx">
+      <div class="hdr-sur">Entraînement post-observation - Observer les pratiques commerciales</div>
+      <h1>Construire le plan de perfectionnement</h1>
+      <p class="hdr-sub">Appliquez les 4 règles pour formaliser les engagements de progrès avec Thomas.</p>
+    </div>
+  </header>
+
+  <div class="phases">
+    <div class="ph active" id="ph1"><div class="ph-n">Etape 1</div><div class="ph-l">Prioriser</div></div>
+    <div class="ph" id="ph2"><div class="ph-n">Etape 2</div><div class="ph-l">Actions SMART</div></div>
+    <div class="ph" id="ph3"><div class="ph-n">Etape 3</div><div class="ph-l">Co-construire</div></div>
+    <div class="ph" id="ph4"><div class="ph-n">Etape 4</div><div class="ph-l">Prévoir le suivi</div></div>
+  </div>
+
+  <div id="zone"></div>
+
+</main>
+
+<script>
+const sfx = {
+  initialized: false,
+  init: async function() {
+    if(this.initialized) return;
+    this.initialized = true;
+    await Tone.start();
+    this.success = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
+    this.success.volume.value = -25;
+    this.error = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
+    this.error.volume.value = -20;
+    this.click = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 } }).toDestination();
+    this.click.volume.value = -30;
+  },
+  playSuccess: function() { if(this.initialized) { const n = Tone.now(); this.success.triggerAttackRelease("C5", "16n", n); this.success.triggerAttackRelease("G5", "16n", n + 0.1); } },
+  playError: function() { if(this.initialized) this.error.triggerAttackRelease("C3", "16n"); },
+  playClick: function() { if(this.initialized) this.click.triggerAttackRelease("C6", "32n"); }
+};
+document.addEventListener('click', () => sfx.init(), { once: true });
+
+const CONSTATS = [
+  {id:1, c:"Accueil du client",               f:"Pas de lever de siège, absence de contact visuel, direction indiquée gestuellement.",               pri:true },
+  {id:2, c:"Présentation claire",             f:"Prénom, fonction et objectif annoncés. Ton chaleureux et rassurant.",                               pri:false},
+  {id:3, c:"Questions ouvertes",              f:"3 questions fermées consécutives en ouverture, aucune question ouverte avant 4 min.",               pri:true },
+  {id:4, c:"Écoute et reformulation",         f:"Reformulation des 2 attentes principales avec validation explicite du client.",                     pri:false},
+  {id:5, c:"Présentation d'une offre",        f:"Offre présentée mais arguments non personnalisés au contexte spécifique du client.",                pri:false},
+  {id:6, c:"Proposition de conclusion",       f:"Accord de principe obtenu, mais pas de suite définie ni de rappel fixé en fin d'entretien.",        pri:false}
+];
+
+const SMART = {
+  1:{critere:"Accueil du client",opts:[
+    {t:"Améliorer son accueil client lors des prochains entretiens en agence pour donner une meilleure impression globale.", b:false, fb:"Trop vague : ni spécifique, ni mesurable, ni temporel. On ne peut pas savoir si l'objectif est atteint."},
+    {t:"Lors des 10 prochains entretiens, se lever systématiquement à l'arrivée du client et maintenir le contact visuel.", b:true,  fb:"Parfait : Spécifique (se lever, contact visuel), Mesurable (10 entretiens), Atteignable et Temporel."},
+    {t:"Ne plus jamais commettre d'impair sur l'accueil, être toujours souriant et parfait avec chaque nouveau visiteur.", b:false, fb:"Formulé de manière absolue et peu réaliste. Un objectif SMART décrit un comportement mesurable à adopter."}
+  ]},
+  3:{critere:"Questions ouvertes",opts:[
+    {t:"Faire une découverte du besoin beaucoup plus approfondie pour mieux cerner les attentes de chaque futur prospect.", b:false, fb:"'Plus approfondie' n'est pas mesurable. Comment valider objectivement que l'objectif est atteint ?"},
+    {t:"Poser au minimum deux questions ouvertes lors des 5 prochains entretiens de découverte avec les nouveaux clients.", b:true,  fb:"Très claire : Spécifique (2 questions ouvertes), Mesurable et Temporelle (5 entretiens). Parfait."},
+    {t:"Travailler l'ensemble des techniques de questionnement dans toutes les prochaines interactions avec la clientèle.", b:false, fb:"'Travailler' et 'prochaines interactions' sont trop flous. Ni le critère de réussite, ni l'échéance ne sont définis."}
+  ]}
+};
+
+const OPTS_R = [
+  {t:"Inscrire Thomas à un module e-learning standard sur les techniques de vente et l'accueil en agence commerciale.", b:false, fb:"Imposer un outil réduit l'engagement. Un collaborateur s'investit davantage dans une solution qu'il a choisi."},
+  {t:"Lui demander ses idées et valider ensemble sa proposition (ex : observation croisée avec un collègue expérimenté).", b:true,  fb:"Exact. La co-construction des moyens est un levier d'engagement majeur pour l'appropriation de l'objectif."},
+  {t:"Le laisser chercher seul ses propres méthodes et outils pour garantir le développement de son autonomie complète.", b:false, fb:"L'autonomie totale sans cadre n'est pas du management. Le rôle du manager est d'accompagner la réflexion."}
+];
+
+const OPTS_S = [
+  {t:"Point dédié de 15 minutes le vendredi 14 à 10h pour faire le bilan de l'objectif sur les 5 derniers entretiens.", b:true,  fb:"Idéal : date précise, durée courte, moment dédié. Ce type d'échéance rend le plan vivant et opérationnel."},
+  {t:"Un bilan complet sera réalisé lors du prochain entretien annuel d'évaluation avec le collaborateur en fin d'année.", b:false, fb:"Trop lointain. Le collaborateur a besoin d'un retour rapide pour ajuster ses comportements commerciaux."},
+  {t:"Un point informel sera fait à la fin du mois, lors d'une pause café si le planning de l'équipe le permet ce jour-là.", b:false, fb:"Un suivi non daté et informel ne constitue pas un engagement. Sans créneau réservé, le suivi n'a pas lieu."}
+];
+
+let selectedAxes = [];
+let smartStep = 0;
+let hasClosedGridOnce = false;
+
+function ouvrirGrille() { 
+  sfx.playClick();
+  const modal = document.getElementById('grid-modal');
+  modal.style.display = 'flex';
+  modal.classList.remove('hidden');
+  setTimeout(() => { modal.style.opacity = '1'; }, 10);
+  hideGridSpotlight();
+}
+
+function fermerGrille() { 
+  sfx.playClick();
+  const modal = document.getElementById('grid-modal');
+  modal.style.opacity = '0';
+  setTimeout(() => { 
+      modal.style.display = 'none'; 
+      modal.classList.add('hidden');
+  }, 300);
+  
+  if (!hasClosedGridOnce) {
+    hasClosedGridOnce = true;
+    const spot = document.getElementById('spotlight');
+    spot.style.display = 'flex';
+    setTimeout(() => { spot.style.opacity = '1'; }, 100);
+  }
+}
+
+function hideGridSpotlight() {
+  const spot = document.getElementById('spotlight');
+  if(spot.style.display !== 'none') {
+    spot.style.opacity = '0';
+    setTimeout(() => { spot.style.display = 'none'; }, 400);
+  }
+}
+
+function shuffleArr(a){ let s=[...a]; for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]];} return s; }
+function setPhase(n){ for(let i=1;i<=4;i++){ const el=document.getElementById('ph'+i); el.className='ph '+(i<n?'done':i===n?'active':''); } }
+function scrollZ(){ setTimeout(()=>document.getElementById('zone').scrollIntoView({behavior:'smooth',block:'start'}), 80); }
+
+function initP1(){
+  selectedAxes=[];
+  setPhase(1);
+  const zone=document.getElementById('zone');
+  
+  const optsH=CONSTATS.map(c=>`
+    <button class="opt" id="axe-${c.id}" onclick="toggleAxe(${c.id})">
+      <strong style="color:var(--bleu);display:block;margin-bottom:4px">${c.c}</strong>
+      <span style="font-size:.85rem;color:#475569;">${c.f}</span>
+    </button>`).join('');
+    
+  zone.innerHTML=`
+    <div class="carte">
+      <div class="carte-hd">
+        <div class="chic bl"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
+        <div>
+          <h3>Règle 1 : Savoir prioriser</h3>
+          <p>Un plan de perfectionnement ne doit <strong>jamais dépasser 2 axes de progrès simultanés</strong> pour être efficace.<br><br>Consultez la <strong>grille d'observation</strong> (bouton en haut à gauche) pour faire le tri. Sur la base de ses résultats, sélectionnez ci-dessous les <strong>DEUX priorités absolues</strong> à travailler.</p>
+        </div>
+      </div>
+      <div class="carte-bd">
+        <div class="cpt">
+          <span class="cpt-lbl">Constats de l'observation</span>
+          <span class="cpt-bdg" id="cpt">0 / 2 sélectionnés</span>
+        </div>
+        <div class="opts">${optsH}</div>
+        <div class="fb" id="fb1"></div>
+        <button class="btn-vp1" id="bvp1" onclick="valP1()">
+          Valider ma sélection
+          <svg style="margin-left:4px" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+        </button>
+      </div>
+    </div>`;
+}
+
+function toggleAxe(id){
+  sfx.playClick();
+  const btn=document.getElementById('axe-'+id);
+  const idx=selectedAxes.indexOf(id);
+  if(idx>-1){ selectedAxes.splice(idx,1); btn.classList.remove('sel'); }
+  else{ if(selectedAxes.length>=2)return; selectedAxes.push(id); btn.classList.add('sel'); }
+  document.getElementById('cpt').textContent=selectedAxes.length+' / 2 sélectionnés';
+  const bv=document.getElementById('bvp1');
+  if(selectedAxes.length===2) bv.classList.add('show'); else bv.classList.remove('show');
+}
+
+function valP1(){
+  const bons=CONSTATS.filter(c=>c.pri).map(c=>c.id);
+  const juste=selectedAxes.length===2&&selectedAxes.every(id=>bons.includes(id));
+  juste ? sfx.playSuccess() : sfx.playError();
+  
+  CONSTATS.forEach(c=>{
+    const btn=document.getElementById('axe-'+c.id);
+    btn.disabled=true; btn.classList.remove('sel');
+    if(bons.includes(c.id)) btn.classList.add('ok');
+    else if(selectedAxes.includes(c.id)) btn.classList.add('ko');
+    else btn.classList.add('gris');
+  });
+  document.getElementById('bvp1').style.display='none';
+  const fb=document.getElementById('fb1');
+  fb.className='fb show '+(juste?'ok':'ko');
+  fb.innerHTML=juste
+    ?'<div class="fb-tt">Priorisation correcte</div>Les deux axes notés "Doit être renforcé" dans la grille sont bien les priorités absolues. Travailler les points partiellement acquis ou surcharger le plan garantit l\'inefficacité du suivi.'
+    :'<div class="fb-tt">Ajustement nécessaire</div>Les axes à prioriser sont ceux notés "Doit être renforcé" dans la grille : <strong>Accueil du client</strong> et <strong>Questions ouvertes</strong>. Les points partiellement acquis ou déjà maîtrisés ne constituent pas les urgences de progrès.';
+  const btn=document.createElement('button');
+  btn.className='btn-nx show';
+  btn.innerHTML='Passer à l\'étape 2 : Actions SMART <svg style="margin-left:4px" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>';
+  btn.onclick=initP2;
+  fb.after(btn);
+  setTimeout(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+function initP2(){ sfx.playClick(); setPhase(2); smartStep=0; afficherSmart(); }
+
+function afficherSmart(){
+  const ids=[1,3]; const axeId=ids[smartStep]; const data=SMART[axeId];
+  const opts=shuffleArr(data.opts);
+  const zone=document.getElementById('zone');
+  const optsH=opts.map((o,i)=>`
+    <button class="opt" id="sopt-${i}" data-b="${o.b}" data-fb="${encodeURIComponent(o.fb)}" onclick="valSmart(${i},this.closest('.opts'))">
+      ${o.t}
+    </button>`).join('');
+  zone.innerHTML=`
+    <div class="carte">
+      <div class="carte-hd">
+        <div class="chic vt"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg></div>
+        <div>
+          <h3>Règle 2 : Être S.M.A.R.T.</h3>
+          <p>Pour l'axe <strong>${data.critere}</strong>, choisissez l'action la mieux formulée : Spécifique, Mesurable, Atteignable, Réaliste et Temporelle.</p>
+        </div>
+      </div>
+      <div class="carte-bd">
+        <div class="cpt">
+          <span class="cpt-lbl">Propositions d'action</span>
+          <span class="cpt-bdg">Axe ${smartStep+1} / 2</span>
+        </div>
+        <div class="opts">${optsH}</div>
+        <div class="fb" id="fbs"></div>
+        <div id="bns"></div>
+      </div>
+    </div>`;
+  scrollZ();
+}
+
+function valSmart(idx,container){
+  const btns=container.querySelectorAll('.opt');
+  const juste=btns[idx].dataset.b==='true';
+  juste ? sfx.playSuccess() : sfx.playError();
+  
+  const fbTxt=decodeURIComponent(btns[idx].dataset.fb);
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===idx) b.classList.add(juste?'ok':'ko');
+    else if(b.dataset.b==='true'&&!juste) b.classList.add('ok');
+    else b.classList.add('gris');
+  });
+  const fb=document.getElementById('fbs');
+  fb.className='fb show '+(juste?'ok':'ko');
+  fb.innerHTML=`<div class="fb-tt">${juste?'Formulation SMART validée':'Action non SMART'}</div>${fbTxt}`;
+  const btn=document.createElement('button'); btn.className='btn-nx show';
+  if(smartStep===0){ 
+      btn.innerHTML='Axe suivant <svg style="margin-left:4px" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>'; 
+      btn.onclick=()=>{sfx.playClick(); smartStep++; afficherSmart();}; 
+  }
+  else{ 
+      btn.innerHTML='Passer à l\'étape 3 : Co-construire <svg style="margin-left:4px" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>'; 
+      btn.onclick=initP3; 
+  }
+  document.getElementById('bns').appendChild(btn);
+  setTimeout(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+function initP3(){
+  sfx.playClick();
+  setPhase(3);
+  const zone=document.getElementById('zone');
+  const opts=shuffleArr(OPTS_R);
+  const optsH=opts.map((o,i)=>`
+    <button class="opt" id="ropt-${i}" data-b="${o.b}" data-fb="${encodeURIComponent(o.fb)}" onclick="valR(${i},this.closest('.opts'))">
+      ${o.t}
+    </button>`).join('');
+  zone.innerHTML=`
+    <div class="carte">
+      <div class="carte-hd">
+        <div class="chic mg"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+        <div>
+          <h3>Règle 3 : Co-construire les ressources</h3>
+          <p>Les actions SMART sont posées. Il faut maintenant définir les <strong>ressources et moyens</strong> pour accompagner Thomas. Quelle approche favorise le mieux son engagement durable ?</p>
+        </div>
+      </div>
+      <div class="carte-bd">
+        <div class="opts">${optsH}</div>
+        <div class="fb" id="fbr"></div>
+        <div id="bnr"></div>
+      </div>
+    </div>`;
+  scrollZ();
+}
+
+function valR(idx,container){
+  const btns=container.querySelectorAll('.opt');
+  const juste=btns[idx].dataset.b==='true';
+  juste ? sfx.playSuccess() : sfx.playError();
+  
+  const fbTxt=decodeURIComponent(btns[idx].dataset.fb);
+  btns.forEach((b,i)=>{ b.disabled=true; if(i===idx) b.classList.add(juste?'ok':'ko'); else if(b.dataset.b==='true'&&!juste) b.classList.add('ok'); else b.classList.add('gris'); });
+  const fb=document.getElementById('fbr');
+  fb.className='fb show '+(juste?'ok':'ko');
+  fb.innerHTML=`<div class="fb-tt">${juste?'Bonne approche':'Reconsidérez'}</div>${fbTxt}`;
+  const btn=document.createElement('button'); btn.className='btn-nx show';
+  btn.innerHTML='Passer à l\'étape 4 : Prévoir le suivi <svg style="margin-left:4px" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>'; 
+  btn.onclick=initP4;
+  document.getElementById('bnr').appendChild(btn);
+  setTimeout(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+function initP4(){
+  sfx.playClick();
+  setPhase(4);
+  const zone=document.getElementById('zone');
+  const opts=shuffleArr(OPTS_S);
+  const optsH=opts.map((o,i)=>`
+    <button class="opt" id="sopt2-${i}" data-b="${o.b}" data-fb="${encodeURIComponent(o.fb)}" onclick="valS(${i},this.closest('.opts'))">
+      ${o.t}
+    </button>`).join('');
+  zone.innerHTML=`
+    <div class="carte">
+      <div class="carte-hd">
+        <div class="chic rg"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+        <div>
+          <h3>Règle 4 : Prévoir le suivi</h3>
+          <p>Le plan doit toujours inclure une <strong>échéance précise et dédiée</strong>. Pour l'axe "Questions ouvertes" (objectif : 5 entretiens), quelle échéance inscrivez-vous dans le plan de Thomas ?</p>
+        </div>
+      </div>
+      <div class="carte-bd">
+        <div class="opts">${optsH}</div>
+        <div class="fb" id="fbsu"></div>
+        <div id="bnsu"></div>
+      </div>
+    </div>`;
+  scrollZ();
+}
+
+function valS(idx,container){
+  const btns=container.querySelectorAll('.opt');
+  const juste=btns[idx].dataset.b==='true';
+  juste ? sfx.playSuccess() : sfx.playError();
+  
+  const fbTxt=decodeURIComponent(btns[idx].dataset.fb);
+  btns.forEach((b,i)=>{ b.disabled=true; if(i===idx) b.classList.add(juste?'ok':'ko'); else if(b.dataset.b==='true'&&!juste) b.classList.add('ok'); else b.classList.add('gris'); });
+  const fb=document.getElementById('fbsu');
+  fb.className='fb show '+(juste?'ok':'ko');
+  fb.innerHTML=`<div class="fb-tt">${juste?'Échéance validée':'Échéance inadaptée'}</div>${fbTxt}`;
+  const btn=document.createElement('button'); btn.className='btn-nx show';
+  btn.innerHTML='Voir le plan de perfectionnement finalisé <svg style="margin-left:6px" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>'; 
+  btn.onclick=afficherBilan;
+  document.getElementById('bnsu').appendChild(btn);
+  setTimeout(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+function afficherBilan(){
+  sfx.playClick();
+  for(let i=1;i<=4;i++) document.getElementById('ph'+i).className='ph done';
+  const zone=document.getElementById('zone');
+  zone.innerHTML=`
+    <div class="bilan">
+      <div class="bilan-hd">
+        <div class="bilan-hd-ic"><svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="margin:0 auto"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+        <div class="bilan-hd-tt">Plan de perfectionnement finalisé</div>
+        <div class="bilan-hd-sub">Document co-construit à l'issue du débrief — Collaborateur : Thomas R.</div>
+      </div>
+
+      <div class="bilan-bd">
+        <div style="background:var(--gris-cl);border:1px solid var(--gris-bd);border-radius:9px;padding:13px 17px;margin-bottom:16px;font-size:.83rem;color:#475569;line-height:1.6">
+          Le plan de perfectionnement est le document co-construit à l'issue du débrief. Il formalise les engagements mutuels (manager et collaborateur) pour progresser sur les axes identifiés.
+        </div>
+
+        <div style="background:var(--gris-cl);border:1px solid var(--gris-bd);border-radius:9px;padding:13px 17px;margin-bottom:18px">
+          <div style="font-size:.65rem;font-weight:800;letter-spacing:.10em;text-transform:uppercase;color:#94a3b8;text-align:center;margin-bottom:11px">Règles de construction d'un bon plan</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div style="text-align:center"><div style="font-size:.73rem;font-weight:700;color:var(--bleu);margin-bottom:3px">1. Prioriser</div><div style="font-size:.70rem;color:#64748b;line-height:1.4">Ne jamais dépasser 2 axes de progrès simultanés.</div></div>
+            <div style="text-align:center"><div style="font-size:.73rem;font-weight:700;color:var(--vert);margin-bottom:3px">2. Être SMART</div><div style="font-size:.70rem;color:#64748b;line-height:1.4">Actions Spécifiques, Mesurables, Atteignables, Réalistes.</div></div>
+            <div style="text-align:center"><div style="font-size:.73rem;font-weight:700;color:var(--magenta);margin-bottom:3px">3. Co-construire</div><div style="font-size:.70rem;color:#64748b;line-height:1.4">Le collaborateur propose les actions et s'engage mieux.</div></div>
+            <div style="text-align:center"><div style="font-size:.73rem;font-weight:700;color:var(--rouge);margin-bottom:3px">4. Prévoir le suivi</div><div style="font-size:.70rem;color:#64748b;line-height:1.4">Fixer systématiquement une date de bilan dédiée.</div></div>
+          </div>
+        </div>
+
+        <table class="ptable">
+          <thead>
+            <tr>
+              <th style="width:18%">Axe de progrès prioritaire<small>(1 à 2 axes max)</small></th>
+              <th style="width:30%">Action concrète à mettre en œuvre<small>(Quoi ? Comment ?)</small></th>
+              <th style="width:21%">Ressources / Moyens<small>(Outils, formations...)</small></th>
+              <th style="width:14%">Échéance<small>(Date cible)</small></th>
+              <th style="width:17%">Niveau de maîtrise<small>(1 = débutant / 3 = expert)</small></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="axe-c"><span class="nc" style="background:var(--vert)">1</span>Accueil du client</span></td>
+              <td>Se lever systématiquement à l'arrivée du client et maintenir le contact visuel (10 prochains entretiens).</td>
+              <td style="font-style:italic;color:#64748b">Observation croisée avec un collègue (proposée par Thomas).</td>
+              <td style="font-weight:700;text-align:center">Ven. 14<br><span style="font-size:.70rem;font-weight:400;color:#64748b">10h00</span></td>
+              <td><div class="bulles"><span class="bulle">1</span><span class="bulle">2</span><span class="bulle on">3</span></div></td>
+            </tr>
+            <tr>
+              <td><span class="axe-c"><span class="nc" style="background:#3b82f6">2</span>Questions ouvertes</span></td>
+              <td>Poser au minimum deux questions ouvertes lors des 5 prochains entretiens clients.</td>
+              <td style="font-style:italic;color:#64748b">Carnet de bord personnel co-construit lors du débrief.</td>
+              <td style="font-weight:700;text-align:center">Ven. 14<br><span style="font-size:.70rem;font-weight:400;color:#64748b">10h15</span></td>
+              <td><div class="bulles"><span class="bulle">1</span><span class="bulle">2</span><span class="bulle on">3</span></div></td>
+            </tr>
+            <tr style="opacity:.3">
+              <td><span class="axe-c"><span class="nc" style="background:var(--ambre)">3</span><span style="color:#94a3b8;font-style:italic;font-weight:400">Non utilisé</span></span></td>
+              <td colspan="4" style="color:#94a3b8;font-style:italic;text-align:center">Règle 1 : ne pas dépasser 2 axes de progrès simultanément.</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="5">Signatures : Manager _________________ &bull; Collaborateur _________________ &bull; Prochain point de contrôle : Ven. 14 à 10h00</td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="bilan-ft">
+        <button class="btn-rec" onclick="recommencer()">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Recommencer l'activité
+        </button>
+      </div>
+    </div>`;
+  scrollZ();
+}
+
+function recommencer(){ sfx.playClick(); selectedAxes=[]; smartStep=0; document.getElementById('grid-modal').classList.remove('hidden'); document.getElementById('grid-modal').style.display='flex'; document.getElementById('grid-modal').style.opacity='1'; hasClosedGridOnce=false; document.getElementById('spotlight').style.display='none'; initP1(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* INIT */
+initP1();
+</script>
+</body>
+</html>

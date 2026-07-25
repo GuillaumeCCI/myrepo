@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendre sur les réseaux sociaux : Visibilité et Réactivité</title>
+    
+    <!-- Polices -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#000099', // Bleu principal
+                            light: '#e6e6ff',
+                            hover: '#0000cc'
+                        },
+                        accent: {
+                            DEFAULT: '#810464', // Magenta secondaire
+                            light: '#fcecf6',
+                            hover: '#9e057a'
+                        },
+                        success: {
+                            DEFAULT: '#10b981', bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7'
+                        },
+                        error: {
+                            DEFAULT: '#ef4444', bg: '#fef2f2', text: '#991b1b', border: '#fca5a5'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-option {
+                @apply flex items-start gap-4 p-5 border-2 border-slate-200 rounded-2xl bg-white cursor-pointer transition-all duration-300 text-left w-full shadow-sm;
+            }
+            .btn-option:hover:not(:disabled) {
+                @apply border-brand bg-brand-light/20 transform -translate-y-1 shadow-[0_8px_20px_rgba(0,0,153,0.08)];
+            }
+            .btn-option:disabled { @apply cursor-default; }
+            
+            /* États après réponse */
+            .btn-option.juste {
+                @apply border-success bg-success-bg transform-none shadow-none ring-2 ring-success/20;
+            }
+            .btn-option.juste .option-titre { @apply text-success; }
+            
+            .btn-option.faux {
+                @apply border-error bg-error-bg opacity-80;
+            }
+            .btn-option.faux .option-titre { @apply text-error; }
+            
+            .btn-option.neutre-apres {
+                @apply opacity-50 grayscale-[30%] bg-slate-50 border-slate-200;
+            }
+
+            .serie-dot {
+                @apply w-3 h-3 rounded-full bg-slate-200 transition-all duration-300;
+            }
+            .serie-dot.juste { @apply bg-success shadow-[0_0_8px_rgba(16,185,129,0.5)]; }
+            .serie-dot.faux { @apply bg-error; }
+            .serie-dot.actif { @apply bg-brand ring-4 ring-brand-light scale-125; }
+        }
+
+        /* Fallback Genially */
+        body.pseudo-fullscreen {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
+            z-index: 99999 !important; margin: 0 !important;
+            overflow-y: auto !important; border-radius: 0 !important;
+        }
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 font-sans p-4 md:p-8 flex flex-col items-center">
+
+    <!-- Bouton Plein Écran -->
+    <button id="btn-fullscreen" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-lg border border-slate-200 text-brand hover:bg-brand hover:text-white transition-all group" title="Plein écran">
+        <svg id="icon-fs-enter" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <svg id="icon-fs-exit" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 hidden"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    </button>
+
+    <!-- Overlay Spotlight -->
+    <div id="spotlight-overlay" class="fixed inset-0 z-40 transition-opacity duration-1000 pointer-events-none flex items-start justify-end" style="background: radial-gradient(circle at calc(100% - 2.5rem) 2.5rem, transparent 32px, rgba(15, 23, 42, 0.75) 50px);">
+        <div class="mr-[4.5rem] mt-[4.5rem] text-white font-medium text-sm flex items-center gap-3 animate-pulse bg-brand/90 py-2 px-4 rounded-xl backdrop-blur-sm border border-white/20 shadow-2xl">
+            <span>Agrandir l'activité</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-4xl flex flex-col gap-6 animate-fade-in mt-14 md:mt-0">
+        
+        <!-- BANDEAU EN-TETE -->
+        <header class="bg-brand text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand/10 flex flex-col md:flex-row items-start md:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-48 h-48 bg-accent/20 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="w-16 h-16 min-w-[64px] bg-white text-brand rounded-2xl flex items-center justify-center shadow-md z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="z-10">
+                <div class="text-accent-light text-xs font-bold tracking-widest uppercase mb-1">Visibilité, Confiance et Réactivité</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold leading-tight mb-2">Vendre sur les réseaux sociaux</h1>
+                <div class="text-white/80 text-sm font-medium">Gérez 4 commentaires publics sur votre page • Quelle posture adopter ?</div>
+            </div>
+        </header>
+
+        <!-- INTRO -->
+        <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-accent"></div>
+            <div class="inline-flex items-center gap-2 bg-accent-light text-accent text-xs font-bold tracking-wider uppercase px-3 py-1.5 rounded-full mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Le contexte
+            </div>
+            <p class="text-slate-600 leading-relaxed">
+                Votre entreprise vient de publier un post sur ses réseaux sociaux. Les notifications s'enchaînent : des centaines, voire des milliers de personnes, peuvent lire ce qui s'y dit.
+                <strong>Pour chaque commentaire ci-dessous, choisissez la stratégie de réponse la plus professionnelle.</strong> 
+                Gardez à l'esprit vos objectifs : rassurer la communauté, protéger votre réputation, et respecter la vie privée.
+            </p>
+        </section>
+
+        <!-- BARRE DE PROGRESSION -->
+        <div class="w-full flex flex-col gap-3" id="progression-wrap">
+            <div class="flex justify-between items-end text-sm">
+                <span class="font-semibold text-slate-500 uppercase tracking-wider text-xs" id="progression-label">Commentaire 1 / 4</span>
+                <span class="font-bold text-accent bg-accent-light px-3 py-1 rounded-full text-xs" id="progression-score">Score : 0 / 4</span>
+            </div>
+            <div class="h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                <div class="h-full bg-accent rounded-full transition-all duration-500 ease-out relative" id="barre-fill" style="width:0%"></div>
+            </div>
+            <div class="flex gap-2 justify-center mt-2" id="series-dots"></div>
+        </div>
+
+        <!-- ZONE QUESTION -->
+        <div id="zone-question" class="w-full min-h-[400px]"></div>
+        
+        <!-- DEBRIEF -->
+        <div id="debrief" class="hidden"></div>
+        
+    </main>
+
+    <script>
+        const QUESTIONS = [
+            {
+                auteur: "Julie D.",
+                avatar: "JD",
+                couleurAvatar: "bg-emerald-500",
+                iconeContext: `<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>`,
+                texte: "Super accueil hier, merci à toute l'équipe de la boutique ! Je recommande !",
+                reponseAttendue: "A",
+                choix: [
+                    { id: "A", titre: "Répondre publiquement en détail", desc: "Remercier chaleureusement au nom de l'équipe." },
+                    { id: "B", titre: "Réponse brève puis Message Privé", desc: "Dire merci puis poursuivre l'échange en DM." },
+                    { id: "C", titre: "Rediriger d'emblée", desc: "Envoyer uniquement un message privé pour remercier." }
+                ],
+                feedbackJuste: "C'est la posture parfaite ! Un avis client positif est un atout de communication majeur (la preuve sociale). En répondant publiquement avec enthousiasme, vous montrez à toute votre audience que vous êtes proches de vos clients et reconnaissants.",
+                feedbackFaux: "Ce n'est pas le choix optimal. Un avis positif est un puissant vecteur de confiance pour les autres prospects qui lisent la page (la preuve sociale). Sauf cas particulier, il faut toujours capitaliser dessus en répondant publiquement pour valoriser le client et votre image."
+            },
+            {
+                auteur: "Marc84",
+                avatar: "M8",
+                couleurAvatar: "bg-blue-500",
+                iconeContext: `<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                texte: "Bonjour, cet article est-il encore disponible en coloris bleu ? Et à quel prix s'il vous plaît ?",
+                reponseAttendue: "A",
+                choix: [
+                    { id: "A", titre: "Répondre publiquement en détail", desc: "Donner directement la disponibilité et le prix." },
+                    { id: "B", titre: "Réponse brève puis Message Privé", desc: "Indiquer que vous envoyez la réponse en DM." },
+                    { id: "C", titre: "Rediriger d'emblée", desc: "Ignorer le commentaire et répondre uniquement en DM." }
+                ],
+                feedbackJuste: "Excellente décision. C'est une question d'intérêt général. En y répondant publiquement de manière claire, vous informez simultanément tous les autres visiteurs qui se poseraient la même question, tout en démontrant votre réactivité.",
+                feedbackFaux: "Mauvaise stratégie. Cette question est simple et ne contient aucune donnée sensible. Si vous répondez en privé (le fameux 'Je vous réponds en MP'), vous frustrez les autres visiteurs qui cherchent la même information, et vous donnez l'impression de cacher vos prix."
+            },
+            {
+                auteur: "Sophie_L",
+                avatar: "SL",
+                couleurAvatar: "bg-amber-500",
+                iconeContext: `<svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
+                texte: "C'est un scandale, ma commande #4521 n'est toujours pas arrivée ! Rappelez-moi d'urgence, mon numéro est le 06.12.34.XX.XX",
+                reponseAttendue: "B",
+                choix: [
+                    { id: "A", titre: "Répondre publiquement en détail", desc: "L'apaiser publiquement en reprenant son n° de commande et de téléphone." },
+                    { id: "B", titre: "Réponse brève puis Message Privé", desc: "Rassurer publiquement, masquer le numéro, et résoudre en DM." },
+                    { id: "C", titre: "Rediriger d'emblée", desc: "Supprimer le commentaire et l'appeler directement." }
+                ],
+                feedbackJuste: "Excellente gestion. Vous avez évité le piège ! Répondre brièvement montre à l'audience que vous gérez les SAV. Masquer le commentaire (ou le numéro) et basculer en Message Privé protège impérativement les Données Personnelles du client exposées à la vue de tous.",
+                feedbackFaux: "Attention, piège dangereux ! Bien que votre intention soit bonne, reprendre publiquement son numéro de téléphone ou de commande expose gravement les Données Personnelles du client à des milliers d'inconnus. La règle d'or : accuser réception publiquement, faire supprimer/masquer la donnée sensible, et résoudre le cas complexe en privé."
+            },
+            {
+                auteur: "Toxxic99",
+                avatar: "T9",
+                couleurAvatar: "bg-rose-600",
+                iconeContext: `<svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                texte: "Toujours aussi nul ce service, vous êtes des incompétents, j'y retourne plus jamais.",
+                reponseAttendue: "B",
+                choix: [
+                    { id: "A", titre: "Répondre publiquement en détail", desc: "Se justifier et argumenter pour prouver qu'il a tort." },
+                    { id: "B", titre: "Réponse brève puis Message Privé", desc: "Formuler des regrets publics polis et proposer d'échanger en privé." },
+                    { id: "C", titre: "Rediriger d'emblée", desc: "Ignorer purement et simplement ou supprimer l'avis." }
+                ],
+                feedbackJuste: "Très bien joué. Face à l'agressivité, une réponse publique polie, courte et bienveillante ne s'adresse pas tant au 'troll' qu'aux autres clients qui vous observent. En l'invitant en privé, vous calmez le jeu publiquement et préservez l'image de la marque sans alimenter le conflit.",
+                feedbackFaux: "Ce n'est pas recommandé. Entrer dans une bataille d'arguments en public est désastreux pour l'image de marque (l'audience n'aime pas assister à des conflits). Il faut répondre avec empathie et politesse, puis isoler la discussion en privé pour désamorcer l'agressivité."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function initDots() {
+            const wrap = document.getElementById("series-dots");
+            wrap.innerHTML = "";
+            QUESTIONS.forEach((_, i) => {
+                const d = document.createElement("div");
+                d.className = "serie-dot" + (i === 0 ? " actif" : "");
+                d.id = "dot-" + i;
+                wrap.appendChild(d);
+            });
+        }
+
+        function majBarre() {
+            const pct = (currentQuestion / QUESTIONS.length) * 100;
+            document.getElementById("barre-fill").style.width = pct + "%";
+            document.getElementById("progression-label").textContent = "Commentaire " + (currentQuestion + 1) + " sur " + QUESTIONS.length;
+            document.getElementById("progression-score").textContent = "Score : " + score + " / " + QUESTIONS.length;
+        }
+
+        function majDot(index, etat) {
+            const d = document.getElementById("dot-" + index);
+            if (d) d.className = "serie-dot " + etat;
+            const next = document.getElementById("dot-" + (index + 1));
+            if (next) next.classList.add("actif");
+        }
+
+        function afficherQuestion(index) {
+            const q = QUESTIONS[index];
+            const zone = document.getElementById("zone-question");
+
+            let htmlOptions = '';
+            q.choix.forEach(opt => {
+                htmlOptions += `
+                    <button class="btn-option group" id="btn-${opt.id}" onclick="valider('${opt.id}')">
+                        <div class="mt-1 w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center group-hover:border-brand shrink-0 transition-colors" id="radio-${opt.id}">
+                            <div class="w-3 h-3 rounded-full bg-transparent transition-colors" id="radio-inner-${opt.id}"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="option-titre font-bold text-slate-800 text-sm mb-1">${opt.titre}</div>
+                            <div class="text-slate-500 text-xs leading-snug">${opt.desc}</div>
+                        </div>
+                    </button>
+                `;
+            });
+
+            zone.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden animate-slide-up">
+                    
+                    <!-- Fake Social Media Header -->
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            <span class="text-xs font-bold tracking-widest uppercase text-slate-500">Nouveau commentaire public</span>
+                        </div>
+                        <span class="bg-slate-200 text-slate-600 text-[10px] font-bold uppercase px-2 py-1 rounded-md">Notification</span>
+                    </div>
+                    
+                    <div class="p-6 md:p-8">
+                        
+                        <!-- The Comment Box -->
+                        <div class="flex gap-4 mb-8 bg-slate-50 p-5 rounded-2xl border border-slate-100 relative">
+                            <div class="absolute -left-3 top-6 w-3 h-3 bg-slate-50 border-l border-b border-slate-100 rotate-45"></div>
+                            
+                            <div class="w-12 h-12 rounded-full ${q.couleurAvatar} text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-inner">
+                                ${q.avatar}
+                            </div>
+                            
+                            <div class="flex-1">
+                                <div class="flex items-baseline justify-between mb-1">
+                                    <div class="font-bold text-slate-800">${q.auteur}</div>
+                                    <div class="text-xs text-slate-400">À l'instant</div>
+                                </div>
+                                <p class="text-slate-700 leading-relaxed mb-3">
+                                    "${q.texte}"
+                                </p>
+                                <div class="flex gap-4 text-xs font-semibold text-slate-400">
+                                    <button class="hover:text-brand flex items-center gap-1 transition-colors">${q.iconeContext} J'aime</button>
+                                    <button class="hover:text-brand flex items-center gap-1 transition-colors">Répondre</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Options -->
+                        <h3 class="text-sm font-bold text-brand mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Quelle stratégie de réponse choisissez-vous ?
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            ${htmlOptions}
+                        </div>
+                        
+                        <!-- Feedback Box -->
+                        <div class="mt-6 rounded-xl p-5 text-sm leading-relaxed hidden animate-fade-in" id="feedback"></div>
+                        
+                        <!-- Next Button -->
+                        <button class="hidden mt-6 w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md shadow-brand/20 items-center justify-center gap-2" id="btn-suivant" onclick="suivant()">
+                            ${index < QUESTIONS.length - 1 ? "Évaluer le commentaire suivant" : "Voir la synthèse finale"}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            majBarre();
+
+            // Auto-scroll subtil vers le haut de la carte
+            setTimeout(() => {
+                const wrap = document.getElementById("progression-wrap");
+                if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        }
+
+        function valider(choixId) {
+            const q = QUESTIONS[currentQuestion];
+            const estJuste = (choixId === q.reponseAttendue);
+            
+            if (estJuste) score++;
+
+            // Bloquer tous les boutons
+            q.choix.forEach(opt => {
+                const btn = document.getElementById("btn-" + opt.id);
+                btn.disabled = true;
+                
+                // Reset radios
+                const radioOuter = document.getElementById("radio-" + opt.id);
+                const radioInner = document.getElementById("radio-inner-" + opt.id);
+                
+                if (opt.id === choixId) {
+                    radioOuter.classList.replace('border-slate-300', estJuste ? 'border-success' : 'border-error');
+                    radioInner.classList.replace('bg-transparent', estJuste ? 'bg-success' : 'bg-error');
+                    
+                    btn.classList.add(estJuste ? 'juste' : 'faux');
+                } else {
+                    btn.classList.add('neutre-apres');
+                }
+                
+                // Mettre en évidence la bonne réponse si l'utilisateur a faux
+                if (!estJuste && opt.id === q.reponseAttendue) {
+                    btn.classList.remove('neutre-apres');
+                    btn.classList.add('juste');
+                    document.getElementById("radio-" + opt.id).classList.replace('border-slate-300', 'border-success');
+                    document.getElementById("radio-inner-" + opt.id).classList.replace('bg-transparent', 'bg-success');
+                }
+            });
+
+            const fb = document.getElementById("feedback");
+            if (estJuste) {
+                fb.className = "mt-6 rounded-xl p-5 text-sm leading-relaxed block animate-fade-in bg-success-bg border border-success-border text-success-text";
+                fb.innerHTML = `<div class="font-bold text-success mb-2 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Très bon réflexe !</div>${q.feedbackJuste}`;
+                majDot(currentQuestion, "juste");
+            } else {
+                fb.className = "mt-6 rounded-xl p-5 text-sm leading-relaxed block animate-fade-in bg-error-bg border border-error-border text-error-text";
+                fb.innerHTML = `<div class="font-bold text-error mb-2 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Pas tout à fait...</div>${q.feedbackFaux}`;
+                majDot(currentQuestion, "faux");
+            }
+
+            document.getElementById("progression-score").textContent = "Score : " + score + " / " + QUESTIONS.length;
+            
+            const btnSuiv = document.getElementById("btn-suivant");
+            btnSuiv.classList.remove("hidden");
+            btnSuiv.classList.add("flex");
+
+            // Scroll auto vers le bouton suivant
+            setTimeout(() => {
+                btnSuiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function suivant() {
+            currentQuestion++;
+            if (currentQuestion < QUESTIONS.length) {
+                afficherQuestion(currentQuestion);
+            } else {
+                afficherDebrief();
+            }
+        }
+
+        function afficherDebrief() {
+            document.getElementById("zone-question").style.display = "none";
+            document.getElementById("progression-wrap").style.display = "none";
+
+            let tonalite = "";
+            let iconSvg = "";
+            
+            if (score === 4) {
+                tonalite = "Parfait ! Vous maîtrisez les subtilités de la modération publique. Vous savez valoriser l'image de marque tout en protégeant les clients.";
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 mx-auto text-white"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`;
+            } else if (score >= 2) {
+                tonalite = "Bonne base ! Prenez garde à toujours distinguer ce qui sert la communauté de ce qui relève de la vie privée du client.";
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 mx-auto text-white"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`;
+            } else {
+                tonalite = "La gestion publique est délicate. Lisez attentivement les règles d'or ci-dessous pour éviter les faux-pas réputationnels.";
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 mx-auto text-white"><path d="M21.73 18l-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
+            }
+
+            const debrief = document.getElementById("debrief");
+            debrief.className = "block animate-slide-up w-full max-w-4xl";
+            
+            document.getElementById("barre-fill").style.width = "100%";
+
+            debrief.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                    
+                    <div class="bg-brand p-8 text-white text-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4">${iconSvg}</div>
+                            <h2 class="text-2xl font-bold mb-2">Synthèse de modération</h2>
+                            <div class="flex items-baseline justify-center gap-1 mb-4">
+                                <span class="text-6xl font-black text-brand-light">${score}</span>
+                                <span class="text-xl text-white/60 font-medium">/ ${QUESTIONS.length}</span>
+                            </div>
+                            <p class="text-white/90 max-w-lg mx-auto text-sm leading-relaxed">${tonalite}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-8">
+                        <h3 class="text-xs font-bold tracking-widest uppercase text-accent mb-5 text-center">Les 3 règles d'or du Social Media Management</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center mb-4">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm mb-2">Visibilité & Preuve Sociale</h4>
+                                <p class="text-slate-600 text-xs leading-relaxed">Les commentaires positifs et les questions générales doivent <strong>toujours être traités publiquement</strong>. Cela montre que vous êtes actif, à l'écoute, et rassure les prospects qui visitent la page.</p>
+                            </div>
+                            
+                            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                <div class="w-10 h-10 rounded-full bg-error/10 text-error flex items-center justify-center mb-4">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm mb-2">Le Piège des Données (RGPD)</h4>
+                                <p class="text-slate-600 text-xs leading-relaxed">Dès qu'un client expose des infos privées (téléphone, adresse, n° commande), <strong>il faut isoler l'échange en privé</strong>. Reprendre ces données publiquement est une faute grave.</p>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                <div class="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center mb-4">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm mb-2">Gestion des Trolls / Colère</h4>
+                                <p class="text-slate-600 text-xs leading-relaxed">Face à l'agressivité, ne rentrez jamais dans le jeu de la justification publique. Formulez une <strong>réponse courte et polie</strong> invitant au dialogue en privé. Votre cible, c'est l'audience qui vous lit.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white font-bold py-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2" onclick="recommencer()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Recommencer l'activité
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function recommencer() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById("debrief").className = "hidden";
+            document.getElementById("zone-question").style.display = "block";
+            document.getElementById("progression-wrap").style.display = "flex";
+            
+            initDots();
+            afficherQuestion(0);
+        }
+
+        const btnFs = document.getElementById('btn-fullscreen');
+        const iconEnter = document.getElementById('icon-fs-enter');
+        const iconExit = document.getElementById('icon-fs-exit');
+        const spotlight = document.getElementById('spotlight-overlay');
+        
+        let isPseudoFs = false;
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+                const elem = document.documentElement;
+                let fsPromise;
+                
+                if (elem.requestFullscreen) {
+                    fsPromise = elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    fsPromise = elem.webkitRequestFullscreen();
+                }
+
+                // Genially Fallback (Pseudo FS if blocked natively)
+                if (fsPromise !== undefined) {
+                    fsPromise.catch(err => {
+                        console.warn("Plein écran natif bloqué (Genially/iFrame). Activation du mode pseudo-plein écran.");
+                        enablePseudoFs();
+                    });
+                }
+                
+                // Double sécurité : timeout si rejet silencieux (Safari)
+                setTimeout(() => {
+                    if (!document.fullscreenElement && !document.webkitFullscreenElement && !isPseudoFs) {
+                        enablePseudoFs();
+                    }
+                }, 300);
+
+            } else {
+                if (isPseudoFs) {
+                    disablePseudoFs();
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        function enablePseudoFs() {
+            isPseudoFs = true;
+            document.body.classList.add('pseudo-fullscreen');
+            updateFsIcons();
+        }
+
+        function disablePseudoFs() {
+            isPseudoFs = false;
+            document.body.classList.remove('pseudo-fullscreen');
+            updateFsIcons();
+        }
+
+        function updateFsIcons() {
+            if (document.fullscreenElement || document.webkitFullscreenElement || isPseudoFs) {
+                iconEnter.classList.add('hidden');
+                iconExit.classList.remove('hidden');
+            } else {
+                iconEnter.classList.remove('hidden');
+                iconExit.classList.add('hidden');
+            }
+        }
+
+        btnFs.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFullScreen();
+            hideSpotlight();
+        });
+
+        const handleFsChange = () => updateFsIcons();
+        document.addEventListener('fullscreenchange', handleFsChange);
+        document.addEventListener('webkitfullscreenchange', handleFsChange);
+
+        function hideSpotlight() {
+            if(spotlight && !spotlight.classList.contains('opacity-0')) {
+                spotlight.classList.add('opacity-0');
+                setTimeout(() => spotlight.style.display = 'none', 1000);
+            }
+        }
+
+        // Dissiper le spotlight au 1er clic sur la page
+        document.addEventListener('click', hideSpotlight, { once: true });
+
+        // Démarrage de l'activité
+        window.onload = () => {
+            initDots();
+            afficherQuestion(0);
+        };
+    </script>
+</body>
+</html>

@@ -867,9 +867,9 @@
 
         case 4:
           tutTitle = "4. Bilan de l'épreuve";
-          tutBody = "Le reste de l'évaluation a été corrigé.\n\nSes autres notes sont saisies automatiquement dans la grille.\nObservez le total mis à jour en bas de la grille.";
+          tutBody = "Le reste de l'évaluation a été corrigé.\n\nSes autres notes sont ici saisies dans la grille.\nObservez le total mis à jour en bas de la grille.";
           if (isActionDone) {
-            tutAction = h(OkBox, { title:`Total = ${totalScore}/100`, body:"Le total de l'épreuve est calculé automatiquement.", onNext: advance });
+            tutAction = h(OkBox, { title:`Total = ${totalScore}/100`, body:"Le total de l'épreuve est ici calculé.", onNext: advance });
           } else {
             tutAction = h('div', { className:'mt-6 p-5 bg-white border border-gray-200 rounded animate-slide-up shadow-sm' },
               h('div', { className:'flex items-center gap-3 mb-3' },

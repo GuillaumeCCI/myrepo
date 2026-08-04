@@ -884,7 +884,7 @@
         case 5:
           tutTitle = "5. Validation globale";
           tutBody = "L'épreuve est notée sur 100 points. Il est demandé d'obtenir au moins la moyenne sur la note de l'épreuve pour la valider.";
-          tutInstruction = "Cochez la case correspondante dans la grille (en bas à droite).";
+          tutInstruction = "Concernant la validation du certificat, cochez la case selon les résultats du candidat.";
           if (step5QDone) {
             tutAction = h('div', { className:'mt-6 animate-slide-up' },
               h(OkBox, { title:"Parfait !", body:`Le candidat valide avec ${totalScore}/100.`, onNext: advance })
